@@ -34,7 +34,15 @@ class TerminalCommand extends Object:
 	func invoke(args: Array) -> void:
 		if args.size() + default_arg_count < method.get_argument_count():
 			TerminalLog.print("Too few arguments for '%s'. Expected at least %s, received %s." % [ name, method.get_argument_count() - default_arg_count, args.size() ], TerminalLog.ERROR)
-		method.callv(args)
+
+		var error = await method.callv(args)
+		if error == null: return
+
+		if error is Array:
+			for e in error:
+				TerminalLog.print(str(e), TerminalLog.ERROR)
+		else:
+			TerminalLog.print(str(error), TerminalLog.ERROR)
 
 
 static var registry : Dictionary
@@ -45,23 +53,35 @@ static func create_command(__name__: StringName, __method__: Callable, __default
 
 
 func _ready() -> void:
+	create_command(&"bindcmd", command_bind, 0, "Binds a command to an InputEventKey.")
 	create_command(&"help", command_help, 1, "Prints a description of available command(s).")
 	create_command(&"cls", TerminalLog.cls, 0, "Clears the TerminalLog.")
 	create_command(&"quit", command_quit, 0, "Quits the game.")
 
 
-func command_quit() -> void:
+func command_quit():
 	get_tree().quit()
 
 
-func command_help(command_name: StringName = &"") -> void:
+
+func command_help(command_name: StringName = &""):
 	if command_name.is_empty():
 		for cmd : TerminalCommand in registry.values():
 			TerminalLog.print(cmd.help_string, TerminalLog.QUIET)
 	elif registry.has(command_name):
 		TerminalLog.print(registry[command_name].help_string, TerminalLog.QUIET)
 	else:
-		TerminalLog.print("No such command '%s' exists." % command_name, TerminalLog.QUIET)
+		return "No such command '%s' exists." % command_name
+
+
+func command_bind(command_name: StringName, key: String):
+	if command_name.is_empty():
+		return "Please specify a command to bind."
+	if key.is_empty():
+		return "Please specify a key to bind to."
+
+
+
 
 
 func receive_invocation(text: String) -> void:
