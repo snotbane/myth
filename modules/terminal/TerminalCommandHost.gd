@@ -53,7 +53,6 @@ static func create_command(__name__: StringName, __method__: Callable, __default
 
 
 func _ready() -> void:
-	create_command(&"bindcmd", command_bind, 0, "Binds a command to an InputEventKey.")
 	create_command(&"help", command_help, 1, "Prints a description of available command(s).")
 	create_command(&"cls", TerminalLog.cls, 0, "Clears the TerminalLog.")
 	create_command(&"quit", command_quit, 0, "Quits the game.")
@@ -61,7 +60,6 @@ func _ready() -> void:
 
 func command_quit():
 	get_tree().quit()
-
 
 
 func command_help(command_name: StringName = &""):
@@ -72,16 +70,6 @@ func command_help(command_name: StringName = &""):
 		TerminalLog.print(registry[command_name].help_string, TerminalLog.QUIET)
 	else:
 		return "No such command '%s' exists." % command_name
-
-
-func command_bind(command_name: StringName, key: String):
-	if command_name.is_empty():
-		return "Please specify a command to bind."
-	if key.is_empty():
-		return "Please specify a key to bind to."
-
-
-
 
 
 func receive_invocation(text: String) -> void:
