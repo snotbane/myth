@@ -13,6 +13,7 @@ class TerminalCommand extends Object:
 	var method : Callable
 	var default_arg_count : int
 	var description : String
+	var hide_terminal : bool
 
 	var name : StringName :
 		get: return TerminalCommandHost.registry.find_key(self)
@@ -23,10 +24,11 @@ class TerminalCommand extends Object:
 			(" : %s" % description) if description else ""
 		]
 
-	func _init(__name__: StringName, __method__: Callable, __default_arg_count__: int, __description__ : String) -> void:
+	func _init(__name__: StringName, __method__: Callable, __default_arg_count__: int, __hide_terminal__ : bool, __description__ : String) -> void:
 		method = __method__
 		default_arg_count = __default_arg_count__
 		description = __description__
+		hide_terminal = __hide_terminal__
 
 		assert(not TerminalCommandHost.registry.has(__name__), "The TerminalCommand with the name \"%s\" already exists. This will replace the original one." % __name__)
 		TerminalCommandHost.registry[__name__] = self
@@ -36,7 +38,11 @@ class TerminalCommand extends Object:
 			TerminalLog.print("Too few arguments for '%s'. Expected at least %s, received %s." % [ name, method.get_argument_count() - default_arg_count, args.size() ], TerminalLog.ERROR)
 
 		var error = await method.callv(args)
-		if error == null: return
+
+		if error == null:
+			if hide_terminal:
+				TerminalVisibility.inst.active_panel = 0
+			return
 
 		if error is Array:
 			for e in error:
@@ -48,14 +54,14 @@ class TerminalCommand extends Object:
 static var registry : Dictionary
 
 
-static func create_command(__name__: StringName, __method__: Callable, __default_arg_count__: int = 0, __description__: String = "") -> void:
-	TerminalCommand.new(__name__, __method__, __default_arg_count__, __description__)
+static func create_command(__name__: StringName, __method__: Callable, __default_arg_count__: int = 0, __hide_terminal__ : bool = true, __description__: String = "") -> void:
+	TerminalCommand.new(__name__, __method__, __default_arg_count__, __hide_terminal__, __description__)
 
 
-func _ready() -> void:
-	create_command(&"help", command_help, 1, "Prints a description of available command(s).")
-	create_command(&"cls", TerminalLog.cls, 0, "Clears the TerminalLog.")
-	create_command(&"quit", command_quit, 0, "Quits the game.")
+func _init() -> void:
+	create_command(&"help", command_help, 1, false, "Prints a description of available command(s).")
+	create_command(&"cls", TerminalLog.cls, 0, false, "Clears the TerminalLog.")
+	create_command(&"quit", command_quit, 0, false, "Quits the game.")
 
 
 func command_quit():

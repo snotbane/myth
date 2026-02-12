@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://06v66pabg40h"]
 
-[ext_resource type="Material" uid="uid://v3qpeounlmsh" path="res://addons/snotbane/materials/mat_invert_canvas.tres" id="1_2gugj"]
+[ext_resource type="Material" uid="uid://v3qpeounlmsh" path="res://addons/snotbane/materials/mat_invert_canvas.tres" id="1_05prs"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ijnsd"]
 bg_color = Color(1, 1, 1, 1)
@@ -65,7 +65,7 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="line" type="Panel" parent="debug_border/crosshair" unique_id=1244906423]
-material = ExtResource("1_2gugj")
+material = ExtResource("1_05prs")
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -77,7 +77,7 @@ grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxLine_8sg17")
 
 [node name="line_2" type="Panel" parent="debug_border/crosshair" unique_id=1662389350]
-material = ExtResource("1_2gugj")
+material = ExtResource("1_05prs")
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -100,7 +100,7 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="box" type="Panel" parent="debug_border/teleport_indicator" unique_id=1535759328]
-material = ExtResource("1_2gugj")
+material = ExtResource("1_05prs")
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5

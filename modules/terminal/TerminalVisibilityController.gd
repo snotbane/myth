@@ -1,5 +1,7 @@
 
-extends Node
+class_name TerminalVisibility extends Node
+
+static var inst : TerminalVisibility
 
 ## If enabled, the game will pause when the terminal is visible.
 @export var pause_when_visible : bool = false
@@ -33,6 +35,10 @@ var active_panel : int :
 			parent.visible = mini_panel.visible
 
 		get_tree().paused = parent.visible and pause_when_visible
+
+
+func _ready() -> void:
+	inst = self
 
 
 func _input(event: InputEvent) -> void:

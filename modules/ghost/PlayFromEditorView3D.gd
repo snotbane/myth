@@ -1,7 +1,7 @@
 ## Moves a node (e.g. the player) to match the editor's view on game start. Use [member visible] to toggle whether or not this functionality is active. Only works once and in editor runtime.
-@tool class_name DebugPlayFromView3D extends Node3D
+@tool class_name PlayFromEditorView3D extends Node3D
 
-## If enabled, this node will spawn a [DebugGhost3D] node on startup.
+## If enabled, this node will spawn a [Ghost3D] node on startup.
 @export var start_in_debug_ghost_mode : bool = false
 
 ## If enabled, [member position_node] will be moved to this node on [method _ready] (i.e. the editor viewport center).
@@ -41,4 +41,4 @@ func activate() -> void:
 
 
 func create_ghost(parent: Node, tform: Transform3D) -> void:
-	DebugGhost3D.instantiate_from_camera(parent, parent.get_viewport().get_camera_3d(), tform)
+	Ghost3D.instantiate_from_camera(parent, parent.get_viewport().get_camera_3d(), tform)

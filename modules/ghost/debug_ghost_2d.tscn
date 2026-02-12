@@ -1,9 +1,0 @@
-[gd_scene format=3 uid="uid://cv3vrsaxhhhkb"]
-
-[ext_resource type="PackedScene" uid="uid://06v66pabg40h" path="res://addons/snotbane/modules/ghost/debug_canvas.tscn" id="1_28v28"]
-[ext_resource type="Script" uid="uid://p06paw7euomy" path="res://addons/snotbane/modules/ghost/DebugGhost2D.gd" id="1_x3kkj"]
-
-[node name="debug_ghost_2d" type="Node2D" unique_id=1492055801]
-script = ExtResource("1_x3kkj")
-
-[node name="debug_canvas" parent="." unique_id=464076785 instance=ExtResource("1_28v28")]

@@ -1,14 +1,14 @@
 ## Allows the user to freely move around 3D scenes for debugging purposes.
-class_name DebugGhost3D extends Node3D
+class_name Ghost3D extends Node3D
 
 static var DEFAULT_SCENE : PackedScene :
 	get: return load("uid://cwcqawp5x05vt")
 
-static var inst : DebugGhost3D
+static var inst : Ghost3D
 
 
-static func instantiate_from_camera(parent: Node, camera: Camera3D = parent.get_viewport().get_camera_3d(), tform: Transform3D = camera.global_transform) -> DebugGhost3D:
-	var result : DebugGhost3D = DEFAULT_SCENE.instantiate()
+static func instantiate_from_camera(parent: Node, camera: Camera3D = parent.get_viewport().get_camera_3d(), tform: Transform3D = camera.global_transform) -> Ghost3D:
+	var result : Ghost3D = DEFAULT_SCENE.instantiate()
 	parent.add_child(result)
 
 	result.global_transform = tform

@@ -1,14 +1,14 @@
 ## Allows the user to freely move around 2D scenes for debugging purposes.
-class_name DebugGhost2D extends Node2D
+class_name Ghost2D extends Node2D
 
 static var DEFAULT_SCENE : PackedScene :
 	get: return load("uid://cv3vrsaxhhhkb")
 
-static var inst : DebugGhost2D
+static var inst : Ghost2D
 
 
-static func instantiate_from_camera(parent: Node, camera: Camera2D = parent.get_viewport().get_camera_2d(), tform: Transform2D = camera.global_transform) -> DebugGhost2D:
-	var result : DebugGhost2D = DEFAULT_SCENE.instantiate()
+static func instantiate_from_camera(parent: Node, camera: Camera2D = parent.get_viewport().get_camera_2d(), tform: Transform2D = camera.global_transform) -> Ghost2D:
+	var result : Ghost2D = DEFAULT_SCENE.instantiate()
 	parent.add_child(result)
 
 	result.global_transform = tform

@@ -2,7 +2,7 @@
 @tool class_name MythPlugin_Ghost extends EditorPlugin
 
 const AUTOLOAD_NAME := "myth_ghost_autoload"
-const AUTOLOAD_PATH := "DebugGhostAutoload.gd"
+const AUTOLOAD_PATH := "GhostAutoload.gd"
 
 const INPUT_GHOST_TOGGLE := &"ghost_toggle"
 const INPUT_GHOST_TELEPORT := &"ghost_teleport"
