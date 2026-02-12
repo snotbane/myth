@@ -254,7 +254,7 @@ func shell_open() -> void:
 	if not save_file_exists: return
 	OS.shell_open(ProjectSettings.globalize_path(_save_path))
 func shell_open_location() -> void:
-	OS.shell_open(Snotbane.get_parent_folder(ProjectSettings.globalize_path(_save_path)))
+	OS.shell_open(Myth.get_parent_folder(ProjectSettings.globalize_path(_save_path)))
 
 
 func save(path: String = _save_path) -> void:

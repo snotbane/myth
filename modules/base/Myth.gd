@@ -1,55 +1,5 @@
 
-@tool class_name Snotbane
-
-#region Input Definitions
-
-const SETTING_INPUT_PREFIX := "input/"
-
-const INPUT_QUIT := &"quit"
-const INPUT_FULLSCREEN := &"fullscreen"
-const INPUT_TERMINAL_TOGGLE := &"terminal_toggle"
-
-const INPUT_GHOST_TOGGLE := &"ghost_toggle"
-const INPUT_GHOST_TELEPORT := &"ghost_teleport"
-const INPUT_GHOST_SPRINT := &"ghost_sprint"
-
-const INPUT_GHOST_MOVE_LEFT := &"ghost_move_left"
-const INPUT_GHOST_MOVE_RIGHT := &"ghost_move_right"
-const INPUT_GHOST_MOVE_DOWN := &"ghost_move_down"
-const INPUT_GHOST_MOVE_UP := &"ghost_move_up"
-const INPUT_GHOST_MOVE_BACK := &"ghost_move_back"
-const INPUT_GHOST_MOVE_FORWARD := &"ghost_move_forward"
-
-const INPUT_GHOST_CAMERA_LEFT := &"ghost_camera_left"
-const INPUT_GHOST_CAMERA_RIGHT := &"ghost_camera_right"
-const INPUT_GHOST_CAMERA_DOWN := &"ghost_camera_down"
-const INPUT_GHOST_CAMERA_UP := &"ghost_camera_up"
-
-const INPUT_DEBUG_GRID_TOGGLE := &"debug_grid_toggle"
-
-const SETTING_INPUT_QUIT := SETTING_INPUT_PREFIX + INPUT_QUIT
-const SETTING_INPUT_FULLSCREEN := SETTING_INPUT_PREFIX + INPUT_FULLSCREEN
-const SETTING_INPUT_TERMINAL_TOGGLE := SETTING_INPUT_PREFIX + INPUT_TERMINAL_TOGGLE
-
-const SETTING_INPUT_GHOST_TOGGLE := SETTING_INPUT_PREFIX + INPUT_GHOST_TOGGLE
-const SETTING_INPUT_GHOST_TELEPORT := SETTING_INPUT_PREFIX + INPUT_GHOST_TELEPORT
-const SETTING_INPUT_GHOST_SPRINT := SETTING_INPUT_PREFIX + INPUT_GHOST_SPRINT
-
-const SETTING_INPUT_GHOST_MOVE_LEFT := SETTING_INPUT_PREFIX + INPUT_GHOST_MOVE_LEFT
-const SETTING_INPUT_GHOST_MOVE_RIGHT := SETTING_INPUT_PREFIX + INPUT_GHOST_MOVE_RIGHT
-const SETTING_INPUT_GHOST_MOVE_DOWN := SETTING_INPUT_PREFIX + INPUT_GHOST_MOVE_DOWN
-const SETTING_INPUT_GHOST_MOVE_UP := SETTING_INPUT_PREFIX + INPUT_GHOST_MOVE_UP
-const SETTING_INPUT_GHOST_MOVE_BACK := SETTING_INPUT_PREFIX + INPUT_GHOST_MOVE_BACK
-const SETTING_INPUT_GHOST_MOVE_FORWARD := SETTING_INPUT_PREFIX + INPUT_GHOST_MOVE_FORWARD
-
-const SETTING_INPUT_GHOST_CAMERA_LEFT := SETTING_INPUT_PREFIX + INPUT_GHOST_CAMERA_LEFT
-const SETTING_INPUT_GHOST_CAMERA_RIGHT := SETTING_INPUT_PREFIX + INPUT_GHOST_CAMERA_RIGHT
-const SETTING_INPUT_GHOST_CAMERA_DOWN := SETTING_INPUT_PREFIX + INPUT_GHOST_CAMERA_DOWN
-const SETTING_INPUT_GHOST_CAMERA_UP := SETTING_INPUT_PREFIX + INPUT_GHOST_CAMERA_UP
-
-const SETTING_INPUT_DEBUG_GRID_TOGGLE := SETTING_INPUT_PREFIX + INPUT_DEBUG_GRID_TOGGLE
-
-#endregion
+@tool class_name Myth
 
 #region FileAccess
 
@@ -148,14 +98,6 @@ static func teleport_rotation_3d(body: PhysicsBody3D, rotation: Vector3) -> void
 
 #endregion
 #region Input
-
-static func add_default_input_binding(binding_name: String, events: Array = [], deadzone := 0.2) -> void:
-	if ProjectSettings.get_setting(binding_name) != null: return
-
-	ProjectSettings.set_setting(binding_name, {
-		"deadzone": deadzone,
-		"events": events,
-	})
 
 static func get_position_on_plane_from_camera(camera: Camera3D, plane: Plane) -> Vector3:
 	var mouse_pos := camera.get_viewport().get_mouse_position()

@@ -53,28 +53,28 @@ func _unhandled_input(event: InputEvent) -> void:
 		turn_input_vector = Vector2.ZERO
 		is_sprinting = false
 		return
-	elif event.is_action_pressed(Snotbane.INPUT_GHOST_TOGGLE):
+	elif event.is_action_pressed(MythPlugin_Ghost.INPUT_GHOST_TOGGLE):
 		queue_free()
 		get_viewport().set_input_as_handled()
 	elif (
-		event.is_action(Snotbane.INPUT_GHOST_MOVE_LEFT) or
-		event.is_action(Snotbane.INPUT_GHOST_MOVE_RIGHT) or
-		event.is_action(Snotbane.INPUT_GHOST_MOVE_DOWN) or
-		event.is_action(Snotbane.INPUT_GHOST_MOVE_UP) or
-		event.is_action(Snotbane.INPUT_GHOST_MOVE_FORWARD) or
-		event.is_action(Snotbane.INPUT_GHOST_MOVE_BACK)
+		event.is_action(MythPlugin_Ghost.INPUT_GHOST_MOVE_LEFT) or
+		event.is_action(MythPlugin_Ghost.INPUT_GHOST_MOVE_RIGHT) or
+		event.is_action(MythPlugin_Ghost.INPUT_GHOST_MOVE_DOWN) or
+		event.is_action(MythPlugin_Ghost.INPUT_GHOST_MOVE_UP) or
+		event.is_action(MythPlugin_Ghost.INPUT_GHOST_MOVE_FORWARD) or
+		event.is_action(MythPlugin_Ghost.INPUT_GHOST_MOVE_BACK)
 	):
-		move_input_vector = Vector3(Input.get_axis(Snotbane.INPUT_GHOST_MOVE_LEFT, Snotbane.INPUT_GHOST_MOVE_RIGHT), Input.get_axis(Snotbane.INPUT_GHOST_MOVE_DOWN, Snotbane.INPUT_GHOST_MOVE_UP), Input.get_axis(Snotbane.INPUT_GHOST_MOVE_FORWARD, Snotbane.INPUT_GHOST_MOVE_BACK))
+		move_input_vector = Vector3(Input.get_axis(MythPlugin_Ghost.INPUT_GHOST_MOVE_LEFT, MythPlugin_Ghost.INPUT_GHOST_MOVE_RIGHT), Input.get_axis(MythPlugin_Ghost.INPUT_GHOST_MOVE_DOWN, MythPlugin_Ghost.INPUT_GHOST_MOVE_UP), Input.get_axis(MythPlugin_Ghost.INPUT_GHOST_MOVE_FORWARD, MythPlugin_Ghost.INPUT_GHOST_MOVE_BACK))
 		get_viewport().set_input_as_handled()
 	elif (
-		event.is_action(Snotbane.INPUT_GHOST_CAMERA_LEFT) or
-		event.is_action(Snotbane.INPUT_GHOST_CAMERA_RIGHT) or
-		event.is_action(Snotbane.INPUT_GHOST_CAMERA_DOWN) or
-		event.is_action(Snotbane.INPUT_GHOST_CAMERA_UP)
+		event.is_action(MythPlugin_Ghost.INPUT_GHOST_CAMERA_LEFT) or
+		event.is_action(MythPlugin_Ghost.INPUT_GHOST_CAMERA_RIGHT) or
+		event.is_action(MythPlugin_Ghost.INPUT_GHOST_CAMERA_DOWN) or
+		event.is_action(MythPlugin_Ghost.INPUT_GHOST_CAMERA_UP)
 	):
-		turn_input_vector = Input.get_vector(Snotbane.INPUT_GHOST_CAMERA_LEFT, Snotbane.INPUT_GHOST_CAMERA_RIGHT, Snotbane.INPUT_GHOST_CAMERA_DOWN, Snotbane.INPUT_GHOST_CAMERA_UP)
+		turn_input_vector = Input.get_vector(MythPlugin_Ghost.INPUT_GHOST_CAMERA_LEFT, MythPlugin_Ghost.INPUT_GHOST_CAMERA_RIGHT, MythPlugin_Ghost.INPUT_GHOST_CAMERA_DOWN, MythPlugin_Ghost.INPUT_GHOST_CAMERA_UP)
 		get_viewport().set_input_as_handled()
-	elif event.is_action(Snotbane.INPUT_GHOST_SPRINT):
+	elif event.is_action(MythPlugin_Ghost.INPUT_GHOST_SPRINT):
 		is_sprinting = event.is_pressed()
 		get_viewport().set_input_as_handled()
 

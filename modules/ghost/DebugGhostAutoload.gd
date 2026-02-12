@@ -1,9 +1,6 @@
 
 class_name DebugGhostAutoload extends Node
 
-const AUTOLOAD_NAME := "debug_ghost_autoload"
-const AUTOLOAD_PATH := "modules/debug/ghost/DebugGhostAutoload.gd"
-
 ## Use this to control if the default input can be used in non-debug builds.
 const ALLOW_INPUT_IN_RELEASE_BUILD : bool = false
 
@@ -19,7 +16,7 @@ func _init():
 
 func _input(event: InputEvent):
 	if not (OS.is_debug_build() or ALLOW_INPUT_IN_RELEASE_BUILD) or ghost != null: return
-	if event.is_action_pressed(Snotbane.INPUT_GHOST_TOGGLE):
+	if event.is_action_pressed(MythPlugin_Ghost.INPUT_GHOST_TOGGLE):
 		create_ghost()
 		get_viewport().set_input_as_handled()
 

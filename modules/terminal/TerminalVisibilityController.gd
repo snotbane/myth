@@ -4,7 +4,7 @@ extends Node
 ## If enabled, the game will pause when the terminal is visible.
 @export var pause_when_visible : bool = false
 
-## Determines which features are available in the terminal. Features can be cycled through using [member Snotbane.INPUT_CLI_TOGGLE].
+## Determines which features are available in the terminal. Features can be cycled through using [member MythPlugin_Terminal.INPUT_CLI_TOGGLE].
 @export_flags("Mini:1","Full:2") var features : int = 2
 
 
@@ -36,7 +36,7 @@ var active_panel : int :
 
 
 func _input(event: InputEvent) -> void:
-	if event.is_action(Snotbane.INPUT_TERMINAL_TOGGLE):
+	if event.is_action(MythPlugin_Terminal.INPUT_TERMINAL_TOGGLE):
 		get_viewport().set_input_as_handled()
 		if event.is_pressed():
 			active_panel += 1

@@ -11,7 +11,7 @@ func _ready() -> void:
 
 
 func _input(event: InputEvent) -> void:
-	if event.is_action_pressed(Snotbane.INPUT_FULLSCREEN):
+	if event.is_action_pressed(Myth.INPUT_FULLSCREEN):
 		is_fullscreen = not is_fullscreen
 
 
