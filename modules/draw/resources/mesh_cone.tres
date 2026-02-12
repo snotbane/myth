@@ -1,0 +1,11 @@
+[gd_resource type="CylinderMesh" format=3 uid="uid://bak40cp1rwhko"]
+
+[ext_resource type="Material" uid="uid://bdosbg5iohx24" path="res://addons/snotbane/modules/draw/resources/draw_3d.tres" id="1_ohpf1"]
+
+[resource]
+material = ExtResource("1_ohpf1")
+top_radius = 0.0
+bottom_radius = 0.333
+height = 1.0
+radial_segments = 16
+cap_top = false

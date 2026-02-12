@@ -1,7 +1,0 @@
-[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://bdosbg5iohx24"]
-
-[ext_resource type="Shader" uid="uid://bp6o16p5c6d4d" path="res://addons/snotbane/modules/debug/draw/resources/draw_3d.gdshader" id="1_uq5cv"]
-
-[resource]
-render_priority = 0
-shader = ExtResource("1_uq5cv")

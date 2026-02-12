@@ -1,6 +1,6 @@
-[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://bm5n28m8boujc"]
+[gd_resource type="ShaderMaterial" format=3 uid="uid://bm5n28m8boujc"]
 
-[ext_resource type="Shader" uid="uid://dgx8is1uf2ug0" path="res://addons/snotbane/modules/debug/draw/resources/march_dots.gdshader" id="1_3l7fl"]
+[ext_resource type="Shader" uid="uid://dgx8is1uf2ug0" path="res://addons/snotbane/modules/draw/resources/march_dots.gdshader" id="1_3l7fl"]
 
 [resource]
 render_priority = -128

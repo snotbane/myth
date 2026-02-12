@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://c1nlgw0r4lj06"]
 
 [ext_resource type="Script" uid="uid://colsjxiky4rbu" path="res://addons/snotbane/modules/misc/FeatureDependentNode.gd" id="1_5cwqd"]
-[ext_resource type="Script" path="res://addons/snotbane/modules/misc/MouseModeUser.gd" id="1_iglwo"]
+[ext_resource type="Script" uid="uid://0eapfr5it6l8" path="res://addons/snotbane/modules/misc/MouseModeUser.gd" id="1_iglwo"]
 [ext_resource type="Script" uid="uid://br7j4h4ldm16k" path="res://addons/snotbane/modules/terminal/TerminalVisibilityController.gd" id="2_td1pb"]
 [ext_resource type="Script" uid="uid://cpwwo6awt2tc4" path="res://addons/snotbane/modules/terminal/TerminalCommandHost.gd" id="3_d1c5l"]
 [ext_resource type="Script" uid="uid://bp7brhmeyhb8i" path="res://addons/snotbane/modules/terminal/TerminalInput.gd" id="3_kfds7"]
