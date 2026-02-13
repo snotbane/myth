@@ -3,12 +3,12 @@
 importer="svg"
 type="DPITexture"
 uid="uid://ebpefvkwjfwm"
-path="res://.godot/imported/NodeWarning.svg-a81c92ef4426b31c2b7d2c8bdbf42ce1.dpitex"
+path="res://.godot/imported/NodeWarning.svg-549d424b0550ae4f6b6b5b00b9f6c996.dpitex"
 
 [deps]
 
-source_file="res://addons/snotbane/icons/NodeWarning.svg"
-dest_files=["res://.godot/imported/NodeWarning.svg-a81c92ef4426b31c2b7d2c8bdbf42ce1.dpitex"]
+source_file="res://addons/myth/icons/NodeWarning.svg"
+dest_files=["res://.godot/imported/NodeWarning.svg-549d424b0550ae4f6b6b5b00b9f6c996.dpitex"]
 
 [params]
 
