@@ -9,7 +9,7 @@ const PROJECT_SETTING_HINT := {
 }
 
 static var DEFAULT_MOUSE_MODE : Input.MouseMode :
-	get: return ProjectSettings.get_setting(PROJECT_SETTING_HINT["name"])
+	get: return ProjectSettings.get_setting(PROJECT_SETTING_HINT[&"name"], Input.MouseMode.MOUSE_MODE_VISIBLE)
 
 static var registry : Array[MouseModeUser]
 static var active_node : MouseModeUser

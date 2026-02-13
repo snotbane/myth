@@ -44,14 +44,13 @@ func _disable_plugin() -> void:
 
 
 func configure_input() -> void:
+	MythPlugin.add_default_input_binding(SETTING_INPUT_GHOST_TOGGLE, [])
+
+
 	var ghost_teleport_0 := InputEventKey.new()
-	ghost_teleport_0.physical_keycode = KEY_V
-	ghost_teleport_0.shift_pressed = true
-	var ghost_teleport_1 := InputEventKey.new()
-	ghost_teleport_1.physical_keycode = KEY_ENTER
+	ghost_teleport_0.physical_keycode = KEY_ENTER
 	MythPlugin.add_default_input_binding(SETTING_INPUT_GHOST_TELEPORT, [
 		ghost_teleport_0,
-		ghost_teleport_1,
 	])
 
 
