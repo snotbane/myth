@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="InputLocalization" format=3 uid="uid://by4uei1ro2t8y"]
 
-[ext_resource type="Script" uid="uid://b8v1iiv7neaxt" path="res://addons/snotbane/modules/setting/SettingInput_Localization.gd" id="1_bp3rp"]
+[ext_resource type="Script" uid="uid://b8v1iiv7neaxt" path="res://addons/myth/modules/setting/SettingInput_Localization.gd" id="1_bp3rp"]
 
 [sub_resource type="InputEventKey" id="InputEventKey_bp3rp"]
 keycode = 4194305
