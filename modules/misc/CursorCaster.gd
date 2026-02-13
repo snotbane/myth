@@ -32,13 +32,12 @@ func _physics_process(delta: float) -> void:
 	var ray_normal := camera.project_ray_normal(mouse_position)
 	target_position = to_local(ray_origin + ray_normal * length)
 
-	focus = get_collider()
-
 	_physics_process_current(delta)
 
 
 ## Called each physics tick, when the parent [member camera] is current, and after [member target_position] and [member focus] have been updated.
-func _physics_process_current(delta: float) -> void: pass
+func _physics_process_current(delta: float) -> void:
+	focus = get_collider()
 
 
 ## Called whenever the collided object changes.
