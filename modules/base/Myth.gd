@@ -186,6 +186,14 @@ static func expanded(vector: Vector2) -> Vector3:
 static func condensed(vector: Vector3) -> Vector2:
 	return Vector2(xz(vector).length(), vector.y)
 
+static func clamp_length2(vector: Vector2, max_length: float) -> Vector2:
+	if vector.length_squared() <= max_length * max_length: return vector
+	return vector.normalized() * max_length
+
+static func clamp_length3(vector: Vector3, max_length: float) -> Vector3:
+	if vector.length_squared() <= max_length * max_length: return vector
+	return vector.normalized() * max_length
+
 
 static func is_in_range(x: float, __range__: Vector2) -> bool:
 	return x >= __range__.x and x <= __range__.y
