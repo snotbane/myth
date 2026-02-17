@@ -73,11 +73,13 @@ static func duplicate_value(v) -> Variant:
 
 	return v
 
-signal input_changed
-## This signal emits when the input value is finished changing, e.g. submitted text or finished slider drag.
+## Emits when the input value changes at all, even if the user is still editing it.
 signal value_changed(new_value: Variant)
+## Emits when the input value is finished changing, e.g. text escaped/submitted or finished slider drag.
+signal value_committed(new_value: Variant)
+## Emits when this Setting changes from being overridden to default or vice versa.
 signal override_changed(is_overridden: bool)
-## This signal emits whenever this Setting changes from being valid to invalid, or invalid to valid (regardless of the reason).
+## Emits whenever this Setting changes from being valid to invalid, or vice versa. (regardless of the reason).
 signal valid_changed(is_valid: bool)
 
 

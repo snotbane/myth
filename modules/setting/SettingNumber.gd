@@ -85,6 +85,9 @@ func _init() -> void:
 	range = HSlider.new()
 	range.custom_minimum_size.x = 100.0
 	range.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	range.min_value = 0.0
+	range.max_value = 100.0
+	range.value = 0.0
 	range.step = 1.0
 	hbox_panel.add_child(range)
 

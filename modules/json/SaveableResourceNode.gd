@@ -55,7 +55,7 @@ func _ready() -> void:
 
 	if autoload and storage_resource:
 		storage_resource.load()
-		pull_all_prefs_from_resource()
+		pull_all_prefs_from_resource.call_deferred()
 
 
 
