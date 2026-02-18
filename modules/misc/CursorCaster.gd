@@ -22,6 +22,10 @@ var focus : CollisionObject3D :
 		focus_changed.emit()
 
 
+var collision_position : Vector3 :
+	get: return get_collision_point() if is_colliding() else to_global(target_position)
+
+
 func _physics_process(delta: float) -> void:
 	if not camera.current:
 		target_position = Vector3.ZERO
