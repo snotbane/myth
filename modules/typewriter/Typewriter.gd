@@ -1,6 +1,8 @@
 
 class_name Typewriter extends RichTextLabel
 
+const ENV_ID := &"twid"
+
 
 static var REGEX_SHAPE_MARKER := RegEx.create_from_string(r"$|(?<=\s)\S")
 static var REGEX_STRIP_BBCODE := RegEx.create_from_string(r"\\[.*?\\]")
@@ -110,6 +112,9 @@ var current_speed : float :
 	get: return base_speed * _get_speed_modifier()
 func _get_speed_modifier() -> float: return 1.0
 
+@export var persistent_fx : Array[RichTextEffect]
+var typewriter_fx : Array[TypewriterTextEffect]
+
 
 func _init() -> void:
 	visible_characters_behavior = TextServer.VC_CHARS_AFTER_SHAPING
@@ -124,12 +129,27 @@ func _init() -> void:
 	shaper.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(shaper)
 
+	visibility_changed.connect(_visibility_changed)
+
 
 func _ready() -> void:
-	if autostart:
+	for effect in persistent_fx:
+		install_effect(effect)
+	for effect in custom_effects:
+		if effect is TypewriterTextEffect and effect not in typewriter_fx:
+			typewriter_fx.push_back(effect)
+
+	if autostart and visible:
 		present(text)
 	else:
 		prep(text)
+
+
+var visible_prev : bool
+func _visibility_changed() -> void:
+	if autostart and visible and not visible_prev:
+		present()
+	visible_prev = visible
 
 
 func _process(delta: float) -> void:
@@ -137,7 +157,6 @@ func _process(delta: float) -> void:
 
 	if is_typing:
 		visible_characters_partial += current_speed * delta
-		print(visible_characters)
 
 	if play_state != COMPLETED and visible_characters_completed and _check_completed():
 		play_state = COMPLETED
@@ -178,14 +197,24 @@ func complete() -> void:
 
 
 func _get_bbcode_string(message) -> String:
+	var result : String
 	match typeof(message):
 		TYPE_STRING, TYPE_STRING_NAME:
-			return message
+			result = message
 
 		TYPE_OBJECT when message.has_method(&"_get_bbcode_string"):
-			return message._get_bbcode_string()
+			result = message._get_bbcode_string()
 
-	return str(message)
+		_:
+			result = str(message)
+
+	var prefix_bbcodes := ""
+	for effect in persistent_fx:
+		var bbcode : String = effect.bbcode
+		bbcode += " %s=%s" % [ ENV_ID, get_instance_id() ]
+		prefix_bbcodes += "[%s]" % bbcode
+
+	return prefix_bbcodes + result
 
 
 func _handle_elements() -> void:
