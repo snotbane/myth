@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://cv3vrsaxhhhkb"]
 
-[ext_resource type="PackedScene" uid="uid://06v66pabg40h" path="res://addons/snotbane/modules/ghost/ghost_canvas.tscn" id="1_28v28"]
-[ext_resource type="Script" uid="uid://p06paw7euomy" path="res://addons/snotbane/modules/ghost/Ghost2D.gd" id="1_x3kkj"]
+[ext_resource type="PackedScene" uid="uid://06v66pabg40h" path="res://addons/myth/modules/ghost/ghost_canvas.tscn" id="1_28v28"]
+[ext_resource type="Script" uid="uid://p06paw7euomy" path="res://addons/myth/modules/ghost/Ghost2D.gd" id="1_x3kkj"]
 
 [node name="debug_ghost_2d" type="Node2D" unique_id=1492055801]
 script = ExtResource("1_x3kkj")

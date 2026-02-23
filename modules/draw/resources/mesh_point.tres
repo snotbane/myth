@@ -1,6 +1,6 @@
 [gd_resource type="SphereMesh" format=3 uid="uid://cnkvd3t13kcod"]
 
-[ext_resource type="Material" uid="uid://bdosbg5iohx24" path="res://addons/snotbane/modules/draw/resources/draw_3d.tres" id="1_pjemq"]
+[ext_resource type="Material" uid="uid://bdosbg5iohx24" path="res://addons/myth/modules/draw/resources/draw_3d.tres" id="1_pjemq"]
 
 [resource]
 material = ExtResource("1_pjemq")

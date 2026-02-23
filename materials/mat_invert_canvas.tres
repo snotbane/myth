@@ -1,6 +1,6 @@
 [gd_resource type="ShaderMaterial" format=3 uid="uid://v3qpeounlmsh"]
 
-[ext_resource type="Shader" uid="uid://c05q8ugcnven7" path="res://addons/snotbane/shaders/screen_invert_canvas.gdshader" id="1_tgwja"]
+[ext_resource type="Shader" uid="uid://c05q8ugcnven7" path="res://addons/myth/shaders/screen_invert_canvas.gdshader" id="1_tgwja"]
 
 [resource]
 shader = ExtResource("1_tgwja")

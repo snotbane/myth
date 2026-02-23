@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://06v66pabg40h"]
 
-[ext_resource type="Material" uid="uid://v3qpeounlmsh" path="res://addons/snotbane/materials/mat_invert_canvas.tres" id="1_05prs"]
+[ext_resource type="Material" uid="uid://v3qpeounlmsh" path="res://addons/myth/materials/mat_invert_canvas.tres" id="1_05prs"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ijnsd"]
 bg_color = Color(1, 1, 1, 1)
