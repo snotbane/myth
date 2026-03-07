@@ -195,7 +195,7 @@ signal modified
 
 
 ## The path to save to. Make sure extension is included. If left blank, a random path located in `user://` will be assigned.
-@export var _save_path : String
+@export var save_path : String
 func generate_save_path(name := str(randi())) -> String:
 	var result := ""
 	var actual_filename := name
@@ -206,7 +206,7 @@ func generate_save_path(name := str(randi())) -> String:
 	return result
 
 var save_file_exists : bool :
-	get: return FileAccess.file_exists(_save_path)
+	get: return FileAccess.file_exists(save_path)
 
 
 var _aes : AESContext
@@ -227,18 +227,28 @@ var _encryption_password_quantized : String :
 	get: return _encryption_password # TODO: ensure it's the same size as KEY_SIZE
 
 
+var is_valid : bool :
+	get: return FileAccess.file_exists(save_path) and _get_is_valid()
+func _get_is_valid() -> bool: return true
+
+var save_dir : String :
+	get: return Myth.get_parent_folder(save_path, 1)
+
+
 @export_storage var time_created : int
 @export_storage var time_modified : int
 @export_storage var data : Dictionary
 
 
 func _init(__save_path__: String = generate_save_path()) -> void:
-	_save_path = __save_path__
+	save_path = __save_path__
 	time_created = NOW
 	time_modified = time_created
 
 	if not save_file_exists:
-		save()
+		self.save()
+	else:
+		self.load()
 
 
 func json_export() -> Dictionary:
@@ -252,12 +262,12 @@ func json_import(json: Variant) -> void:
 
 func shell_open() -> void:
 	if not save_file_exists: return
-	OS.shell_open(ProjectSettings.globalize_path(_save_path))
+	OS.shell_open(ProjectSettings.globalize_path(save_path))
 func shell_open_location() -> void:
-	OS.shell_open(Myth.get_parent_folder(ProjectSettings.globalize_path(_save_path)))
+	OS.shell_open(Myth.get_parent_folder(ProjectSettings.globalize_path(save_path)))
 
 
-func save(path: String = _save_path) -> void:
+func save(path: String = save_path) -> void:
 	var file := FileAccess.open(path, FileAccess.WRITE)
 	# assert(file != null, "Cannot save to file, file does not exist: %s" % path)
 
@@ -287,9 +297,9 @@ func _save(file: FileAccess, json: String) -> void:
 		file.store_buffer(result)
 
 
-func load(path: String = _save_path) -> void:
-	_save_path = path
-	assert(save_file_exists, "Cannot load from file, file does not exist: %s" % _save_path)
+func load(path: String = save_path) -> void:
+	save_path = path
+	assert(save_file_exists, "Cannot load from file, file does not exist: %s" % save_path)
 
 	var file := FileAccess.open(path, FileAccess.READ)
 	if file == null:

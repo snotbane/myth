@@ -8,6 +8,29 @@ static func get_parent_folder(path: String, levels: int = 1) -> String:
 	if levels <= 0: return path
 	return get_parent_folder(path.substr(0, path.rfind("/")), levels - 1)
 
+static func get_paths_in_folder(root := "res://", include : RegEx = null, exclude : RegEx = null) -> PackedStringArray:
+	var dir := DirAccess.open(root)
+	if not dir: return []
+
+	var result : PackedStringArray = []
+
+	if include == null or include.search(root) != null:
+		result.push_back(root)
+
+	dir.list_dir_begin()
+	var file : String = dir.get_next()
+	while file:
+		var next := root.path_join(file)
+		if		(include == null or include.search(file) != null) \
+			and (exclude == null or exclude.search(file) == null) :
+			result.push_back(next)
+
+		if dir.current_is_dir():
+			result.append_array(get_paths_in_folder(next, include))
+
+		file = dir.get_next()
+	return result
+
 #endregion
 #region Nodes
 

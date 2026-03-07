@@ -124,7 +124,6 @@ var hbox_panel : HBoxContainer
 var label : Label
 var space : Control
 
-# var tracker : SettingTracker
 var reset_button_container : Control
 var reset_button : Button
 
