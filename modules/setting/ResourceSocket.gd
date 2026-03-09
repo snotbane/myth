@@ -36,13 +36,14 @@ var _resource : Resource
 		if _resource:
 			_resource.changed.connect(resource_changed.emit)
 
-		if _resource is JsonResource:
-			storage_resource = _resource
-		elif not storage_path.is_empty():
-			storage_resource = JsonResource.new(storage_path)
-			storage_resource.data[&"resource"] = resource
-		else:
-			storage_resource = null
+		storage_resource = _resource if _resource is JsonResource else null
+		# if _resource is JsonResource:
+		# 	storage_resource = _resource
+		# elif not storage_path.is_empty():
+		# 	storage_resource = JsonResource.new(storage_path, false)
+		# 	storage_resource.data[&"resource"] = resource
+		# else:
+		# 	storage_resource = null
 
 		refresh_settings_cache()
 
@@ -52,6 +53,8 @@ var _resource : Resource
 
 		if value_changed:
 			resource_value_changed.emit(resource)
+			resource_changed.emit()
+
 func set_resource(value: Resource) -> void:
 	resource = value
 

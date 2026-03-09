@@ -205,7 +205,16 @@ func generate_save_path(name := str(randi())) -> String:
 		actual_filename = "%s_%s" % [name, str(randi())]
 	return result
 
-var save_file_exists : bool :
+var save_name : String :
+	get: return save_path.substr(save_path.rfind("/") + 1)
+
+var save_dir : String :
+	get: return Myth.get_parent_folder(save_path, 1)
+
+var save_dir_with_slash : String :
+	get: return save_path.path_join("")
+
+var save_path_exists : bool :
 	get: return FileAccess.file_exists(save_path)
 
 
@@ -231,23 +240,20 @@ var is_valid : bool :
 	get: return FileAccess.file_exists(save_path) and _get_is_valid()
 func _get_is_valid() -> bool: return true
 
-var save_dir : String :
-	get: return Myth.get_parent_folder(save_path, 1)
-
 
 @export_storage var time_created : int
 @export_storage var time_modified : int
 @export_storage var data : Dictionary
 
 
-func _init(__save_path__: String = generate_save_path()) -> void:
+func _init(__save_path__: String = generate_save_path(), __autoload__ : bool = true) -> void:
 	save_path = __save_path__
 	time_created = NOW
 	time_modified = time_created
 
-	if not save_file_exists:
+	if not save_path_exists:
 		self.save()
-	else:
+	elif __autoload__:
 		self.load()
 
 
@@ -261,7 +267,7 @@ func json_import(json: Variant) -> void:
 
 
 func shell_open() -> void:
-	if not save_file_exists: return
+	if not save_path_exists: return
 	OS.shell_open(ProjectSettings.globalize_path(save_path))
 func shell_open_location() -> void:
 	OS.shell_open(Myth.get_parent_folder(ProjectSettings.globalize_path(save_path)))
@@ -299,7 +305,7 @@ func _save(file: FileAccess, json: String) -> void:
 
 func load(path: String = save_path) -> void:
 	save_path = path
-	assert(save_file_exists, "Cannot load from file, file does not exist: %s" % save_path)
+	assert(save_path_exists, "Cannot load from file, file does not exist: %s" % save_path)
 
 	var file := FileAccess.open(path, FileAccess.READ)
 	if file == null:
