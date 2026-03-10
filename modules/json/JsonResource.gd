@@ -195,7 +195,11 @@ signal modified
 
 
 ## The path to save to. Make sure extension is included. If left blank, a random path located in `user://` will be assigned.
-@export var save_path : String
+@export var _save_path : String
+var save_path : String :
+	get: return _save_path
+	set(value): _save_path = value
+
 func generate_save_path(name := str(randi())) -> String:
 	var result := ""
 	var actual_filename := name
