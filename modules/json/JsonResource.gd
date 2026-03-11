@@ -233,20 +233,28 @@ var file_dir : String :
 	set(value): file_path = value.path_join("%s.%s" % [file_name, file_ext])
 
 var file_name : String :
-	get: return file_path.substr(file_path.rfind("/") + 1, file_path.length() - (file_ext.length() + 1))
+	get:
+		var start = file_path.rfind("/")
+		return file_path.substr(start + 1, file_path.length() - (file_ext.length() + maxi(start, 0) + 2))
 	set(value): file_path = file_dir.path_join("%s.%s" % [value, file_ext])
 
 var file_ext : String :
-	get : return file_path.get_extension()
+	get: return file_path.get_extension()
 	set(value): file_path = "%s.%s" % [file_path.substr(0, file_path.length() - (file_ext.length() + 1)), value]
+
+var file_name_and_ext : String :
+	get: return "%s.%s" % [ file_name, file_ext ]
 
 var file_path_absolute : String :
 	get: return parent_dir.path_join(_file_path) if parent else _file_path
 	set(value):
 		var file_path_absolute_prev := file_path_absolute
+		if file_path_absolute_prev == value: return
 
 		parent = find_parent_from_path(value)
 		_file_path = value.substr(parent_dir.length() + 1) if parent else value
+
+		# if value.is_empty(): return
 
 		if FileAccess.file_exists(file_path_absolute_prev):
 			DirAccess.rename_absolute(file_path_absolute_prev, file_path_absolute)
@@ -283,8 +291,10 @@ var _store_as_dir : bool
 		if _store_as_dir:
 			DIRECTORY_RESOURCES[file_path_absolute] = self
 
+var data_path : String = DATA_PATH
+
 var data_path_absolute : String :
-	get: return file_path_absolute.path_join(DATA_PATH) if store_as_dir else file_path_absolute
+	get: return file_path_absolute.path_join(data_path) if store_as_dir else file_path_absolute
 
 var data_dir_absolute : String :
 	get: return file_path_absolute if store_as_dir else file_dir_absolute
@@ -413,3 +423,48 @@ func _load(file: FileAccess) -> String:
 		_aes.finish()
 
 		return decrypted.get_string_from_utf8()
+
+
+func reveal() -> void:
+	var err := OS.shell_show_in_file_manager(file_dir)
+	if err != OK:
+		printerr("Error revealing JsonResource at '%s': code %s." % [ err, file_path ])
+
+
+func move(to_dir_absolute: String) -> void:
+	if file_dir_absolute == to_dir_absolute:
+		return
+
+	file_path_absolute = to_dir_absolute.path_join(file_path)
+
+
+## Copies the resource to be placed into a directory. [param hard] determines if all sub resources are copied (only applies if [member store_as_dir] is `true`).
+func copy(to_dir_absolute: String, hard : bool = true) -> JsonResource:
+	if file_dir_absolute == to_dir_absolute:
+		printerr("Can't duplicate to the same path '%s'" % [ to_dir_absolute ])
+		return null
+
+	var copy_err := DirAccess.copy_absolute(file_dir_absolute, to_dir_absolute)
+	if copy_err != OK:
+		printerr("Error code (%s) while copying profile from '%s' to '%s'" % [ copy_err, file_dir_absolute, to_dir_absolute ])
+		return null
+
+	var result := JsonResource.new(to_dir_absolute.path_join(file_path), store_as_dir)
+
+	if hard or not store_as_dir: return result
+
+	# if FileAccess.file_exists(result.file_dir.path_join(Note.NOTES_SUBFOLDER_NAME)):
+	var remove_err := DirAccess.remove_absolute(result.file_dir_absolute)
+	if remove_err != OK:
+		printerr("Error code (%s) while removing notes folder from copied profile '%s'" % [ remove_err, result.file_path ])
+
+	return result
+
+
+
+func delete() -> void:
+	var err := DirAccess.remove_absolute(file_dir_absolute)
+	if err != OK:
+		printerr("Error deleting JsonResource at '%s': code %s." % [ file_path_absolute, err ])
+
+
