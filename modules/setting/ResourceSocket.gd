@@ -66,11 +66,11 @@ var settings_cache : Array[Node]
 
 ## If set, the data will be stored here. If blank, do nothing. Typically, leave this blank for settings which are part of the actual game object, and then save everything in bulk. Consider setting this to something like "user://settings.json" for user preferences or settings.
 @export var storage_path : String :
-	get: return storage_resource.save_path if storage_resource else String()
+	get: return storage_resource.file_path if storage_resource else String()
 	set(value):
 		if storage_resource == null: return
 
-		storage_resource.save_path = value
+		storage_resource.file_path = value
 
 ## Determines when the resource should be saved to an [member storage_path]. If it's empty, this doesn't do anything.
 @export_enum("No Autosave", "On Self Hidden", "On Parent Hidden", "On Value Changed") var autosave : int = ON_VALUE_CHANGED

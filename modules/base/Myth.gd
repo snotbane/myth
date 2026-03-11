@@ -6,7 +6,11 @@
 static func get_parent_folder(path: String, levels: int = 1) -> String:
 	if path.is_empty(): return String()
 	if levels <= 0: return path
-	return get_parent_folder(path.substr(0, path.rfind("/")), levels - 1)
+
+	var end := path.rfind("/")
+	if end == -1: return ""
+
+	return get_parent_folder(path.substr(0, end), levels - 1)
 
 
 static func get_paths_in_folder(root := "res://", include : RegEx = null, exclude : RegEx = null) -> PackedStringArray:

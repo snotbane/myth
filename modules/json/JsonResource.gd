@@ -1,7 +1,9 @@
-## A resource which can serialize data to, and deserialize data from, a JSON file. Useful for any kind of save data. This does NOT provide any access to available save files on the system. Typical usage includes prompting for a path using [FileDialog] and then either saving or loading to a new [JsonResource] instance.
+## A resource which can serialize data to, and deserialize data from, a JSON file. Useful for any kind of save data. This does NOT provide any access to available save files on the system. Typical usage includes prompting for a file_path using [FileDialog] and then either saving or loading to a new [JsonResource] instance.
 class_name JsonResource extends Resource
 
 #region Statics
+
+const DATA_PATH := "__DATA__.json"
 
 const SECONDS_IN_DAY := 86400
 const SECONDS_IN_HOUR := 3600
@@ -14,6 +16,30 @@ const KEY_SIZE := 16
 const IV_SIZE := 16
 
 const IMPORT_ORDER : PackedStringArray = [ &"script", &"resource_local_to_scene", &"resource_name", &"time_created", &"time_modified", &"data" ]
+
+static var DIRECTORY_RESOURCES : Dictionary
+
+static func generate_save_path(dir := "user://", name := generate_save_name(), ext := "json") -> String:
+	var result := ""
+	var actual_filename := name
+	while true:
+		result = "%s%s.%s" % [dir, actual_filename, ext]
+		if not FileAccess.file_exists(result): break
+		actual_filename = "%s_%s" % [name, generate_save_name()]
+
+	return result
+
+static func generate_save_name() -> String:
+	return str(randi())
+
+
+static func find_parent_from_path(path: String) -> JsonResource:
+	while not path.is_empty():
+		path = Myth.get_parent_folder(path)
+		if DIRECTORY_RESOURCES.has(path):
+			return DIRECTORY_RESOURCES[path]
+	return null
+
 
 static func _sort_import_keys(a: StringName, b: StringName) -> bool:
 	var ai := IMPORT_ORDER.find(a)
@@ -194,32 +220,77 @@ static func _resource_import(res: Resource, json: Dictionary) -> void:
 signal modified
 
 
-## The path to save to. Make sure extension is included. If left blank, a random path located in `user://` will be assigned.
-@export var _save_path : String
-var save_path : String :
-	get: return _save_path
-	set(value): _save_path = value
+## The file_path to save to. Make sure extension is included. If left blank, a random file_path located in `user://` will be assigned.
+@export var _file_path : String
 
-func generate_save_path(name := str(randi())) -> String:
-	var result := ""
-	var actual_filename := name
-	while true:
-		result = "%s%s%s" % ["user://", actual_filename, ".json" if _encryption_password.is_empty() else ".dat"]
-		if not FileAccess.file_exists(result): break
-		actual_filename = "%s_%s" % [name, str(randi())]
-	return result
+## The relative file path. Changing this will move the file on the system.
+var file_path : String :
+	get: return _file_path
+	set(value):	file_path_absolute = parent_dir.path_join(value) if parent else value
 
-var save_name : String :
-	get: return save_path.substr(save_path.rfind("/") + 1)
+var file_dir : String :
+	get: return Myth.get_parent_folder(file_path)
+	set(value): file_path = value.path_join("%s.%s" % [file_name, file_ext])
 
-var save_dir : String :
-	get: return Myth.get_parent_folder(save_path, 1)
+var file_name : String :
+	get: return file_path.substr(file_path.rfind("/") + 1, file_path.length() - (file_ext.length() + 1))
+	set(value): file_path = file_dir.path_join("%s.%s" % [value, file_ext])
 
-var save_dir_with_slash : String :
-	get: return save_path.path_join("")
+var file_ext : String :
+	get : return file_path.get_extension()
+	set(value): file_path = "%s.%s" % [file_path.substr(0, file_path.length() - (file_ext.length() + 1)), value]
 
-var save_path_exists : bool :
-	get: return FileAccess.file_exists(save_path)
+var file_path_absolute : String :
+	get: return parent_dir.path_join(_file_path) if parent else _file_path
+	set(value):
+		var file_path_absolute_prev := file_path_absolute
+
+		parent = find_parent_from_path(value)
+		_file_path = value.substr(parent_dir.length() + 1) if parent else value
+
+		if FileAccess.file_exists(file_path_absolute_prev):
+			DirAccess.rename_absolute(file_path_absolute_prev, file_path_absolute)
+
+		if store_as_dir:
+			DIRECTORY_RESOURCES.erase(file_path_absolute_prev)
+			DIRECTORY_RESOURCES[file_path_absolute] = self
+
+var file_dir_absolute : String :
+	get: return Myth.get_parent_folder(file_path_absolute)
+
+## If [member file_path_absolute] exists inside of another [JsonResource] that is [member store_as_dir], that resource will be the parent.
+var parent : JsonResource
+
+var parent_dir : String :
+	get: return parent.file_path_absolute if parent else file_dir
+
+
+var _store_as_dir : bool
+## If enabled, [member file_path] will actually refer to a directory, and all data will be stored in a file INSIDE this folder.
+@export var store_as_dir : bool :
+	get: return _store_as_dir
+	set(value):
+		if _store_as_dir == value: return
+
+		if _store_as_dir:
+			DIRECTORY_RESOURCES.erase(file_path_absolute)
+
+		var data_path_absolute_prev := data_path_absolute
+		_store_as_dir = value
+
+		DirAccess.rename_absolute(data_path_absolute_prev, data_path_absolute)
+
+		if _store_as_dir:
+			DIRECTORY_RESOURCES[file_path_absolute] = self
+
+var data_path_absolute : String :
+	get: return file_path_absolute.path_join(DATA_PATH) if store_as_dir else file_path_absolute
+
+var data_dir_absolute : String :
+	get: return file_path_absolute if store_as_dir else file_dir_absolute
+
+var file_exists : bool :
+	get: return FileAccess.file_exists(data_path_absolute)
 
 
 var _aes : AESContext
@@ -241,7 +312,7 @@ var _encryption_password_quantized : String :
 
 
 var is_valid : bool :
-	get: return FileAccess.file_exists(save_path) and _get_is_valid()
+	get: return (DirAccess.dir_exists_absolute(file_path_absolute) if store_as_dir else FileAccess.file_exists(file_path_absolute)) and _get_is_valid()
 func _get_is_valid() -> bool: return true
 
 
@@ -250,15 +321,16 @@ func _get_is_valid() -> bool: return true
 @export_storage var data : Dictionary
 
 
-func _init(__save_path__: String = generate_save_path(), __autoload__ : bool = true) -> void:
-	save_path = __save_path__
+func _init(__file_path_absolute__: String = generate_save_path(), __store_as_dir__: bool = false) -> void:
+	_store_as_dir = __store_as_dir__
+	file_path_absolute = __file_path_absolute__
 	time_created = NOW
 	time_modified = time_created
 
-	if not save_path_exists:
-		self.save()
-	elif __autoload__:
+	if file_exists:
 		self.load()
+	elif not __file_path_absolute__.is_empty():
+		self.save()
 
 
 func json_export() -> Dictionary:
@@ -271,15 +343,22 @@ func json_import(json: Variant) -> void:
 
 
 func shell_open() -> void:
-	if not save_path_exists: return
-	OS.shell_open(ProjectSettings.globalize_path(save_path))
+	if not file_exists: return
+	OS.shell_open(ProjectSettings.globalize_path(file_path))
 func shell_open_location() -> void:
-	OS.shell_open(Myth.get_parent_folder(ProjectSettings.globalize_path(save_path)))
+	OS.shell_open(Myth.get_parent_folder(ProjectSettings.globalize_path(file_path)))
 
 
-func save(path: String = save_path) -> void:
-	var file := FileAccess.open(path, FileAccess.WRITE)
-	# assert(file != null, "Cannot save to file, file does not exist: %s" % path)
+func save() -> void:
+	var data_dir_touch_err := DirAccess.make_dir_recursive_absolute(data_dir_absolute)
+	if data_dir_touch_err != OK:
+		printerr("Failed to save JsonResource: error code %s while attempting to touch directory '%s'" % [data_dir_touch_err, data_dir_absolute])
+		return
+
+	var file := FileAccess.open(data_path_absolute, FileAccess.WRITE)
+	if file == null:
+		printerr("Failed to save JsonResource: error code %s" % FileAccess.get_open_error())
+		return
 
 	time_modified = NOW
 	var json := JSON.stringify(json_export(), "\t" if OS.is_debug_build() else "", OS.is_debug_build(), true)
@@ -307,18 +386,15 @@ func _save(file: FileAccess, json: String) -> void:
 		file.store_buffer(result)
 
 
-func load(path: String = save_path) -> void:
-	save_path = path
-	assert(save_path_exists, "Cannot load from file, file does not exist: %s" % save_path)
-
-	var file := FileAccess.open(path, FileAccess.READ)
+func load() -> void:
+	var file := FileAccess.open(data_path_absolute, FileAccess.READ)
 	if file == null:
-		var err := file.get_open_error()
-		assert(false, "File load failed in JsonResource. Error code: %s. Path: %s" % [ err, path ])
+		printerr("Failed to load JsonResource. Error code: %s" % file.get_open_error())
+		return
 
 	var json_string = _load(file)
 	var json = JSON.parse_string(json_string)
-	assert(json != null, "Couldn't parse string to json at path: %s" % path)
+	assert(json != null, "Couldn't parse string to json at file_path: %s" % data_path_absolute)
 
 	json_import(json)
 ## Loads the given file as stringified JSON text.

@@ -32,5 +32,3 @@ func refresh() -> void:
 			resources.push_back(res)
 
 	refreshed.emit()
-	print(path)
-	print(Myth.get_paths_in_folder(path))
