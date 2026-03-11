@@ -19,11 +19,11 @@ const IMPORT_ORDER : PackedStringArray = [ &"script", &"resource_local_to_scene"
 
 static var DIRECTORY_RESOURCES : Dictionary
 
-static func generate_save_path(dir := "user://", name := generate_save_name(), ext := "json") -> String:
+static func generate_save_path(dir := ProjectSettings.globalize_path("user://"), name := generate_save_name(), ext := "json") -> String:
 	var result := ""
 	var actual_filename := name
 	while true:
-		result = "%s%s.%s" % [dir, actual_filename, ext]
+		result = dir.path_join("%s.%s" % [actual_filename, ext])
 		if not FileAccess.file_exists(result): break
 		actual_filename = "%s_%s" % [name, generate_save_name()]
 
