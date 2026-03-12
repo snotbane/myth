@@ -367,12 +367,11 @@ func open(flags: FileAccess.ModeFlags) -> FileAccess:
 
 
 func touch(__file_path_absolute__: String = file_path_absolute) -> void:
+	file_path_absolute = __file_path_absolute__
 	if file_exists:
-		print("Loading ", __file_path_absolute__)
-		self.load(__file_path_absolute__)
+		self.load()
 	else:
-		print("Saving ", __file_path_absolute__)
-		self.save(__file_path_absolute__)
+		self.save()
 
 
 func save(__file_path_absolute__: String = file_path_absolute, __save_as_dir__: bool = _save_as_dir) -> void:
