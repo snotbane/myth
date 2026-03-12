@@ -260,6 +260,7 @@ var file_path_absolute : String :
 
 		parent = find_parent_from_path(value)
 		_file_path = value.substr(parent_dir.length() + 1) if parent else value
+		_save_as_dir = DirAccess.dir_exists_absolute(file_path_absolute)
 		# print("file_path_absolute : %s" % [ file_path_absolute ])
 		# print("parent : %s" % [ parent ])
 
@@ -268,45 +269,45 @@ var file_path_absolute : String :
 		if FileAccess.file_exists(file_path_absolute_prev):
 			DirAccess.rename_absolute(file_path_absolute_prev, file_path_absolute)
 
-		if store_as_dir:
+		if save_as_dir:
 			DIRECTORY_RESOURCES.erase(file_path_absolute_prev)
 			DIRECTORY_RESOURCES[file_path_absolute] = self
 
 var file_dir_absolute : String :
 	get: return Myth.get_parent_folder(file_path_absolute)
 
-## If [member file_path_absolute] exists inside of another [JsonResource] that is [member store_as_dir], that resource will be the parent.
+## If [member file_path_absolute] exists inside of another [JsonResource] that is [member save_as_dir], that resource will be the parent.
 var parent : JsonResource
 
 var parent_dir : String :
 	get: return parent.file_path_absolute if parent else file_dir
 
 
-var _store_as_dir : bool
+var _save_as_dir : bool
 ## If enabled, [member file_path] will actually refer to a directory, and all data will be stored in a file INSIDE this folder.
-@export var store_as_dir : bool :
-	get: return _store_as_dir
+@export var save_as_dir : bool :
+	get: return _save_as_dir
 	set(value):
-		if _store_as_dir == value: return
+		if _save_as_dir == value: return
 
-		if _store_as_dir:
+		if _save_as_dir:
 			DIRECTORY_RESOURCES.erase(file_path_absolute)
 
 		var data_path_absolute_prev := data_path_absolute
-		_store_as_dir = value
+		_save_as_dir = value
 
 		DirAccess.rename_absolute(data_path_absolute_prev, data_path_absolute)
 
-		if _store_as_dir:
+		if _save_as_dir:
 			DIRECTORY_RESOURCES[file_path_absolute] = self
 
 var data_path : String = DATA_PATH
 
 var data_path_absolute : String :
-	get: return file_path_absolute.path_join(data_path) if store_as_dir else file_path_absolute
+	get: return file_path_absolute.path_join(data_path) if save_as_dir else file_path_absolute
 
 var data_dir_absolute : String :
-	get: return file_path_absolute if store_as_dir else file_dir_absolute
+	get: return file_path_absolute if save_as_dir else file_dir_absolute
 
 var file_exists : bool :
 	get: return FileAccess.file_exists(data_path_absolute)
@@ -331,7 +332,7 @@ var _encryption_password_quantized : String :
 
 
 var is_valid : bool :
-	get: return (DirAccess.dir_exists_absolute(file_path_absolute) if store_as_dir else FileAccess.file_exists(file_path_absolute)) and _get_is_valid()
+	get: return (DirAccess.dir_exists_absolute(file_path_absolute) if save_as_dir else FileAccess.file_exists(file_path_absolute)) and _get_is_valid()
 func _get_is_valid() -> bool: return true
 
 
@@ -339,42 +340,19 @@ func _get_is_valid() -> bool: return true
 @export_storage var time_modified : int
 @export_storage var data : Dictionary
 
-# func _init() -> void:
-# 	time_created = NOW
-# 	time_modified = time_created
 
-
-# static func new_from_file(path: String, __store_as_dir__: bool = false) -> JsonResource:
-# 	var result := JsonResource.new()
-# 	result.file_path_absolute = path
-# 	if result.file_exists:
-# 		result.load()
-# 	else:
-# 		result.save()
-
-# 	return result
-
-func _init(__file_path_absolute__: String = "", __store_as_dir__: bool = false) -> void:
-	if __file_path_absolute__.is_empty(): return
-
-	_store_as_dir = __store_as_dir__
-	file_path_absolute = __file_path_absolute__
+func _init() -> void:
 	time_created = NOW
 	time_modified = time_created
-
-	if file_exists:
-		self.load()
-	elif not __file_path_absolute__.is_empty():
-		self.save()
+	_save_as_dir = _get_save_as_dir_default()
 
 
-func json_export() -> Dictionary:
-	return serialize(self)
+func _get_save_as_dir_default() -> bool: return false
 
 
-func json_import(json: Variant) -> void:
-	_resource_import(self, json[&"value"])
-
+func _saving() -> void: pass
+func _loaded() -> void: pass
+func _touched() -> void: pass
 
 
 func shell_open() -> void:
@@ -384,7 +362,17 @@ func shell_open_location() -> void:
 	OS.shell_open(Myth.get_parent_folder(ProjectSettings.globalize_path(file_path)))
 
 
-func save() -> void:
+func touch(__file_path_absolute__: String = file_path_absolute) -> void:
+	if file_exists:
+		self.load(__file_path_absolute__)
+	else:
+		self.save(__file_path_absolute__)
+
+
+func save(__file_path_absolute__: String = file_path_absolute, __save_as_dir__: bool = _save_as_dir) -> void:
+	file_path_absolute = __file_path_absolute__
+	_save_as_dir = __save_as_dir__
+
 	var data_dir_touch_err := DirAccess.make_dir_recursive_absolute(data_dir_absolute)
 	if data_dir_touch_err != OK:
 		printerr("Failed to save JsonResource at path '%s': error code %s while attempting to touch directory." % [data_dir_absolute, data_dir_touch_err])
@@ -395,10 +383,17 @@ func save() -> void:
 		printerr("Failed to save JsonResource at path '%s': error code %s while opening file." % [data_path_absolute, FileAccess.get_open_error()])
 		return
 
+	_saving()
+
 	time_modified = NOW
-	var json := JSON.stringify(json_export(), "\t" if OS.is_debug_build() else "", OS.is_debug_build(), true)
+	var json := JSON.stringify(serialize(self), "\t" if OS.is_debug_build() else "", OS.is_debug_build(), true)
+	# print("json : %s" % [ json ])
 	_save(file, json)
 	modified.emit()
+
+	_touched()
+
+
 ## Saves the given stringified JSON text to the file.
 func _save(file: FileAccess, json: String) -> void:
 	if _encryption_password.is_empty():
@@ -420,8 +415,12 @@ func _save(file: FileAccess, json: String) -> void:
 
 		file.store_buffer(result)
 
+	file.close()
 
-func load() -> void:
+
+func load(__file_path_absolute__: String = file_path_absolute) -> void:
+	file_path_absolute = __file_path_absolute__
+
 	var file := FileAccess.open(data_path_absolute, FileAccess.READ)
 	if file == null:
 		printerr("Failed to load JsonResource. Error code: %s" % file.get_open_error())
@@ -431,11 +430,17 @@ func load() -> void:
 	var json = JSON.parse_string(json_string)
 	assert(json != null, "Couldn't parse string to json at file_path: %s" % data_path_absolute)
 
-	json_import(json)
+	_resource_import(self, json[&"value"])
+
+	_loaded()
+	_touched()
+
 ## Loads the given file as stringified JSON text.
 func _load(file: FileAccess) -> String:
+	var result : String
+
 	if _encryption_password.is_empty():
-		return file.get_as_text()
+		result = file.get_as_text()
 	else:
 		var data = file.get_buffer(file.get_length())
 
@@ -447,7 +452,10 @@ func _load(file: FileAccess) -> String:
 		var decrypted := _aes.update(encrypted)
 		_aes.finish()
 
-		return decrypted.get_string_from_utf8()
+		result = decrypted.get_string_from_utf8()
+
+	file.close()
+	return result
 
 
 func reveal() -> void:
@@ -463,27 +471,28 @@ func move(to_dir_absolute: String) -> void:
 	file_path_absolute = to_dir_absolute.path_join(file_path)
 
 
-## Copies the resource to be placed into a directory. [param hard] determines if all sub resources are copied (only applies if [member store_as_dir] is `true`).
+## Copies the resource to be placed into a directory. [param hard] determines if all sub resources are copied (only applies if [member save_as_dir] is `true`).
 func copy(to_dir_absolute: String, hard : bool = true) -> JsonResource:
-	if file_dir_absolute == to_dir_absolute:
-		printerr("Can't duplicate to the same path '%s'" % [ to_dir_absolute ])
-		return null
+	# if file_dir_absolute == to_dir_absolute:
+	# 	printerr("Can't duplicate to the same path '%s'" % [ to_dir_absolute ])
+	# 	return null
 
-	var copy_err := DirAccess.copy_absolute(file_dir_absolute, to_dir_absolute)
-	if copy_err != OK:
-		printerr("Error code (%s) while copying profile from '%s' to '%s'" % [ copy_err, file_dir_absolute, to_dir_absolute ])
-		return null
+	# var copy_err := DirAccess.copy_absolute(file_dir_absolute, to_dir_absolute)
+	# if copy_err != OK:
+	# 	printerr("Error code (%s) while copying profile from '%s' to '%s'" % [ copy_err, file_dir_absolute, to_dir_absolute ])
+	# 	return null
 
-	var result := JsonResource.new_from_file(to_dir_absolute.path_join(file_path), store_as_dir)
+	# var result := JsonResource.new_from_file(to_dir_absolute.path_join(file_path), save_as_dir)
 
-	if hard or not store_as_dir: return result
+	# if hard or not save_as_dir: return result
 
-	# if FileAccess.file_exists(result.file_dir.path_join(Note.NOTES_SUBFOLDER_NAME)):
-	var remove_err := DirAccess.remove_absolute(result.file_dir_absolute)
-	if remove_err != OK:
-		printerr("Error code (%s) while removing notes folder from copied profile '%s'" % [ remove_err, result.file_path ])
+	# # if FileAccess.file_exists(result.file_dir.path_join(Note.NOTES_SUBFOLDER_NAME)):
+	# var remove_err := DirAccess.remove_absolute(result.file_dir_absolute)
+	# if remove_err != OK:
+	# 	printerr("Error code (%s) while removing notes folder from copied profile '%s'" % [ remove_err, result.file_path ])
 
-	return result
+	# return result
+	return null
 
 
 
