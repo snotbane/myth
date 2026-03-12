@@ -357,15 +357,21 @@ func _touched() -> void: pass
 
 func shell_open() -> void:
 	if not file_exists: return
-	OS.shell_open(ProjectSettings.globalize_path(file_path))
+	OS.shell_open(ProjectSettings.globalize_path(file_path_absolute))
 func shell_open_location() -> void:
-	OS.shell_open(Myth.get_parent_folder(ProjectSettings.globalize_path(file_path)))
+	OS.shell_open(Myth.get_parent_folder(ProjectSettings.globalize_path(file_path_absolute)))
+
+
+func open(flags: FileAccess.ModeFlags) -> FileAccess:
+	return FileAccess.open(data_path_absolute, flags)
 
 
 func touch(__file_path_absolute__: String = file_path_absolute) -> void:
 	if file_exists:
+		print("Loading ", __file_path_absolute__)
 		self.load(__file_path_absolute__)
 	else:
+		print("Saving ", __file_path_absolute__)
 		self.save(__file_path_absolute__)
 
 
@@ -378,7 +384,7 @@ func save(__file_path_absolute__: String = file_path_absolute, __save_as_dir__: 
 		printerr("Failed to save JsonResource at path '%s': error code %s while attempting to touch directory." % [data_dir_absolute, data_dir_touch_err])
 		return
 
-	var file := FileAccess.open(data_path_absolute, FileAccess.WRITE)
+	var file := open(FileAccess.WRITE)
 	if file == null:
 		printerr("Failed to save JsonResource at path '%s': error code %s while opening file." % [data_path_absolute, FileAccess.get_open_error()])
 		return
@@ -421,7 +427,7 @@ func _save(file: FileAccess, json: String) -> void:
 func load(__file_path_absolute__: String = file_path_absolute) -> void:
 	file_path_absolute = __file_path_absolute__
 
-	var file := FileAccess.open(data_path_absolute, FileAccess.READ)
+	var file := open(FileAccess.READ)
 	if file == null:
 		printerr("Failed to load JsonResource. Error code: %s" % file.get_open_error())
 		return
