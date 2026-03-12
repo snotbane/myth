@@ -27,6 +27,7 @@ func _init() -> void:
 
 	image_button = Button.new()
 	image_button.custom_minimum_size = BUTTON_MINIMUM_SIZE_DEFAULT
+	image_button.expand_icon = true
 	image_button.icon_alignment = HORIZONTAL_ALIGNMENT_FILL
 	image_button.vertical_icon_alignment = VERTICAL_ALIGNMENT_FILL
 	image_button.toggle_mode = true
@@ -80,12 +81,16 @@ func _ready() -> void:
 
 func refresh() -> void:
 	if collection:
+
 		for i in collection.resources.size():
 			var texture : Texture2D = collection.resources[i]
 			if texture == null: continue
 
 			var button := Button.new()
 			button.icon = texture
+			button.expand_icon = true
+			button.icon_alignment = HORIZONTAL_ALIGNMENT_FILL
+			button.vertical_icon_alignment = VERTICAL_ALIGNMENT_FILL
 			button.custom_minimum_size = _button_size_min
 			button.pressed.connect(_image_grid_button_pressed.bind(i))
 			image_grid.add_child(button)
@@ -96,6 +101,7 @@ func _image_button_toggled(new_value: bool) -> void:
 	image_panel.global_position = image_button.global_position
 
 	image_button.icon = PlaceholderTexture2D.new() if new_value else image
+	image_button.self_modulate = Color.TRANSPARENT if new_value else Color.WHITE
 	# image_panel.position = image_button.get_screen_position()
 
 

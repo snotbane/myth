@@ -58,6 +58,13 @@ static var NOW : int :
 static func get_local_datetime(unix_time: int) -> int:
 	return unix_time + Time.get_time_zone_from_system().bias * SECONDS_IN_MINUTE
 
+
+static func load_from_file(path: String) -> JsonResource:
+	if not FileAccess.file_exists(path): return null
+
+
+	return null
+
 #endregion
 #region Serialization
 
@@ -253,6 +260,8 @@ var file_path_absolute : String :
 
 		parent = find_parent_from_path(value)
 		_file_path = value.substr(parent_dir.length() + 1) if parent else value
+		# print("file_path_absolute : %s" % [ file_path_absolute ])
+		# print("parent : %s" % [ parent ])
 
 		# if value.is_empty(): return
 
@@ -330,8 +339,24 @@ func _get_is_valid() -> bool: return true
 @export_storage var time_modified : int
 @export_storage var data : Dictionary
 
+# func _init() -> void:
+# 	time_created = NOW
+# 	time_modified = time_created
 
-func _init(__file_path_absolute__: String = generate_save_path(), __store_as_dir__: bool = false) -> void:
+
+# static func new_from_file(path: String, __store_as_dir__: bool = false) -> JsonResource:
+# 	var result := JsonResource.new()
+# 	result.file_path_absolute = path
+# 	if result.file_exists:
+# 		result.load()
+# 	else:
+# 		result.save()
+
+# 	return result
+
+func _init(__file_path_absolute__: String = "", __store_as_dir__: bool = false) -> void:
+	if __file_path_absolute__.is_empty(): return
+
 	_store_as_dir = __store_as_dir__
 	file_path_absolute = __file_path_absolute__
 	time_created = NOW
@@ -362,12 +387,12 @@ func shell_open_location() -> void:
 func save() -> void:
 	var data_dir_touch_err := DirAccess.make_dir_recursive_absolute(data_dir_absolute)
 	if data_dir_touch_err != OK:
-		printerr("Failed to save JsonResource: error code %s while attempting to touch directory '%s'" % [data_dir_touch_err, data_dir_absolute])
+		printerr("Failed to save JsonResource at path '%s': error code %s while attempting to touch directory." % [data_dir_absolute, data_dir_touch_err])
 		return
 
 	var file := FileAccess.open(data_path_absolute, FileAccess.WRITE)
 	if file == null:
-		printerr("Failed to save JsonResource: error code %s" % FileAccess.get_open_error())
+		printerr("Failed to save JsonResource at path '%s': error code %s while opening file." % [data_path_absolute, FileAccess.get_open_error()])
 		return
 
 	time_modified = NOW
@@ -449,7 +474,7 @@ func copy(to_dir_absolute: String, hard : bool = true) -> JsonResource:
 		printerr("Error code (%s) while copying profile from '%s' to '%s'" % [ copy_err, file_dir_absolute, to_dir_absolute ])
 		return null
 
-	var result := JsonResource.new(to_dir_absolute.path_join(file_path), store_as_dir)
+	var result := JsonResource.new_from_file(to_dir_absolute.path_join(file_path), store_as_dir)
 
 	if hard or not store_as_dir: return result
 
