@@ -358,6 +358,10 @@ func _init() -> void:
 	time_modified = time_created
 	_save_as_dir = _get_save_as_dir_default()
 
+var _is_ready : bool = false
+## Called the first time the file is touched (saved or loaded).
+func _ready() -> void: pass
+
 
 func _get_save_as_dir_default() -> bool: return false
 
@@ -410,6 +414,9 @@ func save(__file_path_absolute__: String = file_path_absolute, __save_as_dir__: 
 
 	_touched()
 
+	if not _is_ready:
+		_ready()
+		_is_ready = true
 
 ## Saves the given stringified JSON text to the file.
 func _save(file: FileAccess, json: String) -> void:
@@ -451,6 +458,10 @@ func load(__file_path_absolute__: String = file_path_absolute) -> void:
 
 	_loaded()
 	_touched()
+
+	if not _is_ready:
+		_ready()
+		_is_ready = true
 
 ## Loads the given file as stringified JSON text.
 func _load(file: FileAccess) -> String:
