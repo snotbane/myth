@@ -216,8 +216,20 @@ static func _resource_import(res: Resource, json: Dictionary) -> void:
 
 	else:
 		var keys : Array = json.keys()
-		keys.sort_custom(_sort_import_keys)
+		if keys.has(&"script"):
+			var preserve : Dictionary
+			for p in res.get_property_list():
+				if p[&"usage"] & PROPERTY_USAGE_STORAGE:
+					preserve[p[&"name"]] = res.get(p[&"name"])
 
+			res.set(&"script", deserialize(json[&"script"]))
+			keys.erase(&"script")
+
+			for k : StringName in preserve:
+				if k in keys: continue
+				res.set(k, preserve[k])
+
+		keys.sort_custom(_sort_import_keys)
 		for k : StringName in keys:
 			res.set(k, deserialize(json[k]))
 
@@ -233,7 +245,7 @@ signal modified
 ## The relative file path. Changing this will move the file on the system.
 var file_path : String :
 	get: return _file_path
-	set(value):	file_path_absolute = parent_dir.path_join(value) if parent else value
+	set(value):	file_path_absolute = parent_dir.path_join(value) if _parent else value
 
 var file_dir : String :
 	get: return Myth.get_parent_folder(file_path)
@@ -253,16 +265,14 @@ var file_name_and_ext : String :
 	get: return "%s.%s" % [ file_name, file_ext ]
 
 var file_path_absolute : String :
-	get: return parent_dir.path_join(_file_path) if parent else _file_path
+	get: return parent_dir.path_join(_file_path) if _parent else _file_path
 	set(value):
 		var file_path_absolute_prev := file_path_absolute
 		if file_path_absolute_prev == value: return
 
-		parent = find_parent_from_path(value)
-		_file_path = value.substr(parent_dir.length() + 1) if parent else value
+		_parent = find_parent_from_path(value)
+		_file_path = value.substr(parent_dir.length() + 1) if _parent else value
 		_save_as_dir = DirAccess.dir_exists_absolute(file_path_absolute)
-		# print("file_path_absolute : %s" % [ file_path_absolute ])
-		# print("parent : %s" % [ parent ])
 
 		# if value.is_empty(): return
 
@@ -276,11 +286,13 @@ var file_path_absolute : String :
 var file_dir_absolute : String :
 	get: return Myth.get_parent_folder(file_path_absolute)
 
-## If [member file_path_absolute] exists inside of another [JsonResource] that is [member save_as_dir], that resource will be the parent.
-var parent : JsonResource
+## If [member file_path_absolute] exists inside of another [JsonResource] that is [member save_as_dir], that resource will be the _parent.
+@export_storage var _parent : JsonResource
+var parent : JsonResource :
+	get: return _parent
 
 var parent_dir : String :
-	get: return parent.file_path_absolute if parent else file_dir
+	get: return _parent.file_path_absolute if _parent else file_dir
 
 
 var _save_as_dir : bool
