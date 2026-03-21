@@ -236,9 +236,6 @@ static func _resource_import(res: Resource, json: Dictionary) -> void:
 #endregion
 
 
-signal modified
-
-
 ## The file_path to save to. Make sure extension is included. If left blank, a random file_path located in `user://` will be assigned.
 @export var _file_path : String
 
@@ -410,7 +407,7 @@ func save(__file_path_absolute__: String = file_path_absolute, __save_as_dir__: 
 	var json := JSON.stringify(serialize(self), "\t" if OS.is_debug_build() else "", OS.is_debug_build(), true)
 	# print("json : %s" % [ json ])
 	_save(file, json)
-	modified.emit()
+	changed.emit()
 
 	_touched()
 
