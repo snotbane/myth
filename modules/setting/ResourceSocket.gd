@@ -159,3 +159,7 @@ func reset_all(save := false) -> void:
 		setting.reset()
 	if save:
 		save_all()
+
+
+func resource_callv(method: StringName, args: Array = []) -> void:
+	resource.callv(method, args)

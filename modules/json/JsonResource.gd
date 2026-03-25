@@ -19,6 +19,7 @@ const IMPORT_ORDER : PackedStringArray = [ &"script", &"resource_local_to_scene"
 
 static var DIRECTORY_RESOURCES : Dictionary
 
+## Generates a file path in the given [param dir]. If the path already exists, a new path is generated using [member generate_save_name], and is guaranteed to not yet exist.
 static func generate_save_path(dir := ProjectSettings.globalize_path("user://"), name := generate_save_name(), ext := "json") -> String:
 	var result := ""
 	var actual_filename := name
@@ -235,6 +236,12 @@ static func _resource_import(res: Resource, json: Dictionary) -> void:
 
 #endregion
 
+#region Signals
+
+## Emitted after the file has successfully been deleted from the file system.
+signal deleted
+
+#endregion
 
 ## The file_path to save to. Make sure extension is included. If left blank, a random file_path located in `user://` will be assigned.
 @export var _file_path : String
@@ -444,7 +451,7 @@ func load(__file_path_absolute__: String = file_path_absolute) -> void:
 
 	var file := open(FileAccess.READ)
 	if file == null:
-		printerr("Failed to load JsonResource. Error code: %s" % file.get_open_error())
+		printerr("Failed to load JsonResource. Error code: %s (%s)." % [ FileAccess.get_open_error(), error_string(FileAccess.get_open_error()) ])
 		return
 
 	var json_string = _load(file)
@@ -486,7 +493,7 @@ func _load(file: FileAccess) -> String:
 func reveal() -> void:
 	var err := OS.shell_show_in_file_manager(file_dir)
 	if err != OK:
-		printerr("Error revealing JsonResource at '%s': code %s." % [ err, file_path ])
+		printerr("Error revealing JsonResource at '%s': code %s (%s)." % [ file_path, err, error_string(err) ])
 
 
 func move(to_dir_absolute: String) -> void:
@@ -497,33 +504,19 @@ func move(to_dir_absolute: String) -> void:
 
 
 ## Copies the resource to be placed into a directory. [param hard] determines if all sub resources are copied (only applies if [member save_as_dir] is `true`).
-func copy(to_dir_absolute: String, hard : bool = true) -> JsonResource:
-	# if file_dir_absolute == to_dir_absolute:
-	# 	printerr("Can't duplicate to the same path '%s'" % [ to_dir_absolute ])
-	# 	return null
+func copy(to_dir_absolute: String = file_dir_absolute, deep : bool = false) -> JsonResource:
+	var result := duplicate(deep)
+	var path := generate_save_path(to_dir_absolute, generate_save_name(), file_ext)
 
-	# var copy_err := DirAccess.copy_absolute(file_dir_absolute, to_dir_absolute)
-	# if copy_err != OK:
-	# 	printerr("Error code (%s) while copying profile from '%s' to '%s'" % [ copy_err, file_dir_absolute, to_dir_absolute ])
-	# 	return null
+	result.save(path)
 
-	# var result := JsonResource.new_from_file(to_dir_absolute.path_join(file_path), save_as_dir)
-
-	# if hard or not save_as_dir: return result
-
-	# # if FileAccess.file_exists(result.file_dir.path_join(Note.NOTES_SUBFOLDER_NAME)):
-	# var remove_err := DirAccess.remove_absolute(result.file_dir_absolute)
-	# if remove_err != OK:
-	# 	printerr("Error code (%s) while removing notes folder from copied profile '%s'" % [ remove_err, result.file_path ])
-
-	# return result
-	return null
-
+	return result
 
 
 func delete() -> void:
-	var err := DirAccess.remove_absolute(file_dir_absolute)
+	var err := DirAccess.remove_absolute(file_path_absolute)
 	if err != OK:
-		printerr("Error deleting JsonResource at '%s': code %s." % [ file_path_absolute, err ])
+		printerr("Error deleting JsonResource at '%s': code %s (%s)." % [ file_path_absolute, err, error_string(err) ])
+		return
 
-
+	deleted.emit()
