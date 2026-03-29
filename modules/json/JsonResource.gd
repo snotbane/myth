@@ -491,9 +491,15 @@ func _load(file: FileAccess) -> String:
 
 
 func reveal() -> void:
-	var err := OS.shell_show_in_file_manager(file_dir)
+	var err := OS.shell_show_in_file_manager(file_path_absolute)
 	if err != OK:
 		printerr("Error revealing JsonResource at '%s': code %s (%s)." % [ file_path, err, error_string(err) ])
+
+
+func shopen() -> void:
+	var err := OS.shell_open(file_path_absolute)
+	if err != OK:
+		printerr("Error opening JsonResource at '%s': code %s (%s)." % [ file_path, err, error_string(err) ])
 
 
 func move(to_dir_absolute: String) -> void:
