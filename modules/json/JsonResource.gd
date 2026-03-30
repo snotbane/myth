@@ -362,12 +362,19 @@ func _init() -> void:
 	time_modified = time_created
 	_save_as_dir = _get_save_as_dir_default()
 
+	if not changed.is_connected(_on_changed):
+		changed.connect(_on_changed)
+
 var _is_ready : bool = false
 ## Called the first time the file is touched (saved or loaded).
 func _ready() -> void: pass
 
 
 func _get_save_as_dir_default() -> bool: return false
+
+
+func _on_changed() -> void:
+	time_modified = NOW
 
 
 func _saving() -> void: pass
@@ -410,11 +417,10 @@ func save(__file_path_absolute__: String = file_path_absolute, __save_as_dir__: 
 
 	_saving()
 
-	time_modified = NOW
+	changed.emit()
 	var json := JSON.stringify(serialize(self), "\t" if OS.is_debug_build() else "", OS.is_debug_build(), true)
 	# print("json : %s" % [ json ])
 	_save(file, json)
-	changed.emit()
 
 	_touched()
 
