@@ -57,7 +57,7 @@ static func create_one_shot_audio(parent: Node, stream: AudioStream, from_positi
 
 
 static func is_object_of_type(obj: Object, type: String) -> bool:
-	if obj.get_class() == type: return true
+	if ClassDB.is_parent_class(obj.get_class(), type): return true
 
 	var script : Script = obj.get_script()
 	while script != null:
