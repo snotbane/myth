@@ -1,60 +1,63 @@
 ## Treats its children as a [TabContainer] in that only one may be visible at a time, but has no other features.
 @tool class_name QuickTabContainer extends PanelContainer
 
-@export var selected_tab : int :
+var _selected_tab_prev : int = 0
+@export var selected_tab : int = 0 :
 	get:
 		var child : Node
-		for idx in get_child_count(true):
-			child = get_child(idx, true)
+		for idx in get_child_count():
+			child = get_child(idx)
 			if child is not Control: continue
 			if child.visible: return idx
 		return -1
 	set(value):
-		value = clampi(value, 0, get_child_count(true) - 1)
+		if not is_node_ready(): return
+
+		value = wrapi(value, 0, get_child_count())
 		_changing_visibility = true
 
-		selected_child.hide()
-		var child : Node
-		while true:
-			child = get_child(value, true)
+		for child in get_children():
 			if child is not Control:
-				value = wrapi(value + 1, 0, get_child_count(true) - 1)
+				value = wrapi(value + 1, 0, get_child_count())
 				continue
 
-			child.show()
-			break
+			if child.visible == (value == child.get_index()): continue
+			child.visible = not child.visible
 
+		_selected_tab_prev = selected_tab
 		_changing_visibility = false
-var selected_child : Control :
-	get: return get_child(selected_tab, true)
-	set(value):	selected_tab = value.get_index(true)
+
 
 func _ready() -> void:
 	for child in get_children():
-		_child_entered_tree(child)
+		if child is not Control: continue
+		child.visibility_changed.connect(_child_visibility_changed.bind(child))
 
 	child_entered_tree.connect(_child_entered_tree)
 	child_exiting_tree.connect(_child_exiting_tree)
 
 
-func _child_entered_tree(node: Node) -> void:
-	if node is not Control: return
+func _child_entered_tree(child: Node) -> void:
+	if child is not Control: return
 
-	if not node.visibility_changed.is_connected(_child_visibility_changed):
-		node.visibility_changed.connect(_child_visibility_changed.bind(node))
+	if not child.visibility_changed.is_connected(_child_visibility_changed):
+		child.visibility_changed.connect(_child_visibility_changed.bind(child))
 
-	selected_child = node
+	_child_visibility_changed(child)
 
 
-func _child_exiting_tree(node: Node) -> void:
-	if node is not Control: return
+func _child_exiting_tree(child: Node) -> void:
+	if child is not Control: return
 
-	if node.visibility_changed.is_connected(_child_visibility_changed):
-		node.visibility_changed.disconnect(_child_visibility_changed)
+	if child.visibility_changed.is_connected(_child_visibility_changed):
+		child.visibility_changed.disconnect(_child_visibility_changed)
 
-	if node.visible:
-		selected_tab -= 1
+	if not child.visible: return
 
+	## Only trigger if we are actually getting removed.
+	if Engine.is_editor_hint() and child.owner != EditorInterface.get_edited_scene_root(): return
+
+	selected_tab = (_selected_tab_prev + 1) if _selected_tab_prev < get_child_count() - 1 else 0
 
 
 var _changing_visibility : bool = false
@@ -62,19 +65,16 @@ func _child_visibility_changed(node: Node) -> void:
 	if _changing_visibility: return
 
 	_changing_visibility = true
+
 	if node.visible:
 		for child in get_children():
 			if child == node or child is not Control or not child.visible: continue
 			child.hide()
+		_selected_tab_prev = node.get_index()
 	else:
-		var idx := node.get_index(true)
-		var child : Node
-		while true:
-			idx = wrapi(idx + 1, 0, get_child_count(true) - 1)
-			child = get_child(idx, true)
-			if child is not Control: continue
-
-			child.show()
-			break
+		var next : Node = get_child(wrapi(node.get_index() + 1, 0, get_child_count()))
+		while next is not Control:
+			next = get_child(wrapi(next.get_index() + 1, 0, get_child_count()))
+		next.show()
 
 	_changing_visibility = false
