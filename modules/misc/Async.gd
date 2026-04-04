@@ -1,7 +1,7 @@
 
 class_name Async
 
-## Calls all provided callables. Then waits for ALL of the callables/signals to finish awaiting. They can be completed in any order but must all return before continuing. Returns an array with the results of each one, in order of completion..
+## Calls all provided callables. Then waits for ALL of the callables/signals to finish awaiting. They can be completed in any order but must all return before continuing. Returns an array with the results of each one, in order of completion.
 static func all(methods : Array) :
 	var listener := AllListener.new(methods)
 	if not listener.is_completed:
@@ -53,8 +53,9 @@ static func any(methods : Array) :
 		await listener.completed
 	return listener.payload
 
+
 ## Functions like [member any], but returns the index of the method which was first completed. Returns 0 if completed instantly.
-static func any_indexed(methods : Array) :
+static func which(methods : Array) :
 	var listener := AnyListener.new(methods)
 	if not listener.is_completed:
 		return await listener.completed
