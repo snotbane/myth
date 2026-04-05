@@ -368,6 +368,8 @@ func _init() -> void:
 var _is_ready : bool = false
 ## Called the first time the file is touched (saved or loaded).
 func _ready() -> void: pass
+func request_ready() -> void:
+	_is_ready = false
 
 
 func _get_save_as_dir_default() -> bool: return false
