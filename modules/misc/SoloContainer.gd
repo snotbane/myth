@@ -1,5 +1,5 @@
 ## Treats its children as a [TabContainer] in that only one may be visible at a time, but has no other features.
-@tool class_name QuickTabContainer extends Container
+@tool class_name SoloContainer extends Container
 
 var _previous_tab : int = 0
 var _current_tab_control : Control
