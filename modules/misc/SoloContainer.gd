@@ -7,16 +7,17 @@ var _current_tab_control : Control
 ## The index of the currently visible child.
 @export var current_tab : int = 0 :
 	get:
+		var control_child_count := 0
 		var child : Node
 		for idx in get_child_count():
 			child = get_child(idx)
 			if child is not Control: continue
+			control_child_count += 1
 			if child.visible: return idx
-		return -1
+		return -1 if deselect_enabled or control_child_count == 0 else 0
 	set(value):
 		if not is_node_ready(): return
 
-		value = wrapi(value, 0, get_child_count())
 		_changing_visibility = true
 
 		for child in get_children():
@@ -30,8 +31,14 @@ var _current_tab_control : Control
 			if child.visible:
 				_child_became_visible(child)
 
-		_previous_tab = current_tab
+		_previous_tab = value
 		_changing_visibility = false
+
+@export var deselect_enabled : bool = false :
+	set(value):
+		if current_tab == -1:
+			current_tab = 0
+		deselect_enabled = value
 
 ## If enabled, the container will expand to fit the largest child [Control]. If disabled, the container will shrink to fit the currently visible child.
 @export var fit_largest : bool = true :
@@ -102,7 +109,7 @@ func _child_visibility_changed(node: Node) -> void:
 			child.hide()
 		_previous_tab = node.get_index()
 		_child_became_visible(node)
-	else:
+	elif not deselect_enabled:
 		var next : Node = get_child(wrapi(node.get_index() + 1, 0, get_child_count()))
 		while next is not Control:
 			next = get_child(wrapi(next.get_index() + 1, 0, get_child_count()))
