@@ -29,12 +29,15 @@ var _selected_tab_prev : int = 0
 
 
 func _ready() -> void:
-	for child in get_children():
-		if child is not Control: continue
-		child.visibility_changed.connect(_child_visibility_changed.bind(child))
+	_selected_tab_prev = selected_tab
 
-	child_entered_tree.connect(_child_entered_tree)
-	child_exiting_tree.connect(_child_exiting_tree)
+	if Engine.is_editor_hint():
+		for child in get_children():
+			if child is not Control: continue
+			child.visibility_changed.connect(_child_visibility_changed.bind(child))
+
+	child_entered_tree.connect.call_deferred(_child_entered_tree)
+	child_exiting_tree.connect.call_deferred(_child_exiting_tree)
 
 
 func _child_entered_tree(child: Node) -> void:
