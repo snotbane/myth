@@ -33,12 +33,9 @@ var _current_tab_control : Control
 
 		_previous_tab = value
 		_changing_visibility = false
+func set_current_tab(idx: int = -1) -> void:
+	current_tab = idx
 
-@export var deselect_enabled : bool = false :
-	set(value):
-		if current_tab == -1:
-			current_tab = 0
-		deselect_enabled = value
 
 ## If enabled, the container will expand to fit the largest child [Control]. If disabled, the container will shrink to fit the currently visible child.
 @export var fit_largest : bool = true :
@@ -48,16 +45,12 @@ var _current_tab_control : Control
 		_child_became_visible(_current_tab_control)
 
 
-func _ready() -> void:
-	_previous_tab = current_tab
-	_child_became_visible(get_child(_previous_tab))
-
-	for child in get_children():
-		if child is not Control: continue
-		child.visibility_changed.connect(_child_visibility_changed.bind(child))
-
-	child_entered_tree.connect.call_deferred(_child_entered_tree)
-	child_exiting_tree.connect.call_deferred(_child_exiting_tree)
+## If enabled, the container will be able to hide all children.
+@export var deselect_enabled : bool = false :
+	set(value):
+		if current_tab == -1:
+			current_tab = 0
+		deselect_enabled = value
 
 
 func _get_minimum_size() -> Vector2:
@@ -72,6 +65,18 @@ func _get_minimum_size() -> Vector2:
 			if child is not Control or not child.visible: continue
 			return child.get_combined_minimum_size()
 		return Vector2.ZERO
+
+
+func _ready() -> void:
+	_previous_tab = current_tab
+	_child_became_visible(get_child(_previous_tab))
+
+	for child in get_children():
+		if child is not Control: continue
+		child.visibility_changed.connect(_child_visibility_changed.bind(child))
+
+	child_entered_tree.connect.call_deferred(_child_entered_tree)
+	child_exiting_tree.connect.call_deferred(_child_exiting_tree)
 
 
 func _child_entered_tree(child: Node) -> void:
