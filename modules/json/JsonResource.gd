@@ -211,7 +211,7 @@ static func _deserialize_resource(json: Variant) -> Resource:
 	_resource_import(result, json[&"value"])
 	return result
 
-static func _resource_import(res: Resource, json: Dictionary) -> void:
+static func _resource_import(res: Resource, json: Variant) -> void:
 	if res.has_method(&"_json_import"):
 		res._json_import(json)
 
@@ -419,7 +419,7 @@ func save(__file_path_absolute__: String = file_path_absolute, __save_as_dir__: 
 
 	_saving()
 
-	changed.emit()
+	emit_changed()
 	var json := JSON.stringify(serialize(self), "\t" if OS.is_debug_build() else "", OS.is_debug_build(), true)
 	# print("json : %s" % [ json ])
 	_save(file, json)
