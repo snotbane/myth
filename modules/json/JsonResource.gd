@@ -1,4 +1,4 @@
-## A resource which can serialize data to, and deserialize data from, a JSON file. Useful for any kind of save data. This does NOT provide any access to available save files on the system. Typical usage includes prompting for a file_path using [FileDialog] and then either saving or loading to a new [JsonResource] instance.
+## A resource which can be saved as, and loaded from, a JSON file. Useful for any kind of user save data. This does NOT provide any access to available save files on the system. Typical usage includes prompting for a file_path using [FileDialog] and then either saving or loading to a new [JsonResource] instance.
 class_name JsonResource extends Resource
 
 #region Statics
@@ -42,16 +42,6 @@ static func find_parent_from_path(path: String) -> JsonResource:
 	return null
 
 
-static func _sort_import_keys(a: StringName, b: StringName) -> bool:
-	var ai := IMPORT_ORDER.find(a)
-	if ai == -1:	return false
-
-	var bi := IMPORT_ORDER.find(b)
-	if bi == -1:	return true
-
-	return ai < bi
-
-
 static var NOW : int :
 	get: return floori(Time.get_unix_time_from_system())
 
@@ -70,28 +60,22 @@ static func load_from_file(path: String) -> JsonResource:
 #region Serialization
 
 ## Converts a [Variant] into a JSON-compatible typed [Dictionary]. Currently, [Object]s can only be serialized if it has the method [member _export_json()].
-static func serialize(target: Variant) -> Dictionary:
-	var json := {
-		&"type": typeof(target)
-	}
+static func serialize(target: Variant) -> Variant:
+	var json : Dictionary
+	var type := typeof(target)
 
-	match json[&"type"]:
+	match type:
 		TYPE_OBJECT:
-			json[&"class"] = target.get_class()
+			json[&"type"] = target.get_class()
 			if target.get_script():
-				# json[&"script"] = target.get_script().get_global_name()
 				json[&"script"] = ResourceUID.id_to_text(ResourceLoader.get_resource_uid(target.get_script().resource_path))
 
-	match json[&"type"]:
-		TYPE_OBJECT when target.has_method(&"_json_export"):
-			json[&"value"] = target._json_export()
+		_:
+			json[&"type"] = type
 
-		TYPE_OBJECT when target is Resource:
-			json[&"value"] = _serialize_resource(target) if target.resource_path.is_empty() else ResourceUID.id_to_text(ResourceLoader.get_resource_uid(target.resource_path))
-
+	match type:
 		TYPE_OBJECT:
-			json[&"value"] = null
-			printerr("Currently, an object can only be serialized if it implements _json_export(), or if it is a Resource.")
+			json[&"value"] = _serialize_object(target)
 
 		TYPE_DICTIONARY:
 			json[&"value"] = {}
@@ -106,133 +90,109 @@ static func serialize(target: Variant) -> Dictionary:
 
 		TYPE_CALLABLE:
 			json[&"value"] = null
-		# TYPE_CALLABLE:
-		# 	var bound_arguments : Array = target.get_bound_arguments()
-		# 	json[&"value"] = {
-		# 		&"method": target.get_method(),
-		# 		&"unbinds": target.get_unbound_arguments_count(),
-		# 		&"binds": [],
-		# 	}
-		# 	json[&"value"][&"binds"].resize(bound_arguments.size())
-		# 	for i in bound_arguments.size():
-		# 		json[&"value"][&"binds"][i] = serialize(bound_arguments[i])
 
 		TYPE_COLOR:
 			json[&"value"] = target.to_html()
 
 		_:
-			json[&"value"] = target
+			return target
 
 	return json
-static func _serialize_resource(res: Resource) -> Dictionary:
+
+## Serialize an object. To customize serialization for a class, implement a new `func _serialize() -> Variant`. It should return any value that you wish to be stored as JSON. If returning nothing or null, it will serialize all values belonging to the Object and which match PROPERTY_USAGE_STORAGE. Or, if it's a project resource with a valid resource_path, it will simply store the UID.
+static func _serialize_object(obj: Object) -> Variant:
+	if obj.has_method(&"_serialize"):
+		var value = obj._serialize()
+		if value != null:
+			return value
+
+	if obj is Resource and not obj.resource_path.is_empty():
+		return ResourceUID.id_to_text(ResourceLoader.get_resource_uid(obj.resource_path))
+
 	var json := {}
-	for prop in res.get_property_list():
+	for prop in obj.get_property_list():
 		if (
 				prop[&"name"][0] == "_"
+			or	prop[&"name"] == "script"
 			or	not prop[&"usage"] & PROPERTY_USAGE_STORAGE
 		):
 			continue
 
-		json[prop[&"name"]] = serialize(res.get(prop[&"name"]))
+		var value := serialize(obj.get(prop[&"name"]))
+		if value == null and not prop[&"usage"] & PROPERTY_USAGE_STORE_IF_NULL:
+			continue
+
+		json[prop[&"name"]] = value
+
 	return json
 
 
-## Converts a JSON dictionary created using [member serialize()]. Objects and Callables may not always be deserialized as expected. Currently, it is assumed that Objects found in [param json] do not refer to any existing object but instead will create a new object to be populated with more nested data. In other words, do NOT use
-static func deserialize(json: Variant) -> Variant:
-	if json == null: return null
+## Converts a JSON dictionary created using [member serialize()]. If a context object is specified, the context object will be updated, rather than replaced, so all references to it will be kept.
+static func deserialize(json: Variant, context: Object = null) -> Variant:
+	if json is not Dictionary:
+		return json
 
-	match int(json[&"type"]):
-		TYPE_OBJECT when ClassDB.is_parent_class(json[&"class"], "Resource"):
-			return _deserialize_resource(json)
+	if json[&"type"] is String:
+		return _deserialize_object(json, context)
 
-		TYPE_OBJECT:
-			return null
-		# TYPE_OBJECT:
-		# 	var result : Object = context if context != null else ClassDB.instantiate(json[&"class"])
-		# 	if json.has(&"script_uid"):
-		# 		result.set_script(load(json[&"script_uid"]))
-		# 		assert(result.get_script() != null, "Attempted to deserialize an object, but couldn't set the script. Make sure that it has an _init() method with 0 *required* arguments.")
+	if json[&"type"] is float: ## Use float because JSON.parse_string() always imports numbers as floats.
+		match int(json[&"type"]):
+			TYPE_DICTIONARY:
+				var result : Dictionary = {}
+				for k in json[&"value"].keys():
+					var value = json[&"value"][k]
+					result[k] = deserialize(json[&"value"][k])
+				return result
 
-		# 	if result.has_method(&"_json_import"):
-		# 		result._json_import(json[&"value"])
-		# 	else:
-		# 		for prop_name : StringName in json[&"value"].keys():
-		# 			result.set(prop_name, deserialize(json[&"value"][prop_name]))
+			TYPE_ARRAY:
+				var result : Array = []
+				result.resize(json[&"value"].size())
+				for i in result.size():
+					result[i] = deserialize(json[&"value"][i])
+				return result
 
-		# 	return result
+			TYPE_CALLABLE:
+				return null
 
-		TYPE_DICTIONARY:
-			var result : Dictionary = {}
-			for k in json[&"value"].keys():
-				var value = json[&"value"][k]
-				result[k] = deserialize(json[&"value"][k])
-			return result
+			TYPE_COLOR:
+				return Color.html(json[&"value"])
 
-		TYPE_ARRAY:
-			var result : Array = []
-			result.resize(json[&"value"].size())
-			for i in result.size():
-				result[i] = deserialize(json[&"value"][i])
-			return result
-
-		TYPE_CALLABLE:
-			return null
-		# TYPE_CALLABLE:
-		# 	var result := Callable.create(context, json[&"value"][&"method"])
-		# 	var binds : Array = []
-		# 	binds.resize(json[&"value"][&"binds"].size())
-		# 	for i in binds.size():
-		# 		binds[i] = deserialize(json[&"value"][&"binds"][i])
-		# 	return result.bindv(binds).unbind(json[&"value"][&"unbinds"])
-
-		TYPE_COLOR:
-			return Color.html(json[&"value"])
-
-		TYPE_FLOAT:
-			return float(json[&"value"])
-
-		TYPE_INT:
-			return int(json[&"value"])
-
-		_:
-			return json[&"value"]
+			_:
+				return json[&"value"]
 
 	return null
-static func _deserialize_resource(json: Variant) -> Resource:
-	if json[&"value"] is String:
+
+## Deserializes an object. To customize deserialization for a class, implement a new `func _deserialize(json: Variant) -> Variant`. Param `json` will be what `_serialize` created. Return a truthy value to override all deserialization for this object.
+static func _deserialize_object(json: Variant, context: Object = null) -> Object:
+	if json[&"value"] is String and json[&"value"].begins_with("uid://"):
 		return load(json[&"value"])
 
-	var result : Resource = ClassDB.instantiate(json[&"class"])
+	var result : Object = ClassDB.instantiate(json[&"type"]) if context == null else context
 
 	if json.has(&"script"):
-		result.set_script(load(json[&"script"]))
-		assert(result.get_script() != null, "Attempted to deserialize an object, but couldn't set the script. Make sure that it has an _init() method with 0 *required* arguments.")
+		var new_script := load(json[&"script"])
+		if result.get_script() != new_script:
+			result.set_script(new_script)
+			assert(result.get_script() != null, "Attempted to deserialize an object, but couldn't set the script. Make sure that it has an _init() method with 0 *required* arguments.")
 
-	_resource_import(result, json[&"value"])
+	var data = json[&"value"]
+
+	if result.has_method(&"_deserialize"):
+		var value = result._deserialize(data)
+		if value != null and value:
+			return result
+
+	var keys : Array = data.keys()
+	for k: StringName in keys:
+		if k == &"script": continue
+		print("k : %s" % [ k ])
+		var value_prev = result.get(k)
+		print("prev : %s" % [ value_prev ])
+		var value = deserialize(data[k], value_prev if value_prev is Object else null)
+		print("value : %s" % [ value ])
+		result.set(k, value)
+
 	return result
-
-static func _resource_import(res: Resource, json: Variant) -> void:
-	if res.has_method(&"_json_import"):
-		res._json_import(json)
-
-	else:
-		var keys : Array = json.keys()
-		if keys.has(&"script"):
-			var preserve : Dictionary
-			for p in res.get_property_list():
-				if p[&"usage"] & PROPERTY_USAGE_STORAGE:
-					preserve[p[&"name"]] = res.get(p[&"name"])
-
-			res.set(&"script", deserialize(json[&"script"]))
-			keys.erase(&"script")
-
-			for k : StringName in preserve:
-				if k in keys: continue
-				res.set(k, preserve[k])
-
-		keys.sort_custom(_sort_import_keys)
-		for k : StringName in keys:
-			res.set(k, deserialize(json[k]))
 
 #endregion
 
@@ -290,7 +250,7 @@ var file_path_absolute : String :
 var file_dir_absolute : String :
 	get: return Myth.get_parent_folder(file_path_absolute)
 
-## If [member file_path_absolute] exists inside of another [JsonResource] that is [member save_as_dir], that resource will be the _parent.
+## If [member file_path_absolute] exists inside of another [JsonResource] that is [member save_as_dir], that resource will be the [member _parent].
 @export_storage var _parent : JsonResource
 var parent : JsonResource :
 	get: return _parent
@@ -354,16 +314,19 @@ func _get_is_valid() -> bool: return true
 
 @export_storage var time_created : int
 @export_storage var time_modified : int
+@export_storage var tags : Variant
 @export_storage var data : Dictionary
 
 
 func _init() -> void:
 	time_created = NOW
 	time_modified = time_created
+	_init_tags()
 	_save_as_dir = _get_save_as_dir_default()
 
 	if not changed.is_connected(_on_changed):
 		changed.connect(_on_changed)
+
 
 var _is_ready : bool = false
 ## Called the first time the file is touched (saved or loaded).
@@ -459,14 +422,14 @@ func load(__file_path_absolute__: String = file_path_absolute) -> void:
 
 	var file := open(FileAccess.READ)
 	if file == null:
-		printerr("Failed to load JsonResource. Error code: %s (%s)." % [ FileAccess.get_open_error(), error_string(FileAccess.get_open_error()) ])
+		printerr("Failed to load JsonResource. Error code: %s (%s)." % [ FileAccess.get_open_error(), tag_error_string(FileAccess.get_open_error()) ])
 		return
 
 	var json_string = _load(file)
 	var json = JSON.parse_string(json_string)
 	assert(json != null, "Couldn't parse string to json at file_path: %s" % data_path_absolute)
 
-	_resource_import(self, json[&"value"])
+	deserialize(json, self)
 
 	_loaded()
 	_touched()
@@ -501,13 +464,13 @@ func _load(file: FileAccess) -> String:
 func reveal() -> void:
 	var err := OS.shell_show_in_file_manager(file_path_absolute)
 	if err != OK:
-		printerr("Error revealing JsonResource at '%s': code %s (%s)." % [ file_path, err, error_string(err) ])
+		printerr("Error revealing JsonResource at '%s': code %s (%s)." % [ file_path, err, tag_error_string(err) ])
 
 
 func shopen() -> void:
 	var err := OS.shell_open(file_path_absolute)
 	if err != OK:
-		printerr("Error opening JsonResource at '%s': code %s (%s)." % [ file_path, err, error_string(err) ])
+		printerr("Error opening JsonResource at '%s': code %s (%s)." % [ file_path, err, tag_error_string(err) ])
 
 
 func move(to_dir_absolute: String) -> void:
@@ -530,7 +493,64 @@ func copy(to_dir_absolute: String = file_dir_absolute, deep : bool = false) -> J
 func delete() -> void:
 	var err := DirAccess.remove_absolute(file_path_absolute)
 	if err != OK:
-		printerr("Error deleting JsonResource at '%s': code %s (%s)." % [ file_path_absolute, err, error_string(err) ])
+		printerr("Error deleting JsonResource at '%s': code %s (%s)." % [ file_path_absolute, err, tag_error_string(err) ])
 		return
 
 	deleted.emit()
+
+#region Tags
+
+enum {
+	OK,
+	NULL_TAG_LIST,
+	TAG_ALREADY_EXISTS,
+	TAG_EMPTY_OR_WHITESPACE,
+	TAG_DOES_NOT_EXIST,
+}
+static var ERROR_STRINGS : Dictionary[int, String] = {
+	OK:							"",
+	TAG_ALREADY_EXISTS:			"A similar tag already exists.",
+	TAG_EMPTY_OR_WHITESPACE:	"Tag must contain at least one non-whitespace character.",
+	TAG_DOES_NOT_EXIST:			"No matching or similar tag exists."
+
+}
+static func tag_error_string(code: int) -> String:
+	return ERROR_STRINGS[code]
+
+
+static var REGEX_TAGS_REMOVE_WHITESPACE := RegEx.create_from_string(r"^\s+|\s+$|[\n\t]+|(?:\b +(?= )\b)")
+static func format_string_for_tag(s: String) -> String:
+	return REGEX_TAGS_REMOVE_WHITESPACE.sub(s, "")
+
+
+## Use this method to define how/if tags should be stored.
+func _init_tags() -> void:
+	tags = PackedStringArray()
+
+
+func has_tag(tag: Variant) -> bool:
+	return tag in tags
+func has_tag_by_name(text: String) -> bool:
+	return find_tag(text) != null
+func find_tag(text: String) -> Variant:
+	for tag in tags:
+		if _tag_matches_text(tag, text): return tag
+	return null
+func _tag_matches_text(tag, text: String) -> bool:
+	return tag == text
+
+## Creates a new tag, assuming that it does not already exist. Returns an error if unsuccessful.
+func create_tag_by_name(text: String) -> int:
+	text = format_string_for_tag(text)
+
+	if text.is_empty(): return TAG_EMPTY_OR_WHITESPACE
+	if has_tag_by_name(text): return TAG_ALREADY_EXISTS
+
+	_create_tag_by_name(text)
+	return OK
+
+## Custom implementation for adding a tag by string name. Assumes that all validation checks have passed and the tag is formatted properly.
+func _create_tag_by_name(text: String) -> void:
+	tags.push_back(text)
+
+#endregion

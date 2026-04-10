@@ -14,6 +14,19 @@ static func _get_settings(node: Node) -> Array[Setting]:
 	return result
 
 
+static func find_ancestor(node: Node, include_internal: bool = false) -> ResourceSocket:
+	var parent := node
+	while parent != null:
+		var result : ResourceSocket = Myth.find_child_of_type(parent, "ResourceSocket", include_internal)
+		if result == null:
+			parent = parent.get_parent()
+			continue
+		else:
+			return result
+	return null
+
+
+
 ## Emits when the value of [member resource] is changed to a different [Resource].
 signal resource_value_changed(new_resource: Resource)
 
