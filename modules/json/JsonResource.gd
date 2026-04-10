@@ -424,8 +424,6 @@ func _save(file: FileAccess, json: String) -> void:
 func load(__file_path_absolute__: String = file_path_absolute) -> JsonResource:
 	file_path_absolute = __file_path_absolute__
 
-	print("file_path_absolute : %s" % [ file_path_absolute ])
-
 	var file := open(FileAccess.READ)
 	if file == null:
 		printerr("Failed to load JsonResource. Error code: %s (%s)." % [ FileAccess.get_open_error(), tag_error_string(FileAccess.get_open_error()) ])
@@ -435,13 +433,7 @@ func load(__file_path_absolute__: String = file_path_absolute) -> JsonResource:
 	var json = JSON.parse_string(json_string)
 	assert(json != null, "Couldn't parse string to json at file_path: %s" % data_path_absolute)
 
-	print("parent prior deserialize : %s" % [ parent ])
-	print("json : %s" % [ json ])
-
 	deserialize(json, self)
-
-	print("parent after deserialize : %s" % [ parent ])
-
 	_loaded()
 	_touched()
 

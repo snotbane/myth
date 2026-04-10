@@ -82,6 +82,7 @@ static func create_one_shot_audio(parent: Node, stream: AudioStream, from_positi
 
 
 static func is_object_of_type(obj: Object, type: String) -> bool:
+	if type.is_empty(): return false
 	if ClassDB.is_parent_class(obj.get_class(), type): return true
 
 	var script : Script = obj.get_script()
@@ -132,6 +133,18 @@ static func manifest_node_children(node: Node, manifested := true, recursive := 
 	for child in node.get_children():
 		child.owner = EditorInterface.get_edited_scene_root() if manifested else null
 		if recursive: manifest_node_children(child, manifested, true)
+
+
+## Removes all children of a given [param type] from a [Node] and returns a new array with them inside. Useful for reordering children.
+static func cache_children(node: Node, type: String = "") -> Array[Node]:
+	var result : Array[Node]
+	for child in node.get_children():
+		if not is_object_of_type(child, type): continue
+
+		result.push_back(child)
+		node.remove_child(child)
+	return result
+
 
 #endregion
 #region Physics
