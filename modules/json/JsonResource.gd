@@ -169,28 +169,30 @@ static func _deserialize_object(json: Variant, context: Object = null) -> Object
 
 	var result : Object = ClassDB.instantiate(json[&"type"]) if context == null else context
 
-	if json.has(&"script"):
-		var new_script := load(json[&"script"])
-		if result.get_script() != new_script:
-			result.set_script(new_script)
-			assert(result.get_script() != null, "Attempted to deserialize an object, but couldn't set the script. Make sure that it has an _init() method with 0 *required* arguments.")
 
 	var data = json[&"value"]
+	var new_script : Script = load(json[&"script"]) if json.has(&"script") else null
 
 	if result.has_method(&"_deserialize"):
+		Myth.change_script(result, new_script)
+
 		var value = result._deserialize(data)
-		if value != null and value:
+		if value:
+			if result.has_method(&"_deserialized"):
+				result._deserialized()
 			return result
 
-	var keys : Array = data.keys()
-	for k: StringName in keys:
+	else:
+		Myth.change_script(result, new_script, PROPERTY_USAGE_STORAGE, data.keys())
+
+	for k: StringName in data.keys():
 		if k == &"script": continue
-		print("k : %s" % [ k ])
 		var value_prev = result.get(k)
-		print("prev : %s" % [ value_prev ])
 		var value = deserialize(data[k], value_prev if value_prev is Object else null)
-		print("value : %s" % [ value ])
 		result.set(k, value)
+
+	if result.has_method(&"_deserialized"):
+		result._deserialized()
 
 	return result
 
@@ -324,8 +326,8 @@ func _init() -> void:
 	_init_tags()
 	_save_as_dir = _get_save_as_dir_default()
 
-	if not changed.is_connected(_on_changed):
-		changed.connect(_on_changed)
+	if not changed.is_connected(_changed):
+		changed.connect(_changed)
 
 
 var _is_ready : bool = false
@@ -338,7 +340,7 @@ func request_ready() -> void:
 func _get_save_as_dir_default() -> bool: return false
 
 
-func _on_changed() -> void:
+func _changed() -> void:
 	time_modified = NOW
 
 
@@ -358,27 +360,27 @@ func open(flags: FileAccess.ModeFlags) -> FileAccess:
 	return FileAccess.open(data_path_absolute, flags)
 
 
-func touch(__file_path_absolute__: String = file_path_absolute) -> void:
+func touch(__file_path_absolute__: String = file_path_absolute) -> JsonResource:
 	file_path_absolute = __file_path_absolute__
 	if file_exists:
-		self.load()
+		return self.load()
 	else:
-		self.save()
+		return self.save()
 
 
-func save(__file_path_absolute__: String = file_path_absolute, __save_as_dir__: bool = _save_as_dir) -> void:
+func save(__file_path_absolute__: String = file_path_absolute, __save_as_dir__: bool = _save_as_dir) -> JsonResource:
 	file_path_absolute = __file_path_absolute__
 	_save_as_dir = __save_as_dir__
 
 	var data_dir_touch_err := DirAccess.make_dir_recursive_absolute(data_dir_absolute)
 	if data_dir_touch_err != OK:
 		printerr("Failed to save JsonResource at path '%s': error code %s while attempting to touch directory." % [data_dir_absolute, data_dir_touch_err])
-		return
+		return null
 
 	var file := open(FileAccess.WRITE)
 	if file == null:
 		printerr("Failed to save JsonResource at path '%s': error code %s while opening file." % [data_path_absolute, FileAccess.get_open_error()])
-		return
+		return null
 
 	_saving()
 
@@ -392,6 +394,8 @@ func save(__file_path_absolute__: String = file_path_absolute, __save_as_dir__: 
 	if not _is_ready:
 		_ready()
 		_is_ready = true
+
+	return self
 
 ## Saves the given stringified JSON text to the file.
 func _save(file: FileAccess, json: String) -> void:
@@ -417,19 +421,26 @@ func _save(file: FileAccess, json: String) -> void:
 	file.close()
 
 
-func load(__file_path_absolute__: String = file_path_absolute) -> void:
+func load(__file_path_absolute__: String = file_path_absolute) -> JsonResource:
 	file_path_absolute = __file_path_absolute__
+
+	print("file_path_absolute : %s" % [ file_path_absolute ])
 
 	var file := open(FileAccess.READ)
 	if file == null:
 		printerr("Failed to load JsonResource. Error code: %s (%s)." % [ FileAccess.get_open_error(), tag_error_string(FileAccess.get_open_error()) ])
-		return
+		return null
 
 	var json_string = _load(file)
 	var json = JSON.parse_string(json_string)
 	assert(json != null, "Couldn't parse string to json at file_path: %s" % data_path_absolute)
 
+	print("parent prior deserialize : %s" % [ parent ])
+	print("json : %s" % [ json ])
+
 	deserialize(json, self)
+
+	print("parent after deserialize : %s" % [ parent ])
 
 	_loaded()
 	_touched()
@@ -437,6 +448,8 @@ func load(__file_path_absolute__: String = file_path_absolute) -> void:
 	if not _is_ready:
 		_ready()
 		_is_ready = true
+
+	return self
 
 ## Loads the given file as stringified JSON text.
 func _load(file: FileAccess) -> String:

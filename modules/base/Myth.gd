@@ -1,6 +1,31 @@
 
 @tool class_name Myth
 
+#region Objects
+
+## Changes the script of an object while keeping desired properties intact.
+static func change_script(obj: Object, new_script: Script, preserve_usage_flags: PropertyUsageFlags = PROPERTY_USAGE_STORAGE, ignore_prop_names: Array = []) -> void:
+	var old_script := obj.get_script()
+	if old_script == new_script: return
+	if old_script == null or new_script == null:
+		obj.set_script(new_script)
+		return
+
+	var preserve : Dictionary[StringName, Variant]
+	for prop in obj.get_property_list():
+		if prop[&"name"] == &"script": continue
+		if prop[&"name"] in ignore_prop_names: continue
+		if prop[&"usage"] & preserve_usage_flags:
+			preserve[prop[&"name"]] = obj.get(prop[&"name"])
+
+	obj.set_script(new_script)
+	assert(obj.get_script() != null, "Attempted to change the script of an object, but couldn't set the script. Make sure that it has an _init() method with 0 *required* arguments.")
+
+	for k : StringName in preserve:
+		obj.set(k, preserve[k])
+
+
+#endregion
 #region FileAccess
 
 static func get_parent_folder(path: String, levels: int = 1) -> String:
