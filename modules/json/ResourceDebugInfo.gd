@@ -1,17 +1,29 @@
 ## Helper node that displays information about a specific [ResourceNode], or a sibling or ancestor's [ResourceNode].
 class_name ResourceDebugInfo extends PanelContainer
 
-@export var resource_node: ResourceNode
-
-@export var expand_to_text_size: bool = true:
+## The [ResourceNode] which we will watch and update. If unassigned, we will look for siblings, ancestors, and ancestor's siblings to find a [ResourceNode] to fallback to.
+@export var resource_node: ResourceNode:
 	set(value):
-		expand_to_text_size = value
+		if resource_node:
+			resource_node.resource_changed.disconnect(_resource_changed)
+
+		resource_node = value if value else _child_resource_node
+
+		resource_node.resource_changed.connect(_resource_changed)
+
+
+## If enabled, we will fit to the size of the text content. Otherwise, vertical scrolling will be enabled and we will fit to our own [member custom_minimum_size].
+@export var fit_content: bool = true:
+	set(value):
+		fit_content = value
 		_scroll_container.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED if value else ScrollContainer.SCROLL_MODE_AUTO
+
 
 var _rich_text_label: RichTextLabel
 var _scroll_container: ScrollContainer
 var _margin_container: MarginContainer
 var _child_resource_node: ResourceNode
+
 
 func _init() -> void:
 	_child_resource_node = ResourceNode.new()
@@ -51,12 +63,9 @@ func _init() -> void:
 
 
 func _ready() -> void:
-	expand_to_text_size = expand_to_text_size
+	resource_node = resource_node
+	fit_content = fit_content
 
-	if resource_node == null:
-		resource_node = _child_resource_node
-
-	resource_node.resource_changed.connect(_resource_changed)
 	_resource_changed()
 
 
@@ -64,9 +73,13 @@ func _resource_changed() -> void:
 	_rich_text_label.clear()
 	_rich_text_label.push_mono()
 
-	_rich_text_label.append_text(
-		("\"%s\": " % resource_node.resource.file_path_absolute)
-		if resource_node.resource is JsonResource else
-		("%s: " % resource_node.resource.to_string())
-	)
-	_rich_text_label.append_text(JSON.stringify(JsonResource.serialize(resource_node.resource), "\t", true))
+	if resource_node.resource == null:
+		_rich_text_label.push_color(Color.INDIAN_RED)
+		_rich_text_label.append_text("Resource info cannot be retrieved; `resource` is null.")
+	else:
+		_rich_text_label.append_text(
+			("\"%s\": " % resource_node.resource.file_path_absolute)
+			if resource_node.resource is JsonResource else
+			("%s: " % str(resource_node.resource))
+		)
+		_rich_text_label.append_text(JSON.stringify(JsonResource.serialize(resource_node.resource), "\t", true))

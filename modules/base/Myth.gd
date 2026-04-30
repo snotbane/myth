@@ -81,7 +81,7 @@ static func create_one_shot_audio(parent: Node, stream: AudioStream, from_positi
 
 
 static func is_object_of_type(obj: Object, type: String) -> bool:
-	if type.is_empty(): return false
+	if obj == null or type.is_empty(): return false
 	if ClassDB.is_parent_class(obj.get_class(), type): return true
 
 	var script: Script = obj.get_script()
@@ -120,6 +120,8 @@ static func find_ancestor_sibling_of_type(node: Node, type: String, include_inte
 
 ## Searches down the child hierarchy until it finds a [Node] whose class or script matches the specified [type].
 static func find_child_of_type(node: Node, type: String, include_internal: bool = false) -> Node:
+	if node == null: return null
+
 	for child in node.get_children(include_internal):
 		if is_object_of_type(child, type): return child
 	return null
@@ -127,6 +129,8 @@ static func find_child_of_type(node: Node, type: String, include_internal: bool 
 
 ## Searches down the child hierarchy until it finds a [Node] whose class or script matches the specified [type].
 static func find_descendant_of_type(node: Node, type: String, include_internal: bool = false) -> Node:
+	if node == null: return null
+
 	for child in node.get_children(include_internal):
 		if is_object_of_type(child, type): return child
 
@@ -139,6 +143,8 @@ static func find_descendant_of_type(node: Node, type: String, include_internal: 
 
 ## Searches among this node's siblings until it finds a [Node] whose class or script matches the specified [type]. This will never return itself unless [allow_self] is true.
 static func find_sibling_of_type(node: Node, type: String, include_internal: bool = false, allow_self: bool = false) -> Node:
+	if node == null or node.get_parent() == null: return null
+
 	for child in node.get_parent().get_children(include_internal):
 		if child == node and not allow_self: continue
 		if is_object_of_type(child, type):
