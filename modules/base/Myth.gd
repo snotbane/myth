@@ -1,4 +1,3 @@
-
 @tool class_name Myth
 
 #region Objects
@@ -11,7 +10,7 @@ static func change_script(obj: Object, new_script: Script, preserve_usage_flags:
 		obj.set_script(new_script)
 		return
 
-	var preserve : Dictionary[StringName, Variant]
+	var preserve: Dictionary[StringName, Variant]
 	for prop in obj.get_property_list():
 		if prop[&"name"] == &"script": continue
 		if prop[&"name"] in ignore_prop_names: continue
@@ -21,7 +20,7 @@ static func change_script(obj: Object, new_script: Script, preserve_usage_flags:
 	obj.set_script(new_script)
 	assert(obj.get_script() != null, "Attempted to change the script of an object, but couldn't set the script. Make sure that it has an _init() method with 0 *required* arguments.")
 
-	for k : StringName in preserve:
+	for k: StringName in preserve:
 		obj.set(k, preserve[k])
 
 
@@ -38,21 +37,21 @@ static func get_parent_folder(path: String, levels: int = 1) -> String:
 	return get_parent_folder(path.substr(0, end), levels - 1)
 
 
-static func get_paths_in_folder(root := "res://", include : RegEx = null, exclude : RegEx = null) -> PackedStringArray:
+static func get_paths_in_folder(root := "res://", include: RegEx = null, exclude: RegEx = null) -> PackedStringArray:
 	var dir := DirAccess.open(root)
 	if not dir: return []
 
-	var result : PackedStringArray = []
+	var result: PackedStringArray = []
 
 	if include == null or include.search(root) != null:
 		result.push_back(root)
 
 	dir.list_dir_begin()
-	var file : String = dir.get_next()
+	var file: String = dir.get_next()
 	while file:
 		var next := root.path_join(file)
-		if		(include == null or include.search(file) != null) \
-			and (exclude == null or exclude.search(file) == null) :
+		if (include == null or include.search(file) != null) \
+			and (exclude == null or exclude.search(file) == null):
 			result.push_back(next)
 
 		if dir.current_is_dir():
@@ -66,13 +65,13 @@ static func get_paths_in_folder(root := "res://", include : RegEx = null, exclud
 
 ## Creates an [AudioStreamPlayer] that destroys itself after playing one sound. The kind of player it creates depends on the parent node. 3D parent will be a [AudioStreamPlayer3D], 2D parent will be a [AudioStreamPlayer2D], anything else will be [AudioStreamPlayer].
 static func create_one_shot_audio(parent: Node, stream: AudioStream, from_position: float = 0.0) -> Node:
-	var result : Node
+	var result: Node
 
 	if parent is Node3D: result = AudioStreamPlayer3D.new()
 	elif parent is Node2D: result = AudioStreamPlayer2D.new()
 	else: result = AudioStreamPlayer.new()
 
-	result.set_script(preload("uid://bvnerwx0x15br"))	## RescueAudioStreamPlayer.gd
+	result.set_script(preload("uid://bvnerwx0x15br")) ## RescueAudioStreamPlayer.gd
 	result.stream = stream
 	result.finished.connect(result.queue_free)
 	parent.add_child(result)
@@ -85,12 +84,13 @@ static func is_object_of_type(obj: Object, type: String) -> bool:
 	if type.is_empty(): return false
 	if ClassDB.is_parent_class(obj.get_class(), type): return true
 
-	var script : Script = obj.get_script()
+	var script: Script = obj.get_script()
 	while script != null:
 		if script.get_global_name() == type: return true
 		script = script.get_base_script()
 
 	return false
+
 
 ## Searches up the parental hierarchy until it finds a [Node] whose class or script matches the specified [type].
 static func find_ancestor_of_type(node: Node, type: String) -> Node:
@@ -100,11 +100,30 @@ static func find_ancestor_of_type(node: Node, type: String) -> Node:
 		node = node.get_parent()
 	return null
 
+
+## Searches up the parental hierarchy, and any siblings of parents, and returns a [Node] matching the class or script matching the specified [param type].
+static func find_ancestor_sibling_of_type(node: Node, type: String, include_internal: bool = false) -> Node:
+	var self_sibling := find_sibling_of_type(node, type, include_internal)
+	if self_sibling: return self_sibling
+
+	node = node.get_parent()
+	while node != null:
+		if is_object_of_type(node, type): return node
+
+		var sibling := find_sibling_of_type(node, type, include_internal)
+		if sibling: return sibling
+
+		node = node.get_parent()
+
+	return null
+
+
 ## Searches down the child hierarchy until it finds a [Node] whose class or script matches the specified [type].
 static func find_child_of_type(node: Node, type: String, include_internal: bool = false) -> Node:
 	for child in node.get_children(include_internal):
 		if is_object_of_type(child, type): return child
 	return null
+
 
 ## Searches down the child hierarchy until it finds a [Node] whose class or script matches the specified [type].
 static func find_descendant_of_type(node: Node, type: String, include_internal: bool = false) -> Node:
@@ -116,6 +135,7 @@ static func find_descendant_of_type(node: Node, type: String, include_internal: 
 
 		return grandchild
 	return null
+
 
 ## Searches among this node's siblings until it finds a [Node] whose class or script matches the specified [type]. This will never return itself unless [allow_self] is true.
 static func find_sibling_of_type(node: Node, type: String, include_internal: bool = false, allow_self: bool = false) -> Node:
@@ -137,7 +157,7 @@ static func manifest_node_children(node: Node, manifested := true, recursive := 
 
 ## Removes all children of a given [param type] from a [Node] and returns a new array with them inside. Useful for reordering children.
 static func cache_children(node: Node, type: String = "") -> Array[Node]:
-	var result : Array[Node]
+	var result: Array[Node]
 	for child in node.get_children():
 		if not is_object_of_type(child, type): continue
 
@@ -188,10 +208,10 @@ static func cast_mouse(camera: Camera3D, collision_mask: int, max_distance: floa
 #endregion
 #region Time
 
-static var NOW_MILLI : float :
+static var NOW_MILLI: float:
 	get: return Time.get_ticks_msec() * 0.00_1
 
-static var NOW_MICRO : float :
+static var NOW_MICRO: float:
 	get: return Time.get_ticks_usec() * 0.00_000_1
 
 #endregion

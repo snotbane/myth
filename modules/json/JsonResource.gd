@@ -15,9 +15,7 @@ const K_TIME_MODIFIED := &"time_modified"
 const KEY_SIZE := 16
 const IV_SIZE := 16
 
-const IMPORT_ORDER : PackedStringArray = [ &"script", &"resource_local_to_scene", &"resource_name", &"time_created", &"time_modified", &"data" ]
-
-static var DIRECTORY_RESOURCES : Dictionary
+static var DIRECTORY_RESOURCES: Dictionary
 
 ## Generates a file path in the given [param dir]. If the path already exists, a new path is generated using [member generate_save_name], and is guaranteed to not yet exist.
 static func generate_save_path(dir := ProjectSettings.globalize_path("user://"), name := generate_save_name(), ext := "json") -> String:
@@ -42,7 +40,7 @@ static func find_parent_from_path(path: String) -> JsonResource:
 	return null
 
 
-static var NOW : int :
+static var NOW: int:
 	get: return floori(Time.get_unix_time_from_system())
 
 ## Adapted from:	https://github.com/godotengine/godot-proposals/issues/5515#issuecomment-1409971613
@@ -53,15 +51,16 @@ static func get_local_datetime(unix_time: int) -> int:
 static func load_from_file(path: String) -> JsonResource:
 	if not FileAccess.file_exists(path): return null
 
-
-	return null
+	return JsonResource.new().load(path)
 
 #endregion
+
+
 #region Serialization
 
 ## Converts a [Variant] into a JSON-compatible typed [Dictionary]. Currently, [Object]s can only be serialized if it has the method [member _export_json()].
 static func serialize(target: Variant) -> Variant:
-	var json : Dictionary
+	var json: Dictionary
 	var type := typeof(target)
 
 	match type:
@@ -113,8 +112,8 @@ static func _serialize_object(obj: Object) -> Variant:
 	for prop in obj.get_property_list():
 		if (
 				prop[&"name"][0] == "_"
-			or	prop[&"name"] == "script"
-			or	not prop[&"usage"] & PROPERTY_USAGE_STORAGE
+			or prop[&"name"] == "script"
+			or not prop[&"usage"] & PROPERTY_USAGE_STORAGE
 		):
 			continue
 
@@ -138,14 +137,14 @@ static func deserialize(json: Variant, context: Object = null) -> Variant:
 	if json[&"type"] is float: ## Use float because JSON.parse_string() always imports numbers as floats.
 		match int(json[&"type"]):
 			TYPE_DICTIONARY:
-				var result : Dictionary = {}
+				var result: Dictionary = {}
 				for k in json[&"value"].keys():
 					var value = json[&"value"][k]
 					result[k] = deserialize(json[&"value"][k])
 				return result
 
 			TYPE_ARRAY:
-				var result : Array = []
+				var result: Array = []
 				result.resize(json[&"value"].size())
 				for i in result.size():
 					result[i] = deserialize(json[&"value"][i])
@@ -167,11 +166,11 @@ static func _deserialize_object(json: Variant, context: Object = null) -> Object
 	if json[&"value"] is String and json[&"value"].begins_with("uid://"):
 		return load(json[&"value"])
 
-	var result : Object = ClassDB.instantiate(json[&"type"]) if context == null else context
+	var result: Object = ClassDB.instantiate(json[&"type"]) if context == null else context
 
 
 	var data = json[&"value"]
-	var new_script : Script = load(json[&"script"]) if json.has(&"script") else null
+	var new_script: Script = load(json[&"script"]) if json.has(&"script") else null
 
 	if result.has_method(&"_deserialize"):
 		Myth.change_script(result, new_script)
@@ -198,6 +197,7 @@ static func _deserialize_object(json: Variant, context: Object = null) -> Object
 
 #endregion
 
+
 #region Signals
 
 ## Emitted after the file has successfully been deleted from the file system.
@@ -206,31 +206,31 @@ signal deleted
 #endregion
 
 ## The file_path to save to. Make sure extension is included. If left blank, a random file_path located in `user://` will be assigned.
-@export var _file_path : String
+@export var _file_path: String
 
 ## The relative file path. Changing this will move the file on the system.
-var file_path : String :
+var file_path: String:
 	get: return _file_path
-	set(value):	file_path_absolute = parent_dir.path_join(value) if _parent else value
+	set(value): file_path_absolute = parent_dir.path_join(value) if _parent else value
 
-var file_dir : String :
+var file_dir: String:
 	get: return Myth.get_parent_folder(file_path)
 	set(value): file_path = value.path_join("%s.%s" % [file_name, file_ext])
 
-var file_name : String :
+var file_name: String:
 	get:
 		var start = file_path.rfind("/")
 		return file_path.substr(start + 1, file_path.length() - (file_ext.length() + maxi(start, 0) + 2))
 	set(value): file_path = file_dir.path_join("%s.%s" % [value, file_ext])
 
-var file_ext : String :
+var file_ext: String:
 	get: return file_path.get_extension()
 	set(value): file_path = "%s.%s" % [file_path.substr(0, file_path.length() - (file_ext.length() + 1)), value]
 
-var file_name_and_ext : String :
-	get: return "%s.%s" % [ file_name, file_ext ]
+var file_name_and_ext: String:
+	get: return "%s.%s" % [file_name, file_ext]
 
-var file_path_absolute : String :
+var file_path_absolute: String:
 	get: return parent_dir.path_join(_file_path) if _parent else _file_path
 	set(value):
 		var file_path_absolute_prev := file_path_absolute
@@ -249,21 +249,21 @@ var file_path_absolute : String :
 			DIRECTORY_RESOURCES.erase(file_path_absolute_prev)
 			DIRECTORY_RESOURCES[file_path_absolute] = self
 
-var file_dir_absolute : String :
+var file_dir_absolute: String:
 	get: return Myth.get_parent_folder(file_path_absolute)
 
 ## If [member file_path_absolute] exists inside of another [JsonResource] that is [member save_as_dir], that resource will be the [member _parent].
-@export_storage var _parent : JsonResource
-var parent : JsonResource :
+@export_storage var _parent: JsonResource
+var parent: JsonResource:
 	get: return _parent
 
-var parent_dir : String :
+var parent_dir: String:
 	get: return _parent.file_path_absolute if _parent else file_dir
 
 
-var _save_as_dir : bool
+var _save_as_dir: bool
 ## If enabled, [member file_path] will actually refer to a directory, and all data will be stored in a file INSIDE this folder.
-@export var save_as_dir : bool :
+@export var save_as_dir: bool:
 	get: return _save_as_dir
 	set(value):
 		if _save_as_dir == value: return
@@ -279,23 +279,23 @@ var _save_as_dir : bool
 		if _save_as_dir:
 			DIRECTORY_RESOURCES[file_path_absolute] = self
 
-var data_path : String = DATA_PATH
+var data_path: String = DATA_PATH
 
-var data_path_absolute : String :
+var data_path_absolute: String:
 	get: return file_path_absolute.path_join(data_path) if save_as_dir else file_path_absolute
 
-var data_dir_absolute : String :
+var data_dir_absolute: String:
 	get: return file_path_absolute if save_as_dir else file_dir_absolute
 
-var file_exists : bool :
+var file_exists: bool:
 	get: return FileAccess.file_exists(data_path_absolute)
 
 
-var _aes : AESContext
-var _crypto : Crypto
-var __encryption_password : String
+var _aes: AESContext
+var _crypto: Crypto
+var __encryption_password: String
 ## If set, this resource will be encrypted when saved.
-@export var _encryption_password : String :
+@export var _encryption_password: String:
 	get: return __encryption_password
 	set(value):
 		__encryption_password = value
@@ -305,19 +305,18 @@ var __encryption_password : String
 		_aes = AESContext.new()
 		_crypto = Crypto.new()
 
-var _encryption_password_quantized : String :
+var _encryption_password_quantized: String:
 	get: return _encryption_password # TODO: ensure it's the same size as KEY_SIZE
 
 
-var is_valid : bool :
+var is_valid: bool:
 	get: return (DirAccess.dir_exists_absolute(file_path_absolute) if save_as_dir else FileAccess.file_exists(file_path_absolute)) and _get_is_valid()
 func _get_is_valid() -> bool: return true
 
 
-@export_storage var time_created : int
-@export_storage var time_modified : int
-@export_storage var tags : Variant
-@export_storage var data : Dictionary
+@export_storage var time_created: int
+@export_storage var time_modified: int
+@export_storage var tags: Variant
 
 
 func _init() -> void:
@@ -330,7 +329,7 @@ func _init() -> void:
 		changed.connect(_changed)
 
 
-var _is_ready : bool = false
+var _is_ready: bool = false
 ## Called the first time the file is touched (saved or loaded).
 func _ready() -> void: pass
 func request_ready() -> void:
@@ -385,7 +384,7 @@ func save(__file_path_absolute__: String = file_path_absolute, __save_as_dir__: 
 	_saving()
 
 	emit_changed()
-	var json := JSON.stringify(serialize(self), "\t" if OS.is_debug_build() else "", OS.is_debug_build(), true)
+	var json := JSON.stringify(serialize(self ), "\t" if OS.is_debug_build() else "", OS.is_debug_build(), true)
 	# print("json : %s" % [ json ])
 	_save(file, json)
 
@@ -426,14 +425,14 @@ func load(__file_path_absolute__: String = file_path_absolute) -> JsonResource:
 
 	var file := open(FileAccess.READ)
 	if file == null:
-		printerr("Failed to load JsonResource. Error code: %s (%s)." % [ FileAccess.get_open_error(), tag_error_string(FileAccess.get_open_error()) ])
+		printerr("Failed to load JsonResource. Error code: %s (%s)." % [FileAccess.get_open_error(), tag_error_string(FileAccess.get_open_error())])
 		return null
 
 	var json_string = _load(file)
 	var json = JSON.parse_string(json_string)
 	assert(json != null, "Couldn't parse string to json at file_path: %s" % data_path_absolute)
 
-	deserialize(json, self)
+	deserialize(json, self )
 	_loaded()
 	_touched()
 
@@ -445,7 +444,7 @@ func load(__file_path_absolute__: String = file_path_absolute) -> JsonResource:
 
 ## Loads the given file as stringified JSON text.
 func _load(file: FileAccess) -> String:
-	var result : String
+	var result: String
 
 	if _encryption_password.is_empty():
 		result = file.get_as_text()
@@ -469,13 +468,13 @@ func _load(file: FileAccess) -> String:
 func reveal() -> void:
 	var err := OS.shell_show_in_file_manager(file_path_absolute)
 	if err != OK:
-		printerr("Error revealing JsonResource at '%s': code %s (%s)." % [ file_path, err, tag_error_string(err) ])
+		printerr("Error revealing JsonResource at '%s': code %s (%s)." % [file_path, err, tag_error_string(err)])
 
 
 func shopen() -> void:
 	var err := OS.shell_open(file_path_absolute)
 	if err != OK:
-		printerr("Error opening JsonResource at '%s': code %s (%s)." % [ file_path, err, tag_error_string(err) ])
+		printerr("Error opening JsonResource at '%s': code %s (%s)." % [file_path, err, tag_error_string(err)])
 
 
 func move(to_dir_absolute: String) -> void:
@@ -486,7 +485,7 @@ func move(to_dir_absolute: String) -> void:
 
 
 ## Copies the resource to be placed into a directory. [param hard] determines if all sub resources are copied (only applies if [member save_as_dir] is `true`).
-func copy(to_dir_absolute: String = file_dir_absolute, deep : bool = false) -> JsonResource:
+func copy(to_dir_absolute: String = file_dir_absolute, deep: bool = false) -> JsonResource:
 	var result := duplicate(deep)
 	var path := generate_save_path(to_dir_absolute, generate_save_name(), file_ext)
 
@@ -498,7 +497,7 @@ func copy(to_dir_absolute: String = file_dir_absolute, deep : bool = false) -> J
 func delete() -> void:
 	var err := DirAccess.remove_absolute(file_path_absolute)
 	if err != OK:
-		printerr("Error deleting JsonResource at '%s': code %s (%s)." % [ file_path_absolute, err, tag_error_string(err) ])
+		printerr("Error deleting JsonResource at '%s': code %s (%s)." % [file_path_absolute, err, tag_error_string(err)])
 		return
 
 	deleted.emit()
@@ -512,11 +511,11 @@ enum {
 	TAG_EMPTY_OR_WHITESPACE,
 	TAG_DOES_NOT_EXIST,
 }
-static var ERROR_STRINGS : Dictionary[int, String] = {
-	OK:							"",
-	TAG_ALREADY_EXISTS:			"A similar tag already exists.",
-	TAG_EMPTY_OR_WHITESPACE:	"Tag must contain at least one non-whitespace character.",
-	TAG_DOES_NOT_EXIST:			"No matching or similar tag exists."
+static var ERROR_STRINGS: Dictionary[int, String] = {
+	OK: "",
+	TAG_ALREADY_EXISTS: "A similar tag already exists.",
+	TAG_EMPTY_OR_WHITESPACE: "Tag must contain at least one non-whitespace character.",
+	TAG_DOES_NOT_EXIST: "No matching or similar tag exists."
 
 }
 static func tag_error_string(code: int) -> String:
