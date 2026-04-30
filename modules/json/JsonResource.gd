@@ -162,7 +162,7 @@ static func deserialize(json: Variant, context: Object = null) -> Variant:
 
 	return null
 
-## Deserializes an object. To customize deserialization for a class, implement a new `func _deserialize(json: Variant) -> Variant`. Param `json` will be what `_serialize` created. Return a truthy value to override all deserialization for this object.
+## Deserializes an object. To customize deserialization for a class, implement a new `func _deserialize(json: Variant, context: Object = null) -> Variant`. Param `json` will be what `_serialize` created. Return a truthy value to override all deserialization for this object.
 static func _deserialize_object(json: Variant, context: Object = null) -> Object:
 	if json[&"value"] is String and json[&"value"].begins_with("uid://"):
 		return load(json[&"value"])
@@ -176,7 +176,7 @@ static func _deserialize_object(json: Variant, context: Object = null) -> Object
 	if result.has_method(&"_deserialize"):
 		Myth.change_script(result, new_script)
 
-		var value = result._deserialize(data)
+		var value = result._deserialize(data, context)
 		if value:
 			if result.has_method(&"_deserialized"):
 				result._deserialized()
