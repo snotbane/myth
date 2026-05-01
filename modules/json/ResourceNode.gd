@@ -1,29 +1,43 @@
 ## Adds a hook for a [Resource] such that it can be treated like a [Node].
 class_name ResourceNode extends Node
 
+
+static func get_nearest_ancestor_sibling(node: Node, type: String = "ResourceNode") -> ResourceNode:
+	return Myth.find_ancestor_sibling_of_type(node, type, true)
+
+static func get_nearest_descendent(node: Node, type: String = "ResourceNode") -> ResourceNode:
+	return Myth.find_descendant_of_type(node, type, true)
+
+static func add_child_socket(node: Node, fallback_type: int = 1) -> ResourceNode:
+	var result := ResourceNode.new()
+	result.fallback_type = fallback_type
+	node.add_child(result)
+	if node.has_method(&"_resource_changed"):
+		result.resource_changed.connect(node._resource_changed)
+	return result
+
+
 signal resource_changed
 
 var _resource: Resource
 @export var resource: Resource:
 	get: return _resource if _resource else fallback_resource
 	set(value):
-		if _resource == value: return
-
 		if _resource:
 			_resource.changed.disconnect(emit_resource_changed)
+			for sig in resource_signals:
+				for callable: Callable in resource_signals[sig]:
+					_resource.disconnect(sig, callable)
 
 		_resource = value
 
 		if _resource:
 			_resource.changed.connect(emit_resource_changed)
+			for sig in resource_signals:
+				for callable: Callable in resource_signals[sig]:
+					_resource.connect(sig, callable)
 
 		emit_resource_changed()
-
-
-var fallback_resource: Resource:
-	get: return fallback_node.resource if fallback_node else null
-
-var fallback_node: ResourceNode
 
 @export_enum("None", "Ancestor", "Descendant") var fallback_type: int:
 	set(value):
@@ -44,11 +58,16 @@ var fallback_node: ResourceNode
 		fallback_resource_changed()
 
 
-func _ready() -> void:
-	fallback_type = fallback_type
+var fallback_node: ResourceNode
+var fallback_resource: Resource:
+	get: return fallback_node.resource if fallback_node else null
 
-	if _resource:
-		emit_resource_changed()
+var resource_signals: Dictionary[StringName, Array]
+
+
+func _ready() -> void:
+	resource = resource
+	fallback_type = fallback_type
 
 func fallback_resource_changed() -> void:
 	if _resource: return
@@ -56,5 +75,25 @@ func fallback_resource_changed() -> void:
 func emit_resource_changed() -> void:
 	_resource_changed()
 	resource_changed.emit()
-func _resource_changed() -> void:
-	pass
+func _resource_changed() -> void: pass
+
+
+## Connect one of the resource's signals to a callable. If the resource changes later, the connection will be transferred to the new value of [member resource]. This will work even if [member resource] is currently unset.
+func connect_resource_signal(sig: StringName, callable: Callable) -> void:
+	if not resource_signals.has(sig):
+		resource_signals[sig] = []
+	resource_signals[sig].push_back(callable)
+
+	if resource:
+		resource.connect(sig, callable)
+
+## Disconnect one of the resource's signals to a callable.
+func disconnect_resource_signal(sig: StringName, callable: Callable) -> void:
+	assert(resource_signals.has(sig), "Can't disconnect a signal name that does not exist.")
+
+	resource_signals[sig].erase(callable)
+	if resource_signals[sig].is_empty():
+		resource_signals.erase(sig)
+
+	if resource:
+		resource.disconnect(sig, callable)

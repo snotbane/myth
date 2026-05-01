@@ -19,10 +19,10 @@ class_name ResourceDebugInfo extends PanelContainer
 		_scroll_container.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED if value else ScrollContainer.SCROLL_MODE_AUTO
 
 
-var _rich_text_label: RichTextLabel
+var _child_resource_node: ResourceNode
 var _scroll_container: ScrollContainer
 var _margin_container: MarginContainer
-var _child_resource_node: ResourceNode
+var _rich_text_label: RichTextLabel
 
 
 func _init() -> void:

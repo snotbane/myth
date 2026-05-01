@@ -373,12 +373,12 @@ func save(__file_path_absolute__: String = file_path_absolute, __save_as_dir__: 
 
 	var data_dir_touch_err := DirAccess.make_dir_recursive_absolute(data_dir_absolute)
 	if data_dir_touch_err != OK:
-		printerr("Failed to save JsonResource at path '%s': error code %s while attempting to touch directory." % [data_dir_absolute, data_dir_touch_err])
+		printerr("Failed to save %s at path '%s': while attempting to touch directory: %s" % [ self , data_dir_absolute, error_string(data_dir_touch_err)])
 		return null
 
 	var file := open(FileAccess.WRITE)
 	if file == null:
-		printerr("Failed to save JsonResource at path '%s': error code %s while opening file." % [data_path_absolute, FileAccess.get_open_error()])
+		printerr("Failed to save %s at data path '%s': while opening file: %s" % [ self , data_path_absolute, error_string(FileAccess.get_open_error())])
 		return null
 
 	_saving()
