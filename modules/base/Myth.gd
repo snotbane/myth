@@ -80,35 +80,62 @@ static func create_one_shot_audio(parent: Node, stream: AudioStream, from_positi
 	return result
 
 
-static func is_object_of_type(obj: Object, type: String) -> bool:
-	if obj == null or type.is_empty(): return false
-	if ClassDB.is_parent_class(obj.get_class(), type): return true
+## Returns the property in a preexisting property list that matches the given [param name]
+static func find_prop(name: StringName, props: Array[Dictionary]) -> Dictionary:
+	var idx := props.find_custom(func(e: Dictionary) -> bool:
+		return e[&"name"] == name
+	)
+	return props[idx] if idx > -1 else {}
 
-	var script: Script = obj.get_script()
-	while script != null:
-		if script.get_global_name() == type: return true
-		script = script.get_base_script()
 
-	return false
+## Returns true if the property with the given [param name] matches the [param type] within a preexisting property list. Returns false if the property does not exist in the list.
+static func is_prop_of_type(name: StringName, type: String, props: Array[Dictionary]) -> bool:
+	var prop := find_prop(name, props)
+	if prop.is_empty(): return false
+
+	match prop[&"type"]:
+		TYPE_OBJECT:
+			for subtype in prop[&"hint_string"].split(","):
+				if type == subtype or ClassDB.is_parent_class(type, subtype): return true
+			return false
+		_:
+			return type_string(prop[&"type"]) == type
+
+
+static func is_value_of_type(value, type: String) -> bool:
+	match typeof(value):
+		TYPE_OBJECT:
+			if value == null or type.is_empty(): return false
+			if ClassDB.is_parent_class(value.get_class(), type): return true
+
+			var script: Script = value.get_script()
+			while script != null:
+				if script.get_global_name() == type: return true
+				script = script.get_base_script()
+
+			return false
+		_:
+			return type_string(value) == type
 
 
 ## Searches up the parental hierarchy until it finds a [Node] whose class or script matches the specified [type].
 static func find_ancestor_of_type(node: Node, type: String) -> Node:
 	node = node.get_parent()
 	while node != null:
-		if is_object_of_type(node, type): return node
+		if is_value_of_type(node, type): return node
 		node = node.get_parent()
 	return null
 
 
 ## Searches up the parental hierarchy, and any siblings of parents, and returns a [Node] matching the class or script matching the specified [param type].
-static func find_ancestor_sibling_of_type(node: Node, type: String, include_internal: bool = false) -> Node:
-	var self_sibling := find_sibling_of_type(node, type, include_internal)
-	if self_sibling: return self_sibling
+static func find_ancestor_sibling_of_type(node: Node, type: String, include_internal: bool = false, include_self_sibling: bool = false) -> Node:
+	if include_self_sibling:
+		var self_sibling := find_sibling_of_type(node, type, include_internal)
+		if self_sibling: return self_sibling
 
 	node = node.get_parent()
 	while node != null:
-		if is_object_of_type(node, type): return node
+		if is_value_of_type(node, type): return node
 
 		var sibling := find_sibling_of_type(node, type, include_internal)
 		if sibling: return sibling
@@ -123,7 +150,7 @@ static func find_child_of_type(node: Node, type: String, include_internal: bool 
 	if node == null: return null
 
 	for child in node.get_children(include_internal):
-		if is_object_of_type(child, type): return child
+		if is_value_of_type(child, type): return child
 	return null
 
 
@@ -132,7 +159,7 @@ static func find_descendant_of_type(node: Node, type: String, include_internal: 
 	if node == null: return null
 
 	for child in node.get_children(include_internal):
-		if is_object_of_type(child, type): return child
+		if is_value_of_type(child, type): return child
 
 		var grandchild := find_descendant_of_type(child, type, include_internal)
 		if grandchild == null: continue
@@ -147,7 +174,7 @@ static func find_sibling_of_type(node: Node, type: String, include_internal: boo
 
 	for child in node.get_parent().get_children(include_internal):
 		if child == node and not allow_self: continue
-		if is_object_of_type(child, type):
+		if is_value_of_type(child, type):
 			return child
 	return null
 
@@ -161,11 +188,19 @@ static func manifest_node_children(node: Node, manifested := true, recursive := 
 		if recursive: manifest_node_children(child, manifested, true)
 
 
+## Queues free all children of a given [param type] from a [Node].
+static func clear_children(node: Node, type: String = "") -> void:
+	for child in node.get_children():
+		if not (is_value_of_type(child, type) or type.is_empty()): continue
+
+		child.queue_free()
+
+
 ## Removes all children of a given [param type] from a [Node] and returns a new array with them inside. Useful for reordering children.
 static func cache_children(node: Node, type: String = "") -> Array[Node]:
 	var result: Array[Node]
 	for child in node.get_children():
-		if not is_object_of_type(child, type): continue
+		if not (is_value_of_type(child, type) or type.is_empty()): continue
 
 		result.push_back(child)
 		node.remove_child(child)

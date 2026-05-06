@@ -1,22 +1,21 @@
-
 extends ResourceSocket
 
 
 # These will be explicitly added, if they do not belong to this node's parent or any descendant.
-@export var manual_settings : Array[Node]
-var settings_cache : Array[Node]
+@export var manual_settings: Array[Node]
+var settings_cache: Array[Node]
 
 
 ## If set, the data will be stored here. If blank, do nothing. Typically, leave this blank for settings which are part of the actual game object, and then save everything in bulk. Consider setting this to something like "user://settings.json" for user preferences or settings.
-@export var storage_path : String :
-	get: return storage_resource.file_path if storage_resource else String()
+@export var storage_path: String:
+	get: return storage_resource.file_path_relative if storage_resource else String()
 	set(value):
 		if storage_resource == null: return
 
-		storage_resource.file_path = value
+		storage_resource.file_path_relative = value
 
 ## Determines when the resource should be saved to an [member storage_path]. If it's empty, this doesn't do anything.
-@export_enum("No Autosave", "On Self Hidden", "On Parent Hidden", "On Value Changed") var autosave : int = ON_VALUE_CHANGED
+@export_enum("No Autosave", "On Self Hidden", "On Parent Hidden", "On Value Changed") var autosave: int = ON_VALUE_CHANGED
 enum {
 	## This setting will not save_all automatically. Call [member commit()] on any setting in order to save_all changes to all settings with the same [member storage_path].
 	NO_AUTOSAVE,
@@ -29,10 +28,10 @@ enum {
 }
 
 ## If enabled, all overridden [Setting]s present in the saved file will have their values set from this resource. If disabled (or if no save file exists), the [Setting]s will update the resource instead.
-@export var autoload : bool = true
+@export var autoload: bool = true
 
 
-var storage_resource : JsonResource
+var storage_resource: JsonResource
 
 
 func _ready() -> void:
@@ -54,7 +53,6 @@ func _resource_value_changed() -> void:
 	if autoload and storage_resource:
 		storage_resource.load()
 		pull_all_settings_from_resource.call_deferred()
-
 
 
 func refresh_settings_cache() -> void:

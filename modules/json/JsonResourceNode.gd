@@ -4,13 +4,7 @@ class_name JsonResourceNode extends ResourceNode
 @export_global_file("*.json", "*.dat") var resource_initial_path: String
 
 func _ready() -> void:
-	if resource == null:
+	if resource == null and resource_initial_path:
 		resource = JsonResource.load_from_file(resource_initial_path)
 
 	super._ready()
-
-
-func save() -> void:
-	if resource == null: return
-
-	resource.save()

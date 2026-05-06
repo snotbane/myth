@@ -1,4 +1,4 @@
-## A resource which can be saved as, and loaded from, a JSON file. Useful for any kind of user save data. This does NOT provide any access to available save files on the system. Typical usage includes prompting for a file_path using [FileDialog] and then either saving or loading to a new [JsonResource] instance.
+## A resource which can be saved as, and loaded from, a JSON file. Useful for any kind of user save data. This does NOT provide any access to available save files on the system. Typical usage includes prompting for a file_path_relative using [FileDialog] and then either saving or loading to a new [JsonResource] instance.
 class_name JsonResource extends Resource
 
 #region Statics
@@ -200,95 +200,133 @@ static func _deserialize_object(json: Variant, context: Object = null) -> Object
 
 #region Signals
 
+## Emitted when [member _ready] is called.
+signal ready
+
 ## Emitted after the file has successfully been deleted from the file system.
 signal deleted
 
 #endregion
 
-## The file_path to save to. Make sure extension is included. If left blank, a random file_path located in `user://` will be assigned.
-@export var _file_path: String
+## The file_path_relative to save to, relative to [member parent_dir]. Make sure extension is included. If left blank, a random file_path_relative located in `user://` will be assigned.
+@export var _file_path_relative: String
 
-## The relative file path. Changing this will move the file on the system.
-var file_path: String:
-	get: return _file_path
-	set(value): file_path_absolute = parent_dir.path_join(value) if _parent else value
+## The file path, relative to [member parent_dir]. Changing this will move the file on the system.
+var file_path_relative: String:
+	get: return _file_path_relative
+	set(value): file_path = parent_dir.path_join(value) if _parent else value
 
-var file_dir: String:
-	get: return Myth.get_parent_folder(file_path)
-	set(value): file_path = value.path_join("%s.%s" % [file_name, file_ext])
+## The folder containing [member file_path_relative].
+var file_dir_relative: String:
+	get: return Myth.get_parent_folder(file_path_relative)
+	set(value): file_path_relative = value.path_join("%s.%s" % [file_name, file_ext])
 
+## The name of the file, without any extension.
 var file_name: String:
 	get:
-		var start = file_path.rfind("/")
-		return file_path.substr(start + 1, file_path.length() - (file_ext.length() + maxi(start, 0) + 2))
-	set(value): file_path = file_dir.path_join("%s.%s" % [value, file_ext])
+		var start = file_path_relative.rfind("/")
+		return file_path_relative.substr(start + 1, file_path_relative.length() - (file_ext.length() + maxi(start, 0) + 2))
+	set(value): file_path_relative = file_dir_relative.path_join("%s.%s" % [value, file_ext])
 
+## The file extension. Uses [String.get_extension].
 var file_ext: String:
-	get: return file_path.get_extension()
-	set(value): file_path = "%s.%s" % [file_path.substr(0, file_path.length() - (file_ext.length() + 1)), value]
+	get: return file_path_relative.get_extension()
+	set(value): file_path_relative = "%s.%s" % [file_path_relative.substr(0, file_path_relative.length() - (file_ext.length() + 1)), value]
 
+## The full file name, including name and extension, but no containing folder.
 var file_name_and_ext: String:
 	get: return "%s.%s" % [file_name, file_ext]
 
-var file_path_absolute: String:
-	get: return parent_dir.path_join(_file_path) if _parent else _file_path
+## The complete file path, including all parent directories. If the top directory is `res://`, `user://`, etc., that will be preserved.
+var file_path: String:
+	get: return parent_dir.path_join(_file_path_relative) if _parent else _file_path_relative
 	set(value):
-		var file_path_absolute_prev := file_path_absolute
-		if file_path_absolute_prev == value: return
+		var file_path_prev := file_path
+		if file_path_prev == value: return
 
 		_parent = find_parent_from_path(value)
-		_file_path = value.substr(parent_dir.length() + 1) if _parent else value
-		_save_as_dir = DirAccess.dir_exists_absolute(file_path_absolute)
+		_file_path_relative = value.substr(parent_dir.length() + 1) if _parent else value
+		_save_as_dir = DirAccess.dir_exists_absolute(file_path)
 
 		# if value.is_empty(): return
 
-		if FileAccess.file_exists(file_path_absolute_prev):
-			DirAccess.rename_absolute(file_path_absolute_prev, file_path_absolute)
+		if FileAccess.file_exists(file_path_prev):
+			DirAccess.rename_absolute(file_path_prev, file_path)
 
 		if save_as_dir:
-			DIRECTORY_RESOURCES.erase(file_path_absolute_prev)
-			DIRECTORY_RESOURCES[file_path_absolute] = self
+			DIRECTORY_RESOURCES.erase(file_path_prev)
+			DIRECTORY_RESOURCES[file_path] = self
 
+## The folder containing [member file_path].
+var file_dir: String:
+	get: return Myth.get_parent_folder(file_path)
+
+## The globalized version of [member file_path]. This will be different on each machine.
+var file_path_absolute: String:
+	get: return ProjectSettings.globalize_path(file_path)
+
+## The folder containing [member file_path_absolute]. This will be different on each machine.
 var file_dir_absolute: String:
 	get: return Myth.get_parent_folder(file_path_absolute)
 
-## If [member file_path_absolute] exists inside of another [JsonResource] that is [member save_as_dir], that resource will be the [member _parent].
+## If [member file_path] exists inside of another [JsonResource] that is [member save_as_dir], that resource will be the [member _parent].
 @export_storage var _parent: JsonResource
 var parent: JsonResource:
 	get: return _parent
 
+## If we have a [member parent], this is a shorthand for its file path. If no [member parent] exists, it will return [member file_dir_relative].
 var parent_dir: String:
-	get: return _parent.file_path_absolute if _parent else file_dir
+	get: return _parent.file_path if _parent else file_dir_relative
 
 
 var _save_as_dir: bool
-## If enabled, [member file_path] will actually refer to a directory, and all data will be stored in a file INSIDE this folder.
+## If enabled, [member file_path_relative] will actually refer to a directory, and all data will be stored in a file INSIDE this folder.
 @export var save_as_dir: bool:
 	get: return _save_as_dir
 	set(value):
 		if _save_as_dir == value: return
 
 		if _save_as_dir:
-			DIRECTORY_RESOURCES.erase(file_path_absolute)
+			DIRECTORY_RESOURCES.erase(file_path)
 
-		var data_path_absolute_prev := data_path_absolute
+		var data_path_absolute_prev := data_path
 		_save_as_dir = value
 
-		DirAccess.rename_absolute(data_path_absolute_prev, data_path_absolute)
+		DirAccess.rename_absolute(data_path_absolute_prev, data_path)
 
 		if _save_as_dir:
-			DIRECTORY_RESOURCES[file_path_absolute] = self
+			DIRECTORY_RESOURCES[file_path] = self
 
-var data_path: String = DATA_PATH
+## The path of the location of the actual JSON file, relative to [member file_path]. Only relevant if [member save_as_dir] is true
+var data_path_relative: String:
+	get: return DATA_PATH
 
+## The path of the actual JSON file. Only relevant if [member save_as_dir] is true, otherwise it will be the same as [member file_path].
+var data_path: String:
+	get: return file_path.path_join(data_path_relative) if save_as_dir else file_path
+
+## The folder containing the actual JSON file (usually the same as [member file_path], unless directly modified). Only relevant if [member save_as_dir] is true, otherwise it will be the same as [member file_dir].
+var data_dir: String:
+	get: return file_path if save_as_dir else file_dir
+
+## The globalized version of [member data_path]. This will be different on each machine.
 var data_path_absolute: String:
-	get: return file_path_absolute.path_join(data_path) if save_as_dir else file_path_absolute
+	get: return ProjectSettings.globalize_path(data_path)
 
+## The folder containing [member data_path_absolute]. This will be different on each machine.
 var data_dir_absolute: String:
-	get: return file_path_absolute if save_as_dir else file_dir_absolute
+	get: return Myth.get_parent_folder(data_path_absolute)
 
+## Whethor or not the actual JSON file exists.
 var file_exists: bool:
-	get: return FileAccess.file_exists(data_path_absolute)
+	get: return FileAccess.file_exists(data_path)
+
+## Returns true if the [member file_exists], and custom conditions defined in [member _get_is_valid] pass.
+var is_valid: bool:
+	get: return file_exists and _get_is_valid()
+
+## Custom implementation to check if the data is valid.
+func _get_is_valid() -> bool: return true
 
 
 var _aes: AESContext
@@ -307,11 +345,6 @@ var __encryption_password: String
 
 var _encryption_password_quantized: String:
 	get: return _encryption_password # TODO: ensure it's the same size as KEY_SIZE
-
-
-var is_valid: bool:
-	get: return (DirAccess.dir_exists_absolute(file_path_absolute) if save_as_dir else FileAccess.file_exists(file_path_absolute)) and _get_is_valid()
-func _get_is_valid() -> bool: return true
 
 
 @export_storage var time_created: int
@@ -348,27 +381,23 @@ func _loaded() -> void: pass
 func _touched() -> void: pass
 
 
-func shell_open() -> void:
-	if not file_exists: return
-	OS.shell_open(ProjectSettings.globalize_path(file_path_absolute))
-func shell_open_location() -> void:
-	OS.shell_open(Myth.get_parent_folder(ProjectSettings.globalize_path(file_path_absolute)))
-
-
+## Opens the JSON file for [FileAccess] use.
 func open(flags: FileAccess.ModeFlags) -> FileAccess:
-	return FileAccess.open(data_path_absolute, flags)
+	return FileAccess.open(data_path, flags)
 
 
-func touch(__file_path_absolute__: String = file_path_absolute) -> JsonResource:
-	file_path_absolute = __file_path_absolute__
+## Loads the [JsonResource] if it exists, or creates the file if it does not.
+func touch(__file_path__: String = file_path) -> JsonResource:
+	file_path = __file_path__
 	if file_exists:
 		return self.load()
 	else:
 		return self.save()
 
 
-func save(__file_path_absolute__: String = file_path_absolute, __save_as_dir__: bool = _save_as_dir) -> JsonResource:
-	file_path_absolute = __file_path_absolute__
+## Serializes object data, and saves the [JsonResource] to the file system.
+func save(__file_path__: String = file_path, __save_as_dir__: bool = _save_as_dir) -> JsonResource:
+	file_path = __file_path__
 	_save_as_dir = __save_as_dir__
 
 	var data_dir_touch_err := DirAccess.make_dir_recursive_absolute(data_dir_absolute)
@@ -393,6 +422,7 @@ func save(__file_path_absolute__: String = file_path_absolute, __save_as_dir__: 
 	if not _is_ready:
 		_ready()
 		_is_ready = true
+		ready.emit()
 
 	return self
 
@@ -420,8 +450,9 @@ func _save(file: FileAccess, json: String) -> void:
 	file.close()
 
 
-func load(__file_path_absolute__: String = file_path_absolute) -> JsonResource:
-	file_path_absolute = __file_path_absolute__
+## Loads the [JsonResource] from the file system, deserializes the JSON data, and updates object fields to match.
+func load(__file_path__: String = file_path) -> JsonResource:
+	file_path = __file_path__
 
 	var file := open(FileAccess.READ)
 	if file == null:
@@ -430,7 +461,7 @@ func load(__file_path_absolute__: String = file_path_absolute) -> JsonResource:
 
 	var json_string = _load(file)
 	var json = JSON.parse_string(json_string)
-	assert(json != null, "Couldn't parse string to json at file_path: %s" % data_path_absolute)
+	assert(json != null, "Couldn't parse string to json at file_path_relative: %s" % data_path)
 
 	deserialize(json, self )
 	_loaded()
@@ -439,6 +470,7 @@ func load(__file_path_absolute__: String = file_path_absolute) -> JsonResource:
 	if not _is_ready:
 		_ready()
 		_is_ready = true
+		ready.emit()
 
 	return self
 
@@ -465,27 +497,29 @@ func _load(file: FileAccess) -> String:
 	return result
 
 
-func reveal() -> void:
+## Opens [member data_path_absolute] using [OS.shell_open].
+func shell_open() -> void:
+	var err := OS.shell_open(data_path_absolute)
+	if err != OK:
+		printerr("Error opening JsonResource at '%s': code %s (%s)." % [file_path_absolute, err, error_string(err)])
+
+## Opens [member file_path_absolute] using [OS.shell_show_in_file_manager].
+func shell_reveal() -> void:
 	var err := OS.shell_show_in_file_manager(file_path_absolute)
 	if err != OK:
-		printerr("Error revealing JsonResource at '%s': code %s (%s)." % [file_path, err, tag_error_string(err)])
+		printerr("Error revealing JsonResource at '%s': code %s (%s)." % [file_path_relative, err, error_string(err)])
 
 
-func shopen() -> void:
-	var err := OS.shell_open(file_path_absolute)
-	if err != OK:
-		printerr("Error opening JsonResource at '%s': code %s (%s)." % [file_path, err, tag_error_string(err)])
-
-
-func move(to_dir_absolute: String) -> void:
-	if file_dir_absolute == to_dir_absolute:
+## Moves the file's location to a different directory.
+func move(to_dir: String) -> void:
+	if file_dir == to_dir:
 		return
 
-	file_path_absolute = to_dir_absolute.path_join(file_path)
+	file_path = to_dir.path_join(file_path_relative)
 
 
-## Copies the resource to be placed into a directory. [param hard] determines if all sub resources are copied (only applies if [member save_as_dir] is `true`).
-func copy(to_dir_absolute: String = file_dir_absolute, deep: bool = false) -> JsonResource:
+## Copies the resource to be placed into a directory. [param deep] determines if all sub resources are copied (only applies if [member save_as_dir] is `true`).
+func copy(to_dir_absolute: String = file_dir, deep: bool = false) -> JsonResource:
 	var result := duplicate(deep)
 	var path := generate_save_path(to_dir_absolute, generate_save_name(), file_ext)
 
@@ -494,10 +528,11 @@ func copy(to_dir_absolute: String = file_dir_absolute, deep: bool = false) -> Js
 	return result
 
 
+## Removes the JSON file from the file system. Generally, this [JsonResource] should stop being used after this is called.
 func delete() -> void:
-	var err := DirAccess.remove_absolute(file_path_absolute)
+	var err := DirAccess.remove_absolute(file_path)
 	if err != OK:
-		printerr("Error deleting JsonResource at '%s': code %s (%s)." % [file_path_absolute, err, tag_error_string(err)])
+		printerr("Error deleting JsonResource at '%s': code %s (%s)." % [file_path, err, error_string(err)])
 		return
 
 	deleted.emit()
@@ -532,16 +567,27 @@ func _init_tags() -> void:
 	tags = PackedStringArray()
 
 
+## Returns true if the given [param tag] exists in [member tags].
 func has_tag(tag: Variant) -> bool:
 	return tag in tags
+
+
+## Returns true if the given [param text] matches any tag in [member tags]. If [member tags] is an array of [String]s, this is equivalent to [member has_tag].
 func has_tag_by_name(text: String) -> bool:
-	return find_tag(text) != null
-func find_tag(text: String) -> Variant:
+	return find_tag_by_name(text) != null
+
+
+## Returns the first tag in [member tags] that matches the given [param text].
+func find_tag_by_name(text: String) -> Variant:
 	for tag in tags:
 		if _tag_matches_text(tag, text): return tag
 	return null
+
+
+## Custom override to check if a [Variant] [param tag] matches the given [param text]. By default, it assumes that [param tag] is a [String] (and [member tags] is an array of [String]s).
 func _tag_matches_text(tag, text: String) -> bool:
 	return tag == text
+
 
 ## Creates a new tag, assuming that it does not already exist. Returns an error if unsuccessful.
 func create_tag_by_name(text: String) -> int:
@@ -552,6 +598,7 @@ func create_tag_by_name(text: String) -> int:
 
 	_create_tag_by_name(text)
 	return OK
+
 
 ## Custom implementation for adding a tag by string name. Assumes that all validation checks have passed and the tag is formatted properly.
 func _create_tag_by_name(text: String) -> void:

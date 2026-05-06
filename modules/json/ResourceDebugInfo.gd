@@ -78,7 +78,7 @@ func _resource_changed() -> void:
 		_rich_text_label.append_text("Resource info cannot be retrieved; `resource` is null.")
 	else:
 		_rich_text_label.append_text(
-			("\"%s\": " % resource_node.resource.file_path_absolute)
+			("\"%s\": " % resource_node.resource.file_path)
 			if resource_node.resource is JsonResource else
 			("%s: " % str(resource_node.resource))
 		)

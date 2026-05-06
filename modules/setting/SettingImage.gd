@@ -1,14 +1,13 @@
-
 @tool class_name SettingImage extends Setting
 
 const BUTTON_MINIMUM_SIZE_DEFAULT := Vector2(32.0, 32.0)
 
-var image_label : Label
-var image_button : Button
+var image_label: Label
+var image_button: Button
 
-var image_panel : PanelContainer
-var image_scroll_container : ScrollContainer
-var image_grid : GridContainer
+var image_panel: PanelContainer
+var image_scroll_container: ScrollContainer
+var image_grid: GridContainer
 
 
 func _get_value() -> Variant:
@@ -56,10 +55,10 @@ func _init() -> void:
 	image_panel.visibility_changed.connect(_image_panel_visibility_changed)
 
 
-@export var collection : ResourceCollection
+@export var collection: ResourceCollection
 
-var _image : Texture2D
-@export_storage var image : Texture2D :
+var _image: Texture2D
+@export_storage var image: Texture2D:
 	get: return _image
 	set(value):
 		_image = value
@@ -69,7 +68,7 @@ var _image : Texture2D
 
 
 var _button_size_min := BUTTON_MINIMUM_SIZE_DEFAULT
-@export var button_size_min := BUTTON_MINIMUM_SIZE_DEFAULT :
+@export var button_size_min := BUTTON_MINIMUM_SIZE_DEFAULT:
 	get: return _button_size_min
 	set(value):
 		_button_size_min = value
@@ -80,12 +79,12 @@ var _button_size_min := BUTTON_MINIMUM_SIZE_DEFAULT
 		for child: Button in image_grid.get_children():
 			child.custom_minimum_size = _button_size_min
 
-@export var grid_columns : int = 5 :
+@export var grid_columns: int = 5:
 	get: return image_grid.columns
 	set(value): image_grid.columns = value
 
-var _grid_rows : int = 5
-@export var grid_rows : int = 5 :
+var _grid_rows: int = 5
+@export var grid_rows: int = 5:
 	get: return _grid_rows
 	set(value):
 		_grid_rows = value
@@ -96,9 +95,8 @@ func _ready() -> void:
 
 func refresh() -> void:
 	if collection:
-
 		for i in collection.resources.size():
-			var texture : Texture2D = collection.resources[i]
+			var texture: Texture2D = collection.resources[i]
 			if texture == null: continue
 
 			var button := Button.new()
@@ -127,5 +125,3 @@ func _image_panel_visibility_changed() -> void:
 func _image_grid_button_pressed(idx: int) -> void:
 	image = collection.resources[idx]
 	image_panel.hide()
-
-

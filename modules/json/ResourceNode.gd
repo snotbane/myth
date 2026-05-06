@@ -5,10 +5,13 @@ class_name ResourceNode extends Node
 static func get_nearest_ancestor_sibling(node: Node, type: String = "ResourceNode") -> ResourceNode:
 	return Myth.find_ancestor_sibling_of_type(node, type, true)
 
+
 static func get_nearest_descendent(node: Node, type: String = "ResourceNode") -> ResourceNode:
 	return Myth.find_descendant_of_type(node, type, true)
 
-static func add_child_socket(node: Node, fallback_type: int = 1) -> ResourceNode:
+
+## Adds a child [ResourceNode] to the given [param node]. If the [param node] has a member function [member _resource_changed], it will be connected to the child's [member resource_changed] signal.
+static func add_child_socket(node: Node, fallback_type: int = 2) -> ResourceNode:
 	var result := ResourceNode.new()
 	result.fallback_type = fallback_type
 	node.add_child(result)
@@ -18,6 +21,7 @@ static func add_child_socket(node: Node, fallback_type: int = 1) -> ResourceNode
 
 
 signal resource_changed
+
 
 var _resource: Resource
 @export var resource: Resource:
@@ -39,7 +43,7 @@ var _resource: Resource
 
 		emit_resource_changed()
 
-@export_enum("None", "Ancestor", "Descendant") var fallback_type: int:
+@export_enum("None", "Descendant", "Ancestor", "Ancestor or Sibling") var fallback_type: int:
 	set(value):
 		fallback_type = value
 		if not is_node_ready(): return
@@ -49,13 +53,17 @@ var _resource: Resource
 
 		match value:
 			0: fallback_node = null
-			1: fallback_node = Myth.find_ancestor_sibling_of_type(self , "ResourceNode", true)
-			2: fallback_node = Myth.find_descendant_of_type(self , "ResourceNode", true)
+			1: fallback_node = Myth.find_descendant_of_type(self , "ResourceNode", true)
+			2: fallback_node = Myth.find_ancestor_sibling_of_type(self , "ResourceNode", true, false)
+			3: fallback_node = Myth.find_ancestor_sibling_of_type(self , "ResourceNode", true, true)
 
 		if fallback_node:
 			fallback_node.resource_changed.connect(fallback_resource_changed)
 
 		fallback_resource_changed()
+
+
+@export_enum("Do Nothing", "Hide Parent", "Show Parent") var when_resource_is_null: int = 0
 
 
 var fallback_node: ResourceNode
@@ -69,10 +77,15 @@ func _ready() -> void:
 	resource = resource
 	fallback_type = fallback_type
 
+
 func fallback_resource_changed() -> void:
 	if _resource: return
 	emit_resource_changed()
 func emit_resource_changed() -> void:
+	match when_resource_is_null:
+		1: get_parent().visible = resource != null
+		2: get_parent().visible = resource == null
+
 	_resource_changed()
 	resource_changed.emit()
 func _resource_changed() -> void: pass
