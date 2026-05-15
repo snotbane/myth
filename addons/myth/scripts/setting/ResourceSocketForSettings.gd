@@ -43,7 +43,7 @@ func _resource_value_changed() -> void:
 	if _resource is JsonResource:
 		storage_resource = _resource
 	elif not storage_path.is_empty():
-		storage_resource = JsonResource.new(storage_path, false)
+		storage_resource = JsonResource.new()
 		storage_resource.data[&"resource"] = resource
 	else:
 		storage_resource = null

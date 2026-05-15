@@ -1,0 +1,46 @@
+[gd_scene format=3 uid="uid://qaeefni22cwm"]
+
+[ext_resource type="Script" uid="uid://c7hcf3fykjk88" path="res://addons/myth/scripts/json/SettingContainer.gd" id="1_t2hvj"]
+[ext_resource type="Script" uid="uid://bvp4qvuvvars2" path="res://addons/myth/scripts/json/SettingLayoutGroup.gd" id="2_axiek"]
+[ext_resource type="Script" uid="uid://d3f8jstcrmiht" path="res://addons/myth/scripts/json/ResourcePropertyNode.gd" id="3_ep0bq"]
+
+[sub_resource type="Resource" id="Resource_jclyu"]
+resource_local_to_scene = true
+script = ExtResource("2_axiek")
+metadata/_custom_type_script = "uid://bvp4qvuvvars2"
+
+[node name="Settings" type="Control" unique_id=1989541124]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PanelContainer" type="PanelContainer" parent="." unique_id=787431364]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer" unique_id=1154447213]
+layout_mode = 2
+
+[node name="SettingContainer" type="HBoxContainer" parent="PanelContainer/VBoxContainer" unique_id=703152058]
+custom_minimum_size = Vector2(0, 31)
+layout_mode = 2
+size_flags_horizontal = 3
+script = ExtResource("1_t2hvj")
+label_text = "Your Mom"
+layout_group = SubResource("Resource_jclyu")
+metadata/_custom_type_script = "uid://c7hcf3fykjk88"
+
+[node name="LineEdit" type="LineEdit" parent="PanelContainer/VBoxContainer/SettingContainer" unique_id=1540890739]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ResourcePropertyNode" type="Node" parent="PanelContainer/VBoxContainer/SettingContainer/LineEdit" unique_id=1281091696]
+script = ExtResource("3_ep0bq")
+metadata/_custom_type_script = "uid://d3f8jstcrmiht"

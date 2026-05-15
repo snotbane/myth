@@ -35,10 +35,12 @@ var reset_button: Button
 @export_enum("Disabled", "Use Layout Group", "Enabled") var reset_mode: int = 1:
 	set(value):
 		reset_mode = value
-		match value:
-			0: reset_container.visible = false
-			1: reset_container.visible = layout_group.reset_enabled if layout_group else false
-			2: reset_container.visible = true
+		refresh_reset_container_visibility()
+func refresh_reset_container_visibility() -> void:
+	match reset_mode:
+		0: reset_container.visible = false
+		1: reset_container.visible = layout_group.reset_enabled if layout_group else false
+		2: reset_container.visible = true
 
 
 @export var reset_icon: Texture2D = RESET_ICON:

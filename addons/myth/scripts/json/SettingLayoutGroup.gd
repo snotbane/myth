@@ -5,7 +5,12 @@
 		same_height = value
 		update_users_minimum_size()
 
-@export var reset_enabled: bool = false
+@export var reset_enabled: bool = false:
+	set(value):
+		reset_enabled = value
+		for user in users:
+			if user is not SettingContainer or user.reset_mode != 1: continue
+			user.refresh_reset_container_visibility()
 
 var users: Array[Control]
 
