@@ -9,6 +9,7 @@ static var AUTO_PROPERTIES: Dictionary = {
 	&"icon": [&"Texture2D", &"icon_changed"],
 	&"text": [&"String", &"text_changed"],
 	&"value": [&"int", &"value_changed"],
+	&"selected": [&"int", &"item_selected"],
 	&"action": [&"Dictionary", &"action_changed"]
 }
 

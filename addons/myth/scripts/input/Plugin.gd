@@ -1,4 +1,4 @@
-@tool class_name MythPlugin_Setting extends EditorPlugin
+@tool class_name MythPlugin_Input extends EditorPlugin
 
 func _ready() -> void:
 	touch_settings()
