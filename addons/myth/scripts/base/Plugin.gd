@@ -1,4 +1,3 @@
-
 @tool class_name MythPlugin extends EditorPlugin
 
 const INPUT_QUIT := &"quit"
@@ -41,7 +40,7 @@ func configure_input() -> void:
 	fullscreen_1.physical_keycode = KEY_F
 	fullscreen_1.ctrl_pressed = true
 	fullscreen_1.command_or_control_autoremap = true
-	MythPlugin.add_default_input_binding(SettingWindowMode.SETTING_INPUT_FULLSCREEN, [
+	MythPlugin.add_default_input_binding(WindowModeSelector.SETTING_INPUT_FULLSCREEN, [
 		fullscreen_0,
 		fullscreen_1,
 	])
