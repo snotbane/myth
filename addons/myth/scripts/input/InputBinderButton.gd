@@ -45,7 +45,7 @@ var event: InputEvent:
 			_refresh_modifiers()
 
 			if is_node_ready():
-				_check_duplicates()
+				check_duplicates()
 
 			_refresh_warnings()
 			event.changed.connect(_refresh_display)
@@ -203,14 +203,10 @@ func _refresh_warnings() -> void:
 
 
 ## Removes any duplicate events, keeping this one.
-func _check_duplicates(exact_match: bool = true) -> void:
+func check_duplicates(exact_match: bool = true) -> void:
 	if event == null: return
 
 	for other: InputBinderButton in input.event_buttons:
-		print("self : %s" % [ self ])
-		print("other : %s" % [other])
-		print("self.event : %s" % [ self.event])
-		print("other.event : %s" % [other.event])
 		if self == other or other.event == null or not event.is_match(other.event, exact_match): continue
 
 		other.event = null
