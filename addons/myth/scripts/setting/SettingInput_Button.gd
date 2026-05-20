@@ -1,4 +1,3 @@
-
 @tool class_name SettingInput_Button extends Button
 
 enum {
@@ -9,7 +8,7 @@ enum {
 
 const WARNING_ICON_TEXTURE := preload("uid://ebpefvkwjfwm")
 
-const ALLOWED_INPUT_CLASSES : PackedStringArray = [
+const ALLOWED_INPUT_CLASSES: PackedStringArray = [
 	"InputEventJoypadButton",
 	"InputEventJoypadMotion",
 	"InputEventKey",
@@ -18,12 +17,12 @@ const ALLOWED_INPUT_CLASSES : PackedStringArray = [
 
 signal remapped
 
-var pref : SettingInput
+var pref: SettingInput
 
-var read_only : bool
+var read_only: bool
 
-var _event : InputEvent
-var event : InputEvent :
+var _event: InputEvent
+var event: InputEvent:
 	get: return _event
 	set(value):
 		_event = value
@@ -36,20 +35,20 @@ var event : InputEvent :
 
 		remapped.emit()
 
-var _displayed_event : InputEvent
-var displayed_event : InputEvent :
+var _displayed_event: InputEvent
+var displayed_event: InputEvent:
 	get: return _displayed_event if _displayed_event else event
 	set(value):
 		_displayed_event = value
 		_refresh_event()
 
-var warning_icon : TextureRect
+var warning_icon: TextureRect
 
 
-var conflict_buttons : Array[SettingInput_Button]
+var conflict_buttons: Array[SettingInput_Button]
 
 
-func _init(__pref__: SettingInput, __event__: InputEvent = null, create_type : int = BEGIN_REMAP) -> void:
+func _init(__pref__: SettingInput, __event__: InputEvent = null, create_type: int = BEGIN_REMAP) -> void:
 	size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	toggle_mode = true
 	text_overrun_behavior = TextServer.OVERRUN_TRIM_WORD_ELLIPSIS_FORCE
@@ -97,7 +96,7 @@ func _exit_tree() -> void:
 
 
 func _refresh_event() -> void:
-	if InputLocalization.apply_to(self): pass
+	if InputLocalization.apply_to(self ): pass
 	else:
 		icon = null
 		text = "..." if button_pressed else event.as_text()
@@ -130,16 +129,15 @@ func _refresh_disabled() -> void:
 	disabled = read_only or get_index() < pref.disabled_bindings
 
 
-
 #region Conflicts
 
-var is_conflict_exempt : bool :
-	get: return not visible or event == null or is_queued_for_deletion() #or pref.binding_group == null # Redundant.
+var is_conflict_exempt: bool:
+	get: return not visible or event == null or is_queued_for_deletion() # or pref.binding_group == null # Redundant.
 func is_not_conflicting_with(other: SettingInput_Button, exact_match := true) -> bool:
 	return (
 			other == null or self == other
-		or	self.is_conflict_exempt or other.is_conflict_exempt
-		or	not self.event.is_match(other.event, exact_match)
+		or self.is_conflict_exempt or other.is_conflict_exempt
+		or not self.event.is_match(other.event, exact_match)
 	)
 
 
@@ -173,8 +171,8 @@ func create_conflict_with(other: SettingInput_Button) -> void:
 
 	if other == null: return
 
-	if not other.conflict_buttons.has(self):
-		other.conflict_buttons.push_back(self)
+	if not other.conflict_buttons.has(self ):
+		other.conflict_buttons.push_back(self )
 		other._refresh_conflict()
 
 
@@ -184,7 +182,7 @@ func resolve_conflict_with(other: SettingInput_Button) -> void:
 
 	if other == null: return
 
-	other.conflict_buttons.erase(self)
+	other.conflict_buttons.erase(self )
 	other._refresh_conflict()
 
 

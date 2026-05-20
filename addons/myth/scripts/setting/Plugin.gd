@@ -1,4 +1,3 @@
-
 @tool class_name MythPlugin_Setting extends EditorPlugin
 
 func _ready() -> void:
@@ -13,8 +12,8 @@ func _enable_plugin() -> void:
 
 func touch_settings() -> void:
 	if not ProjectSettings.has_setting(InputLocalization.PROJECT_SETTING_HINT[&"name"]):
-		ProjectSettings.set_setting(InputLocalization.PROJECT_SETTING_HINT[&"name"], "uid://by4uei1ro2t8y")
-		ProjectSettings.set_initial_value(InputLocalization.PROJECT_SETTING_HINT[&"name"], "uid://by4uei1ro2t8y")
+		ProjectSettings.set_setting(InputLocalization.PROJECT_SETTING_HINT[&"name"], "")
+		ProjectSettings.set_initial_value(InputLocalization.PROJECT_SETTING_HINT[&"name"], "")
 		ProjectSettings.add_property_info(InputLocalization.PROJECT_SETTING_HINT)
 		ProjectSettings.save()
 

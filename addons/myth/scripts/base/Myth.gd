@@ -115,7 +115,7 @@ static func is_value_of_type(value, type: String) -> bool:
 
 			return false
 		_:
-			return type_string(value) == type
+			return type_string(typeof(value)) == type
 
 
 ## Searches up the parental hierarchy until it finds a [Node] whose class or script matches the specified [type].

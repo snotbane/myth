@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://2wdilwbr64ns"]
+
+[ext_resource type="Script" uid="uid://dpuhwhjc70rag" path="res://addons/myth/scripts/input/InputBinderRemap.gd" id="1_jedka"]
+
+[node name="InputBinderRemap" type="Node" unique_id=172813472]
+script = ExtResource("1_jedka")

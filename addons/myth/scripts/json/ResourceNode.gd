@@ -28,7 +28,7 @@ var _resource: Resource
 	get: return _resource if _resource else fallback_resource
 	set(value):
 		if _resource:
-			_resource.changed.disconnect(emit_resource_changed)
+			_resource.changed.disconnect(on_resource_changed)
 			for sig in resource_signals:
 				for callable: Callable in resource_signals[sig]:
 					_resource.disconnect(sig, callable)
@@ -36,12 +36,12 @@ var _resource: Resource
 		_resource = value
 
 		if _resource:
-			_resource.changed.connect(emit_resource_changed)
+			_resource.changed.connect(on_resource_changed)
 			for sig in resource_signals:
 				for callable: Callable in resource_signals[sig]:
 					_resource.connect(sig, callable)
 
-		emit_resource_changed()
+		on_resource_changed()
 
 @export_enum("None", "Descendant", "Ancestor", "Ancestor or Sibling") var fallback_type: int:
 	set(value):
@@ -49,7 +49,7 @@ var _resource: Resource
 		if not is_node_ready(): return
 
 		if fallback_node:
-			fallback_node.resource_changed.disconnect(fallback_resource_changed)
+			fallback_node.resource_changed.disconnect(on_fallback_resource_changed)
 
 		match value:
 			0: fallback_node = null
@@ -58,9 +58,9 @@ var _resource: Resource
 			3: fallback_node = Myth.find_ancestor_sibling_of_type(self , "ResourceNode", true, true)
 
 		if fallback_node:
-			fallback_node.resource_changed.connect(fallback_resource_changed)
+			fallback_node.resource_changed.connect(on_fallback_resource_changed)
 
-		fallback_resource_changed()
+		on_fallback_resource_changed()
 
 
 @export_enum("Do Nothing", "Hide Parent", "Show Parent") var when_resource_is_null: int = 0
@@ -78,10 +78,13 @@ func _ready() -> void:
 	fallback_type = fallback_type
 
 
-func fallback_resource_changed() -> void:
-	if _resource: return
-	emit_resource_changed()
 func emit_resource_changed() -> void:
+	if resource == null: return
+	resource.changed.emit()
+func on_fallback_resource_changed() -> void:
+	if _resource: return
+	on_resource_changed()
+func on_resource_changed() -> void:
 	match when_resource_is_null:
 		1: get_parent().visible = resource != null
 		2: get_parent().visible = resource == null

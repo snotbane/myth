@@ -97,6 +97,7 @@ func _init() -> void:
 
 func _ready() -> void:
 	layout_match_group_height = layout_match_group_height
+	refresh_reset_container_visibility()
 
 	reset_container.custom_minimum_size = reset_button.get_combined_minimum_size()
 

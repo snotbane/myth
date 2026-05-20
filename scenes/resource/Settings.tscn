@@ -1,8 +1,16 @@
 [gd_scene format=3 uid="uid://qaeefni22cwm"]
 
+[ext_resource type="Script" uid="uid://coksmubhy87xv" path="res://addons/myth/scripts/json/JsonResourceNode.gd" id="1_ep0bq"]
 [ext_resource type="Script" uid="uid://c7hcf3fykjk88" path="res://addons/myth/scripts/json/SettingContainer.gd" id="1_t2hvj"]
 [ext_resource type="Script" uid="uid://bvp4qvuvvars2" path="res://addons/myth/scripts/json/SettingLayoutGroup.gd" id="2_axiek"]
 [ext_resource type="Script" uid="uid://d3f8jstcrmiht" path="res://addons/myth/scripts/json/ResourcePropertyNode.gd" id="3_ep0bq"]
+[ext_resource type="Script" uid="uid://ckcd6xukn3h6u" path="res://scenes/resource/TestResourceA.gd" id="4_axiek"]
+[ext_resource type="Script" uid="uid://bgsuunw8n3e3" path="res://addons/myth/scripts/input/InputBinder.gd" id="6_jclyu"]
+
+[sub_resource type="Resource" id="Resource_yxrdi"]
+script = ExtResource("4_axiek")
+tags = null
+metadata/_custom_type_script = "uid://ckcd6xukn3h6u"
 
 [sub_resource type="Resource" id="Resource_jclyu"]
 resource_local_to_scene = true
@@ -17,18 +25,38 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="PanelContainer" type="PanelContainer" parent="." unique_id=787431364]
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=1046426519]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
 
-[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer" unique_id=1154447213]
+[node name="PanelContainer" type="PanelContainer" parent="MarginContainer" unique_id=787431364]
 layout_mode = 2
 
-[node name="SettingContainer" type="HBoxContainer" parent="PanelContainer/VBoxContainer" unique_id=703152058]
+[node name="JsonResourceNode" type="Node" parent="MarginContainer/PanelContainer" unique_id=1088886198]
+script = ExtResource("1_ep0bq")
+resource_initial_path = "user://test.json"
+resource = SubResource("Resource_yxrdi")
+metadata/_custom_type_script = "uid://coksmubhy87xv"
+
+[node name="MarginContainer" type="MarginContainer" parent="MarginContainer/PanelContainer" unique_id=1864429814]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/PanelContainer/MarginContainer" unique_id=1154447213]
+layout_mode = 2
+
+[node name="SettingContainer" type="HBoxContainer" parent="MarginContainer/PanelContainer/MarginContainer/VBoxContainer" unique_id=703152058]
 custom_minimum_size = Vector2(0, 31)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -37,10 +65,61 @@ label_text = "Your Mom"
 layout_group = SubResource("Resource_jclyu")
 metadata/_custom_type_script = "uid://c7hcf3fykjk88"
 
-[node name="LineEdit" type="LineEdit" parent="PanelContainer/VBoxContainer/SettingContainer" unique_id=1540890739]
+[node name="LineEdit" type="LineEdit" parent="MarginContainer/PanelContainer/MarginContainer/VBoxContainer/SettingContainer" unique_id=1540890739]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="ResourcePropertyNode" type="Node" parent="PanelContainer/VBoxContainer/SettingContainer/LineEdit" unique_id=1281091696]
+[node name="ResourcePropertyNode" type="Node" parent="MarginContainer/PanelContainer/MarginContainer/VBoxContainer/SettingContainer/LineEdit" unique_id=1281091696 node_paths=PackedStringArray("node_target")]
 script = ExtResource("3_ep0bq")
+resource_property_name = &"text"
+node_target = NodePath("..")
+fallback_type = 2
 metadata/_custom_type_script = "uid://d3f8jstcrmiht"
+
+[node name="SettingContainer2" type="HBoxContainer" parent="MarginContainer/PanelContainer/MarginContainer/VBoxContainer" unique_id=1053023858]
+custom_minimum_size = Vector2(0, 31)
+layout_mode = 2
+size_flags_horizontal = 3
+script = ExtResource("1_t2hvj")
+label_text = "Your Mom 2"
+layout_group = SubResource("Resource_jclyu")
+metadata/_custom_type_script = "uid://c7hcf3fykjk88"
+
+[node name="LineEdit" type="LineEdit" parent="MarginContainer/PanelContainer/MarginContainer/VBoxContainer/SettingContainer2" unique_id=1810641941]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ResourcePropertyNode" type="Node" parent="MarginContainer/PanelContainer/MarginContainer/VBoxContainer/SettingContainer2/LineEdit" unique_id=777327793]
+script = ExtResource("3_ep0bq")
+resource_property_name = &"text"
+fallback_type = 2
+metadata/_custom_type_script = "uid://d3f8jstcrmiht"
+
+[node name="SettingContainer3" type="HBoxContainer" parent="MarginContainer/PanelContainer/MarginContainer/VBoxContainer" unique_id=83156363]
+layout_mode = 2
+size_flags_horizontal = 3
+script = ExtResource("1_t2hvj")
+label_text = "Test 1"
+metadata/_custom_type_script = "uid://c7hcf3fykjk88"
+
+[node name="InputBinder" type="BoxContainer" parent="MarginContainer/PanelContainer/MarginContainer/VBoxContainer/SettingContainer3" unique_id=1076217418]
+layout_mode = 2
+size_flags_horizontal = 3
+script = ExtResource("6_jclyu")
+input_name = &"test_1"
+conflict_enabled = false
+metadata/_custom_type_script = "uid://bgsuunw8n3e3"
+
+[node name="ResourcePropertyNode" type="Node" parent="MarginContainer/PanelContainer/MarginContainer/VBoxContainer/SettingContainer3/InputBinder" unique_id=315915706]
+script = ExtResource("3_ep0bq")
+resource_property_name = &"text"
+fallback_type = 2
+metadata/_custom_type_script = "uid://d3f8jstcrmiht"
+
+[node name="save" type="Button" parent="MarginContainer/PanelContainer/MarginContainer/VBoxContainer" unique_id=728981]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Save"
+
+[connection signal="resource_changed" from="MarginContainer/PanelContainer/MarginContainer/VBoxContainer/SettingContainer2/LineEdit/ResourcePropertyNode" to="MarginContainer/PanelContainer/MarginContainer/VBoxContainer/SettingContainer2/LineEdit/ResourcePropertyNode" method="test"]
+[connection signal="resource_changed" from="MarginContainer/PanelContainer/MarginContainer/VBoxContainer/SettingContainer3/InputBinder/ResourcePropertyNode" to="MarginContainer/PanelContainer/MarginContainer/VBoxContainer/SettingContainer3/InputBinder/ResourcePropertyNode" method="test"]

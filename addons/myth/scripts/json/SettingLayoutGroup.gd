@@ -10,12 +10,15 @@
 		reset_enabled = value
 		for user in users:
 			if user is not SettingContainer or user.reset_mode != 1: continue
+			print("user : %s" % [user])
 			user.refresh_reset_container_visibility()
 
 var users: Array[Control]
 
 var minimum_height: float:
 	get:
+		_flush_null_users()
+
 		var result := 0.0
 		for user in users:
 			result = maxf(result, user.get_minimum_size().y)
@@ -56,12 +59,6 @@ func _flush_null_users() -> void:
 	while users.has(null):
 		users.erase(null)
 
-	var to_remove = null
-	for user in users:
-		if user is Setting: continue
-		if to_remove == null: to_remove = []
-		to_remove.push_back(user)
-	if to_remove == null: return
-
-	for user in to_remove:
+	for user in users.duplicate():
+		if user is SettingContainer: continue
 		users.erase(user)
