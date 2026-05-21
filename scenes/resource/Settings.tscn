@@ -66,30 +66,14 @@ label_text = "Your Mom"
 layout_group = SubResource("Resource_jclyu")
 metadata/_custom_type_script = "uid://c7hcf3fykjk88"
 
-[node name="window_mode" type="OptionButton" parent="MarginContainer/PanelContainer/MarginContainer/VBoxContainer/SettingContainer" unique_id=712592800]
+[node name="window_mode" type="Control" parent="MarginContainer/PanelContainer/MarginContainer/VBoxContainer/SettingContainer" unique_id=151465463]
+process_mode = 1
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
 size_flags_horizontal = 3
-selected = 0
-item_count = 5
-popup/item_0/text = "Windowed"
-popup/item_0/id = 0
-popup/item_1/text = "Minimized"
-popup/item_1/id = 1
-popup/item_2/text = "Maximized"
-popup/item_2/id = 2
-popup/item_3/text = "Borderless"
-popup/item_3/id = 3
-popup/item_4/text = "Exclusive"
-popup/item_4/id = 4
+focus_mode = 2
 script = ExtResource("5_yxrdi")
-input_name = null
-labels = null
-selectable_modes = null
-default_windowed_mode = null
-default_fullscreen_mode = null
-startup_mode = null
-metadata/_custom_type_script = "uid://cu8dfaktbh2ki"
+labels = PackedStringArray("Windowed", "Minimized", "Maximized", "Borderless", "Exclusive")
 
 [node name="SettingContainer4" type="HBoxContainer" parent="MarginContainer/PanelContainer/MarginContainer/VBoxContainer" unique_id=442362131]
 custom_minimum_size = Vector2(0, 31)

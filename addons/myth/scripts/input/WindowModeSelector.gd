@@ -1,9 +1,21 @@
-@tool class_name WindowModeSelector extends OptionButton
+## Contains an automatically-handled [OptionButton] that changes [member Window.mode] when interacted by the user.
+@tool class_name WindowModeSelector extends Control
 
 const INPUT_FULLSCREEN := &"fullscreen"
 const SETTING_INPUT_FULLSCREEN := "input/" + INPUT_FULLSCREEN
 
+signal item_selected(idx: int)
+
+## The name of the input action which controls the window mode for this option. The action is handled here, so best to keep this node present and processing at all times.
 @export_custom(PROPERTY_HINT_INPUT_NAME, "loose_mode") var input_name: StringName = &"fullscreen"
+
+
+@export_range(0, 5, 1) var selected: int:
+	get: return option.selected
+	set(value):
+		option.selected = value
+		option.item_selected.emit(option.selected)
+
 
 @export var labels: PackedStringArray = [
 	"Windowed",
@@ -17,24 +29,23 @@ const SETTING_INPUT_FULLSCREEN := "input/" + INPUT_FULLSCREEN
 @export_flags("Windowed:1", "Minimized:2", "Maximized:4", "Borderless:8", "Exclusive:16") var selectable_modes: int = 25:
 	set(value):
 		selectable_modes = value
-
-		clear()
+		option.clear()
 
 		if selectable_modes & 1:
-			add_item(labels[Window.Mode.MODE_WINDOWED])
-			set_item_id(item_count - 1, Window.Mode.MODE_WINDOWED)
+			option.add_item(labels[Window.Mode.MODE_WINDOWED])
+			option.set_item_id(option.item_count - 1, Window.Mode.MODE_WINDOWED)
 		if selectable_modes & 2:
-			add_item(labels[Window.Mode.MODE_MINIMIZED])
-			set_item_id(item_count - 1, Window.Mode.MODE_MINIMIZED)
+			option.add_item(labels[Window.Mode.MODE_MINIMIZED])
+			option.set_item_id(option.item_count - 1, Window.Mode.MODE_MINIMIZED)
 		if selectable_modes & 4:
-			add_item(labels[Window.Mode.MODE_MAXIMIZED])
-			set_item_id(item_count - 1, Window.Mode.MODE_MAXIMIZED)
+			option.add_item(labels[Window.Mode.MODE_MAXIMIZED])
+			option.set_item_id(option.item_count - 1, Window.Mode.MODE_MAXIMIZED)
 		if selectable_modes & 8:
-			add_item(labels[Window.Mode.MODE_FULLSCREEN])
-			set_item_id(item_count - 1, Window.Mode.MODE_FULLSCREEN)
+			option.add_item(labels[Window.Mode.MODE_FULLSCREEN])
+			option.set_item_id(option.item_count - 1, Window.Mode.MODE_FULLSCREEN)
 		if selectable_modes & 16:
-			add_item(labels[Window.Mode.MODE_EXCLUSIVE_FULLSCREEN])
-			set_item_id(item_count - 1, Window.Mode.MODE_EXCLUSIVE_FULLSCREEN)
+			option.add_item(labels[Window.Mode.MODE_EXCLUSIVE_FULLSCREEN])
+			option.set_item_id(option.item_count - 1, Window.Mode.MODE_EXCLUSIVE_FULLSCREEN)
 
 
 @export var default_windowed_mode := Window.Mode.MODE_WINDOWED
@@ -58,6 +69,7 @@ enum StartupMode {
 }
 
 
+var option: OptionButton
 var windowed_mode: Window.Mode
 var fullscreen_mode: Window.Mode
 
@@ -70,20 +82,31 @@ var is_fullscreen: bool:
 
 
 var ignore_events: bool:
-	get: return Engine.is_editor_hint() or get_window() == null
+	get: return Engine.is_editor_hint() or option == null or get_window() == null
 
 
 func select_mode(mode: Window.Mode) -> void:
-	for i in item_count:
-		if get_item_id(i) != mode: continue
+	for i in option.item_count:
+		if option.get_item_id(i) != mode: continue
 
-		select(i)
-		item_selected.emit(i)
+		option.select(i)
+		option.item_selected.emit(i)
 		break
 
 
 func _init() -> void:
+	option = OptionButton.new()
+	option.set_anchors_preset(PRESET_FULL_RECT)
+	add_child(option)
+
 	selectable_modes = selectable_modes
+	option.selected = 0
+
+	option.item_selected.connect(item_selected.emit)
+
+
+func _get_minimum_size() -> Vector2:
+	return option.get_minimum_size()
 
 
 func _ready() -> void:
@@ -119,11 +142,11 @@ func _item_selected(idx: int) -> void:
 
 	if not _started_up: return
 
-	get_window().mode = get_item_id(selected)
+	get_window().mode = option.get_item_id(selected)
 
 
 func _notification(what: int) -> void:
-	if button_pressed or ignore_events: return
+	if option == null or option.button_pressed or ignore_events: return
 
 	match what:
 		NOTIFICATION_WM_WINDOW_FOCUS_IN, NOTIFICATION_WM_WINDOW_FOCUS_OUT:
