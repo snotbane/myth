@@ -82,7 +82,7 @@ var is_fullscreen: bool:
 
 
 var ignore_events: bool:
-	get: return Engine.is_editor_hint() or option == null or get_window() == null
+	get: return Engine.is_editor_hint() or get_window() == null
 
 
 func select_mode(mode: Window.Mode) -> void:
@@ -146,7 +146,7 @@ func _item_selected(idx: int) -> void:
 
 
 func _notification(what: int) -> void:
-	if option.button_pressed or ignore_events: return
+	if option == null or option.button_pressed or ignore_events: return
 
 	match what:
 		NOTIFICATION_WM_WINDOW_FOCUS_IN, NOTIFICATION_WM_WINDOW_FOCUS_OUT:

@@ -5,8 +5,8 @@
 [ext_resource type="Script" uid="uid://bvp4qvuvvars2" path="res://addons/myth/scripts/json/SettingLayoutGroup.gd" id="2_axiek"]
 [ext_resource type="Script" uid="uid://d3f8jstcrmiht" path="res://addons/myth/scripts/json/ResourcePropertyNode.gd" id="3_ep0bq"]
 [ext_resource type="Script" uid="uid://ckcd6xukn3h6u" path="res://scenes/resource/TestResourceA.gd" id="4_axiek"]
-[ext_resource type="Script" uid="uid://cu8dfaktbh2ki" path="res://addons/myth/scripts/input/WindowModeSelector.gd" id="5_yxrdi"]
-[ext_resource type="Script" uid="uid://dwm22iqtauis3" path="res://addons/myth/scripts/input/WindowFocusAudioBusMuter.gd" id="6_7u362"]
+[ext_resource type="Script" uid="uid://cu8dfaktbh2ki" path="res://addons/myth/scripts/misc/WindowModeSelector.gd" id="5_yxrdi"]
+[ext_resource type="Script" uid="uid://dwm22iqtauis3" path="res://addons/myth/scripts/misc/WindowFocusAudioBusMuter.gd" id="6_7u362"]
 [ext_resource type="Script" uid="uid://bgsuunw8n3e3" path="res://addons/myth/scripts/input/InputBinder.gd" id="6_jclyu"]
 [ext_resource type="AudioStream" uid="uid://x6g2cjajafls" path="res://scenes/cheese_00.ogg" id="9_kfwal"]
 
