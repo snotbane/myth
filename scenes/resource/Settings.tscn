@@ -6,7 +6,9 @@
 [ext_resource type="Script" uid="uid://d3f8jstcrmiht" path="res://addons/myth/scripts/json/ResourcePropertyNode.gd" id="3_ep0bq"]
 [ext_resource type="Script" uid="uid://ckcd6xukn3h6u" path="res://scenes/resource/TestResourceA.gd" id="4_axiek"]
 [ext_resource type="Script" uid="uid://cu8dfaktbh2ki" path="res://addons/myth/scripts/input/WindowModeSelector.gd" id="5_yxrdi"]
+[ext_resource type="Script" uid="uid://dwm22iqtauis3" path="res://addons/myth/scripts/input/WindowFocusAudioBusMuter.gd" id="6_7u362"]
 [ext_resource type="Script" uid="uid://bgsuunw8n3e3" path="res://addons/myth/scripts/input/InputBinder.gd" id="6_jclyu"]
+[ext_resource type="AudioStream" uid="uid://x6g2cjajafls" path="res://scenes/cheese_00.ogg" id="9_kfwal"]
 
 [sub_resource type="Resource" id="Resource_yxrdi"]
 script = ExtResource("4_axiek")
@@ -62,12 +64,11 @@ custom_minimum_size = Vector2(0, 31)
 layout_mode = 2
 size_flags_horizontal = 3
 script = ExtResource("1_t2hvj")
-label_text = "Your Mom"
+label_text = "Mode"
 layout_group = SubResource("Resource_jclyu")
 metadata/_custom_type_script = "uid://c7hcf3fykjk88"
 
 [node name="window_mode" type="Control" parent="MarginContainer/PanelContainer/MarginContainer/VBoxContainer/SettingContainer" unique_id=151465463]
-process_mode = 1
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -75,12 +76,26 @@ focus_mode = 2
 script = ExtResource("5_yxrdi")
 labels = PackedStringArray("Windowed", "Minimized", "Maximized", "Borderless", "Exclusive")
 
+[node name="SettingContainer5" type="HBoxContainer" parent="MarginContainer/PanelContainer/MarginContainer/VBoxContainer" unique_id=406623550]
+custom_minimum_size = Vector2(0, 31)
+layout_mode = 2
+size_flags_horizontal = 3
+script = ExtResource("1_t2hvj")
+label_text = "Mute When Unfocused"
+layout_group = SubResource("Resource_jclyu")
+metadata/_custom_type_script = "uid://c7hcf3fykjk88"
+
+[node name="CheckButton" type="CheckButton" parent="MarginContainer/PanelContainer/MarginContainer/VBoxContainer/SettingContainer5" unique_id=1730836766]
+layout_mode = 2
+button_pressed = true
+script = ExtResource("6_7u362")
+
 [node name="SettingContainer4" type="HBoxContainer" parent="MarginContainer/PanelContainer/MarginContainer/VBoxContainer" unique_id=442362131]
 custom_minimum_size = Vector2(0, 31)
 layout_mode = 2
 size_flags_horizontal = 3
 script = ExtResource("1_t2hvj")
-label_text = "Your Mom 2"
+label_text = "Setting 1"
 layout_group = SubResource("Resource_jclyu")
 metadata/_custom_type_script = "uid://c7hcf3fykjk88"
 
@@ -99,7 +114,7 @@ custom_minimum_size = Vector2(0, 31)
 layout_mode = 2
 size_flags_horizontal = 3
 script = ExtResource("1_t2hvj")
-label_text = "Your Mom 2"
+label_text = "Setting 2"
 layout_group = SubResource("Resource_jclyu")
 metadata/_custom_type_script = "uid://c7hcf3fykjk88"
 
@@ -138,6 +153,9 @@ metadata/_custom_type_script = "uid://d3f8jstcrmiht"
 layout_mode = 2
 size_flags_horizontal = 4
 text = "Save"
+
+[node name="music" type="AudioStreamPlayer" parent="." unique_id=394647439]
+stream = ExtResource("9_kfwal")
 
 [connection signal="resource_changed" from="MarginContainer/PanelContainer/MarginContainer/VBoxContainer/SettingContainer4/LineEdit/ResourcePropertyNode" to="MarginContainer/PanelContainer/MarginContainer/VBoxContainer/SettingContainer4/LineEdit/ResourcePropertyNode" method="test"]
 [connection signal="resource_changed" from="MarginContainer/PanelContainer/MarginContainer/VBoxContainer/SettingContainer2/LineEdit/ResourcePropertyNode" to="MarginContainer/PanelContainer/MarginContainer/VBoxContainer/SettingContainer2/LineEdit/ResourcePropertyNode" method="test"]

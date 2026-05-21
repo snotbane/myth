@@ -146,7 +146,7 @@ func _item_selected(idx: int) -> void:
 
 
 func _notification(what: int) -> void:
-	if option == null or option.button_pressed or ignore_events: return
+	if option.button_pressed or ignore_events: return
 
 	match what:
 		NOTIFICATION_WM_WINDOW_FOCUS_IN, NOTIFICATION_WM_WINDOW_FOCUS_OUT:

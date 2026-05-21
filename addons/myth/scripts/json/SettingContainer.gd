@@ -8,23 +8,25 @@ signal resetted
 
 @export_subgroup("Label", "label_")
 
-var text_label: Label
+var label: Label
+
+@export_custom(PROPERTY_HINT_GROUP_ENABLE, "") var label_enabled: bool = true:
+	get: return label.visible
+	set(value): label.visible = value
 
 @export var label_text: String = "":
-	get: return text_label.text
-	set(value):
-		text_label.text = value
-		text_label.visible = not label_text.is_empty()
+	get: return label.text
+	set(value): label.text = value
 
 
 @export var label_settings: LabelSettings:
-	get: return text_label.label_settings
-	set(value): text_label.label_settings = value
+	get: return label.label_settings
+	set(value): label.label_settings = value
 
 
 @export var label_expand: bool = true:
-	get: return text_label.size_flags_horizontal == SIZE_EXPAND
-	set(value): text_label.size_flags_horizontal = SIZE_EXPAND if value else SIZE_SHRINK_BEGIN
+	get: return label.size_flags_horizontal == SIZE_EXPAND
+	set(value): label.size_flags_horizontal = SIZE_EXPAND if value else SIZE_SHRINK_BEGIN
 
 
 @export_subgroup("Reset Button", "reset_")
@@ -69,11 +71,10 @@ func refresh_reset_container_visibility() -> void:
 func _init() -> void:
 	size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
-	text_label = Label.new()
-	text_label.name = &"text_label"
-	text_label.visible = false
-	text_label.size_flags_horizontal = SIZE_EXPAND
-	add_child(text_label, false, INTERNAL_MODE_FRONT)
+	label = Label.new()
+	label.name = &"label"
+	label.size_flags_horizontal = SIZE_EXPAND
+	add_child(label, false, INTERNAL_MODE_FRONT)
 
 
 	reset_container = Control.new()
