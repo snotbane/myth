@@ -21,7 +21,7 @@ myth_terminal_autoload="*uid://skiqkluncsub"
 
 [display]
 
-window/stretch/scale=2.0
+window/stretch/scale=3.0
 
 [editor_plugins]
 
