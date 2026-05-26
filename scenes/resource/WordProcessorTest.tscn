@@ -11,6 +11,14 @@ tags = null
 metadata/_custom_type_script = "uid://ckcd6xukn3h6u"
 
 [sub_resource type="Theme" id="Theme_hanll"]
+TextEdit/constants/caret_width = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hanll"]
+bg_color = Color(1, 1, 1, 1)
+corner_radius_top_left = 1
+corner_radius_top_right = 1
+corner_radius_bottom_right = 1
+corner_radius_bottom_left = 1
 
 [node name="Settings" type="Control" unique_id=1989541124]
 layout_mode = 3
@@ -52,6 +60,8 @@ theme_override_constants/margin_bottom = 16
 layout_mode = 2
 theme = SubResource("Theme_hanll")
 script = ExtResource("3_t7ba7")
+caret_multiple = true
+caret_style_box = SubResource("StyleBoxFlat_hanll")
 metadata/_custom_type_script = "uid://d0n51dymp6pmn"
 
 [node name="music" type="AudioStreamPlayer" parent="." unique_id=394647439]

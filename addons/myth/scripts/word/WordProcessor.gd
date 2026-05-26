@@ -1,10 +1,8 @@
 ## Generic class for word processing. Supports only plain text.
 @tool class_name WordProcessor extends Control
 
-
 const LB := "[lb]"
 const RB := "[rb]"
-
 
 static var REGEX_BBCODE := RegEx.create_from_string(r"\[.*?\]")
 static var REGEX_BRACKETS := RegEx.create_from_string(r"[\[\]]")
@@ -36,8 +34,6 @@ class ShaperLine extends RefCounted:
 
 		bbcode_line = bbcode_full_text.substr(bbcode_start, bbcode_end - bbcode_start if bbcode_end != -1 else -1)
 
-		print("self : %s" % [ self ])
-
 
 	func _to_string() -> String:
 		return bbcode_line
@@ -51,35 +47,7 @@ class ShaperLine extends RefCounted:
 		return prefix_text.length() + column_index
 
 
-var display: RichTextLabel
-var caret: ColorRect
-
-var shaped: RichTextLabel
-var editor: TextEdit
-
-var shaper_lines: Array[ShaperLine]
-@export_multiline var text: String:
-	get: return editor.text
-	set(value):
-		editor.text = value
-		_refresh_text()
-func _refresh_text() -> void:
-	display.text = get_bbcode_text(text)
-	shaped.text = display.text
-
-	assert(editor.text == display.get_parsed_text())
-
-	var editor_lines := text.split("\n")
-	# var bbcode_lines := display.text.split("\n")
-
-	shaper_lines.resize(display.get_line_count())
-	var start := 0
-	for i in shaper_lines.size():
-		shaper_lines[i] = ShaperLine.new(i, start, display.text)
-		start += shaper_lines[i].bbcode_line.length() + 1
-
-
-func get_bbcode_text(raw: String) -> String:
+static func get_bbcode_text(raw: String) -> String:
 	var result: String
 	var search := 0
 
@@ -93,29 +61,120 @@ func get_bbcode_text(raw: String) -> String:
 	result += raw.substr(search)
 	search = 0
 
-	print("result : %s" % [result])
 	return result
 
 
-var caret_index: int:
-	get: return get_index_at_column_line(editor.get_caret_column(), editor.get_caret_line())
-# 	set(value):
-# 		var coord := get_editor_column_line_at_index(clampi(value, 0, text.length()))
-# 		editor.set_caret_column(coord.x)
-# 		editor.set_caret_line(coord.y)
-# 		_refresh_caret()
-func _refresh_caret() -> void:
-	caret.position = await get_caret_position_for_index(caret_index)
+var display: RichTextLabel
+var editor: TextEdit
+var carets: Array[WordProcessorCaret]
 
 
-func get_caret_position_for_index(__caret_index__: int) -> Vector2:
-	var line_idx: int = display.get_character_line(caret_index) if caret_index < text.length() else (display.get_line_count() - 1)
-	shaped.text = shaper_lines[line_idx].text
-	shaped.visible_characters = shaper_lines[line_idx].snippet_index(editor.get_caret_column())
+var shaper_lines: Array[ShaperLine]
+@export_multiline var text: String:
+	get: return editor.text
+	set(value):
+		editor.text = value
+		_refresh_text()
+func _refresh_text() -> void:
+	display.text = get_bbcode_text(text)
 
-	await get_tree().process_frame
+	assert(editor.text == display.get_parsed_text())
 
-	return Vector2(shaped.get_visible_content_rect().size.x, shaped.get_line_offset(line_idx))
+	shaper_lines.resize(display.get_line_count())
+	var start := 0
+	for i in shaper_lines.size():
+		shaper_lines[i] = ShaperLine.new(i, start, display.text)
+		start += shaper_lines[i].bbcode_line.length() + 1
+
+	# _refresh_carets()
+
+
+@export_group("Caret", "caret_")
+
+@export var caret_multiple: bool = false:
+	get: return editor.caret_multiple
+	set(value): editor.caret_multiple = value
+
+
+@export var caret_style_box: StyleBox
+
+
+@export_subgroup("Blink", "caret_blink_")
+
+var caret_blink_tween: Tween
+var caret_blink_opacity: float = 1.0:
+	set(value):
+		caret_blink_opacity = value
+		for caret in carets:
+			caret.self_modulate = Color(1, 1, 1, caret_blink_opacity)
+
+@export_custom(PROPERTY_HINT_GROUP_ENABLE, "") var caret_blink_enabled: bool = true:
+	set(value):
+		caret_blink_enabled = value
+		_caret_blink_tween_refresh()
+
+
+@export_range(0.0, 1.0, 0.01) var caret_blink_transition: float = 0.0:
+	set(value):
+		caret_blink_transition = value
+		_caret_blink_tween_refresh()
+
+
+var _caret_blink_interval_third: float = 0.333333
+var _caret_blink_interval_half: float = 0.5
+@export_range(0.01, 1.0, 0.01, "or_greater") var caret_blink_interval: float = 1.0:
+	set(value):
+		caret_blink_interval = value
+		_caret_blink_tween_refresh()
+
+
+func _caret_blink_tween_refresh() -> void:
+	_caret_blink_interval_third = caret_blink_interval * 0.333333
+	_caret_blink_interval_half = caret_blink_interval * 0.5
+	var caret_hold_duration = maxf(0.0, caret_blink_interval - caret_blink_transition * 2.0) * 0.5
+
+	if caret_blink_tween and caret_blink_tween.is_running():
+		caret_blink_tween.kill()
+
+	if not caret_blink_enabled: return
+
+	caret_blink_tween = create_tween()
+	caret_blink_tween.set_loops()
+	caret_blink_tween.set_ease(Tween.EASE_IN_OUT)
+	caret_blink_tween.set_trans(Tween.TRANS_LINEAR)
+
+	if caret_blink_transition > 0.0:
+		caret_blink_tween.tween_property(self , ^"caret_blink_opacity", 0.0, caret_blink_transition)
+
+		caret_blink_tween.tween_interval(caret_hold_duration)
+
+		caret_blink_tween.tween_property(self , ^"caret_blink_opacity", 1.0, caret_blink_transition)
+
+		caret_blink_tween.tween_interval(caret_hold_duration)
+
+	else:
+		caret_blink_tween.tween_property(self , ^"caret_blink_opacity", 0.0, 0.0)
+
+		caret_blink_tween.tween_interval(_caret_blink_interval_half)
+
+		caret_blink_tween.tween_property(self , ^"caret_blink_opacity", 1.0, 0.0)
+
+		caret_blink_tween.tween_interval(_caret_blink_interval_half)
+
+
+@export_subgroup("Slide", "caret_slide_")
+
+@export_custom(PROPERTY_HINT_GROUP_ENABLE, "") var caret_slide_enabled: bool = false:
+	set(value):
+		caret_slide_enabled = value
+
+@export var caret_slide_duration: float = 0.1:
+	set(value):
+		caret_slide_duration = value
+
+@export var caret_slide_trans: Tween.TransitionType = Tween.TransitionType.TRANS_CUBIC:
+	set(value):
+		caret_slide_trans = value
 
 
 func _init() -> void:
@@ -125,31 +184,39 @@ func _init() -> void:
 	display.focus_mode = FOCUS_NONE
 	display.mouse_filter = MOUSE_FILTER_STOP
 	display.set_anchors_preset(PRESET_FULL_RECT)
-	add_child(display)
-
-	shaped = display.duplicate(DUPLICATE_DEFAULT)
-	shaped.mouse_filter = MOUSE_FILTER_IGNORE
-	shaped.modulate = Color.RED
-	add_child(shaped)
+	add_child(display, false, INTERNAL_MODE_BACK)
 
 	editor = TextEdit.new()
+	editor.caret_blink = false
 	editor.mouse_filter = MOUSE_FILTER_IGNORE
-	# editor.modulate = Color.TRANSPARENT
 	editor.modulate = Color(0.0, 0.0, 1.0, 0.5)
 	editor.set_anchors_preset(PRESET_FULL_RECT)
-	add_child(editor)
+	add_child(editor, false, INTERNAL_MODE_BACK)
 
-	caret = ColorRect.new()
-	add_child(caret)
-
-	display.gui_input.connect(_display_gui_input)
-	editor.caret_changed.connect(_refresh_caret)
+	editor.caret_changed.connect(_refresh_carets)
 	editor.text_changed.connect(_refresh_text)
+	display.gui_input.connect(_display_gui_input)
 
 
 func _ready() -> void:
-	caret.size.x = editor.get_theme_constant(&"caret_width")
-	caret.size.y = 10.0
+	if caret_style_box == null: caret_style_box = StyleBoxFlat.new()
+
+	_caret_blink_tween_refresh()
+
+	resized.connect.call_deferred(_refresh_carets)
+
+
+func _refresh_carets() -> void:
+	while carets.size() < editor.get_caret_count():
+		var caret := WordProcessorCaret.new()
+		add_child(caret)
+		carets.push_back(caret)
+
+	while carets.size() > editor.get_caret_count():
+		carets.pop_back().queue_free()
+
+	for caret in carets:
+		caret._refresh_position()
 
 
 func _display_gui_input(event: InputEvent) -> void:
@@ -157,19 +224,10 @@ func _display_gui_input(event: InputEvent) -> void:
 		set_caret_to_local_position(event.position)
 
 
-func get_index_at_column_line(column: int, line: int) -> int:
-	var result := column
-	for i in line:
-		result += editor.get_line(i).length() + 1
-	return result
-
-
-func get_editor_column_line_at_index(idx: int) -> Vector2i:
-	return Vector2i(0, 0)
-
-
 func set_caret_to_local_position(pos: Vector2) -> void:
 	editor.grab_focus.call_deferred()
+
+	print("pos : %s" % [pos])
 
 	editor.set_caret_column(0)
 	editor.set_caret_line(0)
