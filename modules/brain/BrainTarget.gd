@@ -1,3 +1,4 @@
+## Generic storage unit 
 class_name BrainTarget extends Timer
 
 ## Emitted when the target node or position is changed.
@@ -33,10 +34,10 @@ var refresh_duration : float :
 		if _wait_time_is_valid:
 			wait_time = value
 			if is_inside_tree():
-				if is_stopped():	start()
-			else:					autostart = true
-		else:
-			if not is_stopped(): stop()
+				if is_stopped(): start()
+			else:
+				autostart = true
+		elif not is_stopped(): stop()
 
 
 func _init(__wait_time__: float) -> void:
@@ -59,7 +60,7 @@ func assign(value: Variant, relative_pos: Variant = null, closest: bool = true) 
 		_target_node.tree_exiting.disconnect(unassign)
 
 	_target_node = value if value_is_node else null
-	_target_pos = ((Vector3.ZERO if _target_node is Node3D else Vector2.ZERO) if value_is_node else value)
+	_target_pos = (Vector3.ZERO if _target_node is Node3D else Vector2.ZERO) if value_is_node else value
 	if relative_pos != null:
 		_target_pos += relative_pos
 

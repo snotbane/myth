@@ -1,5 +1,5 @@
 
-class_name Brain3D extends NavigationAgent3D
+@abstract class_name Brain3D extends NavigationAgent3D
 
 enum {
 	STOPPED,
@@ -61,9 +61,9 @@ func _ready() -> void:
 	sequence()
 
 func sequence() -> void:
-	if not has_method(&"_sequence"): return
 	await get_tree().process_frame
-	while is_instance_valid(self): await call(&"_sequence")
+	while is_instance_valid(self): await _sequence()
+@abstract func _sequence()
 
 func _physics_process(delta: float) -> void:
 	var move_vector : Vector3
