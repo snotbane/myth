@@ -1,0 +1,13 @@
+[gd_scene format=3 uid="uid://dg8sls5jjhyxl"]
+
+[ext_resource type="Script" uid="uid://dkli5o1raltxu" path="res://addons/myth/scripts/brain/Brain.gd" id="1_bwggq"]
+
+[node name="Brain3dTest" type="Node3D" unique_id=1351182011]
+
+[node name="Node3D" type="Node3D" parent="." unique_id=1567678664]
+
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="Node3D" unique_id=1151047508]
+
+[node name="Brain" type="Timer" parent="Node3D/NavigationAgent3D" unique_id=793273714]
+script = ExtResource("1_bwggq")
+metadata/_custom_type_script = "uid://dkli5o1raltxu"
