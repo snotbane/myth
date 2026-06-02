@@ -1,14 +1,13 @@
 ## Allows the user to freely move around 3D scenes for debugging purposes.
 class_name Ghost3D extends Node3D
 
-static var DEFAULT_SCENE : PackedScene :
-	get: return load("uid://cwcqawp5x05vt")
+const DEFAULT_SCENE = preload("res://addons/myth/scripts/ghost/ghost_3d.tscn")
 
-static var inst : Ghost3D
+static var inst: Ghost3D
 
 
-static func instantiate_from_camera(parent: Node, camera: Camera3D = parent.get_viewport().get_camera_3d(), tform: Transform3D = camera.global_transform) -> Ghost3D:
-	var result : Ghost3D = DEFAULT_SCENE.instantiate()
+static func instantiate_from_camera(parent: Node, camera: Camera3D = null, tform: Transform3D = null) -> Ghost3D:
+	var result: Ghost3D = DEFAULT_SCENE.instantiate()
 	parent.add_child(result)
 
 	result.global_transform = tform
@@ -21,24 +20,24 @@ static func instantiate_from_camera(parent: Node, camera: Camera3D = parent.get_
 
 
 ## Movement speed.
-@export var speed : float = 5.0
+@export var speed: float = 5.0
 ## Speed multiplier while sprinting.
-@export var sprint_multiplier : float = 5.0
+@export var sprint_multiplier: float = 5.0
 
 ## If enabled, camera will always move up along the global gravity up vector and laterally relative to that (Minecraft creative controls).
-@export var global_move_axis : bool = false
+@export var global_move_axis: bool = false
 
 ## If enabled, the camera will always stay right side up. Otherwise, the camera may be turned upside down.
-@export var turn_clamp_pitch : bool = true
+@export var turn_clamp_pitch: bool = true
 ## Turn speed (degrees per second) via keyboard/gamepad.
-@export var turn_speed : float = 90.0
+@export var turn_speed: float = 90.0
 ## Turn speed via mouse.
-@export var turn_speed_mouse : float = 10.0
+@export var turn_speed_mouse: float = 10.0
 
-var move_input_vector : Vector3
-var turn_input_vector : Vector2
-var turn_input_vector_mouse : Vector2
-var is_sprinting : bool
+var move_input_vector: Vector3
+var turn_input_vector: Vector2
+var turn_input_vector_mouse: Vector2
+var is_sprinting: bool
 
 
 func _init() -> void:
@@ -48,7 +47,7 @@ func _init() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if InputNode.is_input_restricted(self):
+	if InputNode.is_input_restricted(self ):
 		move_input_vector = Vector3.ZERO
 		turn_input_vector = Vector2.ZERO
 		is_sprinting = false
@@ -88,7 +87,7 @@ func _input(event: InputEvent) -> void:
 
 
 func _process(delta: float) -> void:
-	var gravity_up : Vector3 = -ProjectSettings.get_setting("physics/3d/default_gravity_vector")
+	var gravity_up: Vector3 = - ProjectSettings.get_setting("physics/3d/default_gravity_vector")
 	var is_upsidedown := not turn_clamp_pitch and self.global_basis.y.dot(gravity_up) < 0.0
 
 	#region Rotation
@@ -118,7 +117,7 @@ func _process(delta: float) -> void:
 	#endregion
 	#region Movement
 
-	var move_quat : Quaternion
+	var move_quat: Quaternion
 	if global_move_axis:
 		var forward := gravity_up.cross(self.global_basis.x)
 		move_quat = Basis(-gravity_up.cross(forward), gravity_up, -forward).get_rotation_quaternion()

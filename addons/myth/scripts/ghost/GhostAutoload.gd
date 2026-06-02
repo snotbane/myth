@@ -1,8 +1,13 @@
-
+## Handles debug ghost nodes.
 class_name GhostAutoload extends Node
 
+static var ghost: Node:
+	set(value):
+		if ghost == value: return
 
-var ghost : Node
+		if ghost: ghost.queue_free()
+
+		ghost = value
 
 
 func _ready() -> void:
@@ -16,24 +21,26 @@ func _input(event: InputEvent):
 		get_viewport().set_input_as_handled()
 
 
-func create_ghost(parent: Node = get_tree().root) -> void:
-	if ghost: printerr("Ghost %s already exists. Can't spawn a new one." % ghost); return
+func create_ghost(parent: Node = get_tree().root) -> Node:
+	var result: Node
+
 	if self.get_tree().current_scene is Node2D:
-		ghost = Ghost2D.instantiate_from_camera(parent)
-		self.get_tree().root.add_child(ghost)
+		result = Ghost2D.instantiate_from_parent(parent)
+
 	elif self.get_tree().current_scene is Node3D:
-		ghost = Ghost3D.instantiate_from_camera(parent)
-	ghost.tree_exited.connect(clear_ghost)
+		result = Ghost3D.instantiate_from_parent(parent)
+
+	else:
+		printerr("The current scene must be a Node2D or Node3D, in order to create a Ghost.")
+		return null
+
+	result.tree_exited.connect(clear_ghost)
+	return result
 
 
 func clear_ghost() -> void:
-	if ghost:
-		ghost.queue_free()
 	ghost = null
 
 
 func toggle_ghost() -> void:
-	if ghost:
-		clear_ghost()
-	else:
-		create_ghost()
+	ghost = null if ghost else create_ghost()

@@ -2,16 +2,16 @@
 @tool class_name PlayFromEditorView2D extends Node2D
 
 ## If enabled, this node will spawn a [Ghost2D] node on startup.
-@export var start_in_debug_ghost_mode : bool = false
+@export var start_in_debug_ghost_mode: bool = false
 
 ## If enabled, [member position_node] will be moved to this node on [method _ready] (i.e. the editor viewport center).
-@export var transform_selected_nodes : bool = true
+@export var transform_selected_nodes: bool = true
 
 ## If set, this node will move to the editor view transform on [methos _ready]. Set this to your player's base node.
-@export var position_node : Node2D
+@export var position_node: Node2D
 
 ## If set, this node will match the editor's view rotation.
-@export var rotation_node : Node2D
+@export var rotation_node: Node2D
 
 
 func _ready() -> void:
@@ -37,4 +37,8 @@ func activate() -> void:
 
 
 func create_ghost(parent: Node, tform: Transform2D) -> void:
-	Ghost2D.instantiate_from_camera(parent, parent.get_viewport().get_camera_2d(), tform)
+	var camera: Camera2D = parent.get_viewport().get_camera_2d()
+	if camera == null:
+		camera = Camera2D.new()
+
+	Ghost2D.instantiate_from_camera(parent, camera, tform)

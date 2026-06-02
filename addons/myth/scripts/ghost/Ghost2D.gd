@@ -1,18 +1,17 @@
 ## Allows the user to freely move around 2D scenes for debugging purposes.
 class_name Ghost2D extends Node2D
 
-static var DEFAULT_SCENE : PackedScene :
-	get: return load("uid://cv3vrsaxhhhkb")
+const DEFAULT_SCENE: PackedScene = preload("res://addons/myth/scripts/ghost/ghost_2d.tscn")
 
-static var inst : Ghost2D
+static var inst: Ghost2D
 
 
 static func instantiate_from_camera(parent: Node, camera: Camera2D = parent.get_viewport().get_camera_2d(), tform: Transform2D = camera.global_transform) -> Ghost2D:
-	var result : Ghost2D = DEFAULT_SCENE.instantiate()
+	var result: Ghost2D = DEFAULT_SCENE.instantiate()
 	parent.add_child(result)
 
 	result.global_transform = tform
-	var new_camera : Camera2D = camera.duplicate(0)
+	var new_camera: Camera2D = camera.duplicate(0)
 	new_camera.transform = Transform2D.IDENTITY
 	result.add_child(new_camera)
 	new_camera.make_current()
@@ -21,26 +20,25 @@ static func instantiate_from_camera(parent: Node, camera: Camera2D = parent.get_
 
 
 ## Movement speed via keyboard/gamepad.
-@export var speed : float = 500.0
+@export var speed: float = 500.0
 ## Movement speed via mouse.
-@export var speed_mouse : float = 50.0
+@export var speed_mouse: float = 50.0
 ## Speed multiplier while sprinting.
-@export var sprint_multiplier : float = 5.0
+@export var sprint_multiplier: float = 5.0
 
 ## Turn speed (degrees per second). Has no effect if [member turn_interval_degrees] is greater than 0.0
-@export var turn_speed_degrees : float = 90.0
+@export var turn_speed_degrees: float = 90.0
 ## If greater than 0.0, rotation will be locked to a turn this many degrees on each distinct input (rather than continuously rotating)
-@export_range(0.0, 90.0, 5.0, "or_greater") var turn_interval_degrees : float = 0.0
+@export_range(0.0, 90.0, 5.0, "or_greater") var turn_interval_degrees: float = 0.0
 
 
-var move_input_vector : Vector2
-var move_input_vector_mouse : Vector2
-var is_sprinting : bool
+var move_input_vector: Vector2
+var move_input_vector_mouse: Vector2
+var is_sprinting: bool
 
 
-var use_turn_interval : bool :
+var use_turn_interval: bool:
 	get: return not is_zero_approx(turn_interval_degrees)
-
 
 
 func _init() -> void:
@@ -50,7 +48,7 @@ func _init() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if InputNode.is_input_restricted(self):
+	if InputNode.is_input_restricted(self ):
 		move_input_vector = Vector2.ZERO
 		is_sprinting = false
 		return
@@ -74,7 +72,7 @@ func _unhandled_input(event: InputEvent) -> void:
 				MythPlugin_Ghost.INPUT_GHOST_MOVE_RIGHT,
 				MythPlugin_Ghost.INPUT_GHOST_MOVE_FORWARD,
 				MythPlugin_Ghost.INPUT_GHOST_MOVE_BACK
-			) +	Input.get_vector(
+			) + Input.get_vector(
 				MythPlugin_Ghost.INPUT_GHOST_CAMERA_LEFT,
 				MythPlugin_Ghost.INPUT_GHOST_CAMERA_RIGHT,
 				MythPlugin_Ghost.INPUT_GHOST_CAMERA_UP,
