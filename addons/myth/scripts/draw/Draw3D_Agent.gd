@@ -1,8 +1,7 @@
-
 @tool class_name Draw3D_Agent extends Draw3D
 
-var line : Draw3D_Line
-var host_point : Draw3D_Mesh
+var line: Draw3D_Line
+var host_point: Draw3D_Mesh
 
 func _init() -> void:
 	super._init()
@@ -22,20 +21,19 @@ func _set_color(value: Color) -> void:
 	host_point.color = value
 
 
-@export_range(0.0, 1.0, 0.01, "or_greater") var host_size : float = 0.1 :
+@export_range(0.0, 1.0, 0.01, "or_greater") var host_size: float = 0.1:
 	get: return host_point.size
 	set(value): host_point.size = value
 
-var _point_size : float = 0.2
-@export var point_size : float = 0.2 :
+var _point_size: float = 0.2
+@export var point_size: float = 0.2:
 	get: return _point_size
 	set(value):
 		_point_size = value
 
 
-
-@onready var _agent : NavigationAgent3D = get_parent()
-@onready var _host : Node3D = _agent.get_parent()
+@onready var _agent: NavigationAgent3D = get_parent()
+@onready var _host: Node3D = _agent.get_parent()
 
 func _ready() -> void:
 	super._ready()
@@ -51,13 +49,7 @@ func _physics_process(delta: float) -> void:
 	if Engine.is_editor_hint(): return
 
 	if _agent.is_target_reached():
-		if _agent is Brain3D:
-			if _agent._travel_state == Brain3D.STOPPED:
-				color = Color.BLUE
-			else:
-				color = Color.AQUAMARINE
-		else:
-			color = Color.BLUE
+		color = Color.BLUE
 	elif _agent.is_navigation_finished():
 		color = Color.RED
 	else:
@@ -76,10 +68,9 @@ func _physics_process(delta: float) -> void:
 	points.push_back(_agent.target_position)
 	sizes.push_back(_agent.target_desired_distance)
 
-	if not Engine.is_editor_hint() and _agent is Brain3D and _agent.target.is_assigned:
+	if not Engine.is_editor_hint():
 		points.push_back(_agent.target.target_position)
 		sizes.push_back(_agent.target_desired_distance)
 
 	line.points = points
 	line.points_multimesh.sizes = sizes
-
