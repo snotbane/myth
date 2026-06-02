@@ -228,8 +228,13 @@ func _travel_precise():
 		travel_precise_tween.stop()
 
 	if travel_precise_tween_duration > 0.0:
+		travel_precise_tween = create_tween()
+		travel_precise_tween.set_ease(Tween.EASE_IN_OUT)
+		travel_precise_tween.set_trans(Tween.TRANS_CUBIC)
 		travel_precise_tween.tween_property(user, ^"global_position", target_position, travel_precise_tween_duration)
+
 		await travel_precise_tween.finished
+
 	else:
 		user.global_position = target_position
 
@@ -282,10 +287,6 @@ func _init() -> void:
 	wait_timer.one_shot = true
 	wait_timer.process_mode = PROCESS_MODE_INHERIT
 	add_child(wait_timer)
-
-	travel_precise_tween = Tween.new()
-	travel_precise_tween.set_ease(Tween.EASE_IN_OUT)
-	travel_precise_tween.set_trans(Tween.TRANS_CUBIC)
 
 	timeout.connect(target_refresh)
 
