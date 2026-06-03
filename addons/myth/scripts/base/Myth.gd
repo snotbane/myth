@@ -168,6 +168,26 @@ static func find_descendant_of_type(node: Node, type: String, include_internal: 
 	return null
 
 
+static func find_children_of_type(node: Node, type: String, include_internal: bool = false) -> Array[Node]:
+	if node == null: return []
+
+	var result: Array[Node]
+	for child in node.get_children(include_internal):
+		if is_value_of_type(child, type): result.push_back(child)
+	return result
+
+
+static func find_descendants_of_type(node: Node, type: String, include_internal: bool = false) -> Array[Node]:
+	if node == null: return []
+
+	var result: Array[Node]
+	for child in node.get_children(include_internal):
+		if is_value_of_type(child, type): result.push_back(child)
+
+		result.append_array(find_descendants_of_type(child, type, include_internal))
+	return result
+
+
 ## Searches among this node's siblings until it finds a [Node] whose class or script matches the specified [type]. This will never return itself unless [allow_self] is true.
 static func find_sibling_of_type(node: Node, type: String, include_internal: bool = false, allow_self: bool = false) -> Node:
 	if node == null or node.get_parent() == null: return null

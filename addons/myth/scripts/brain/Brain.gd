@@ -39,14 +39,21 @@ func _get_move_vector_rough(delta: float) -> Variant:
 
 #region Target
 
+@export_group("Target", "target_")
+
+## If set, [member target] will be set to this [Node] on ready.
+@export var target_initial_target: Node
+
+## The distance at which we consider the target to be reached. NOTE: this has no effect if [member agent] is set; see [member NavigationAgent3D.target_desired_distance].
+@export var target_rough_desired_distance: float = 1.0
+
+
 ## Emitted when the Brain considers [member target] as mostly reached. If [member travel_precise_enabled], this will begin precise movement. Otherwise, this will also trigger [member target_reached].
 signal target_reached_rough
 
 ## Emitted when the Brain considers [member target] as reached.
 signal target_reached
 
-## If set, [member target] will be set to this [Node] on ready.
-@export var initial_target: Node
 
 ## Emits when [member target] changes.
 signal target_changed
@@ -96,6 +103,8 @@ signal target_refreshed
 var _target_refreshed_method: Callable
 
 func _target_refreshed() -> void:
+	if _target_refreshed_method.is_null(): return
+
 	_target_refreshed_method.call()
 
 func _target_refreshed_agent_2d() -> void:
@@ -216,7 +225,8 @@ func _travel_rough():
 	if agent:
 		await agent.target_reached
 	else:
-		await travel_precise()
+		while user.global_position.distance_to(target_position) > target_rough_desired_distance:
+			await timeout
 
 
 func travel_precise():
@@ -302,8 +312,8 @@ func _ready() -> void:
 		if parent is NavigationAgent2D or parent is NavigationAgent3D:
 			agent = parent
 
-	if initial_target:
-		target = initial_target
+	if target_initial_target:
+		target = target_initial_target
 
 	if agent is NavigationAgent2D:
 		_target_refreshed_method = _target_refreshed_agent_2d
@@ -311,14 +321,17 @@ func _ready() -> void:
 	elif agent is NavigationAgent3D:
 		_target_refreshed_method = _target_refreshed_agent_3d
 
+	else:
+		_target_refreshed_method = Callable()
+
 
 	start_sequence.call_deferred()
 
 
 func _physics_process(delta: float) -> void:
 	var move_vector := get_move_vector(delta)
+	if move_vector == null: move_vector = Vector3.ZERO if user is Node3D else Vector2.ZERO
 
-	if move_vector == null: return
 
 	if move_vector != _move_vector_prev:
 		desired_move.emit(move_vector)
