@@ -41,4 +41,4 @@ func create_ghost(parent: Node, tform: Transform2D) -> void:
 	if camera == null:
 		camera = Camera2D.new()
 
-	Ghost2D.instantiate_from_camera(parent, camera, tform)
+	Ghost2D.instantiate_from_parent(parent, tform, camera)
