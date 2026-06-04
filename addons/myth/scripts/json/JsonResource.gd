@@ -15,6 +15,11 @@ const K_TIME_MODIFIED := &"time_modified"
 const KEY_SIZE := 16
 const IV_SIZE := 16
 
+const IGNORED_PROPERTY_NAMES := [
+	"script",
+	"metadata/_custom_type_script"
+]
+
 static var DIRECTORY_RESOURCES: Dictionary
 
 ## Generates a file path in the given [param dir]. If the path already exists, a new path is generated using [member generate_save_name], and is guaranteed to not yet exist.
@@ -43,22 +48,30 @@ static func find_parent_from_path(path: String) -> JsonResource:
 static var NOW: int:
 	get: return floori(Time.get_unix_time_from_system())
 
+
 ## Adapted from:	https://github.com/godotengine/godot-proposals/issues/5515#issuecomment-1409971613
 static func get_local_datetime(unix_time: int) -> int:
 	return unix_time + Time.get_time_zone_from_system().bias * SECONDS_IN_MINUTE
 
 
-static func load_from_file(path: String) -> JsonResource:
-	if not FileAccess.file_exists(path): return null
-
-	return JsonResource.new().load(path)
+## Creates a new [JsonResource] and loads it from the given [param path]. If [param touch] is enabled, the file will be created if it does not already exist.
+static func new_from_path(path: String, touch_script: Script = null) -> JsonResource:
+	if FileAccess.file_exists(path):
+		return JsonResource.new().load(path)
+	elif touch_script:
+		var result := JsonResource.new()
+		Myth.change_script(result, touch_script)
+		result.save(path)
+		return result
+	else:
+		return null
 
 #endregion
 
 
 #region Serialization
 
-## Converts a [Variant] into a JSON-compatible typed [Dictionary]. Currently, [Object]s can only be serialized if it has the method [member _export_json()].
+## Converts a [Variant] into a JSON-compatible typed [Dictionary].
 static func serialize(target: Variant) -> Variant:
 	var json: Dictionary
 	var type := typeof(target)
@@ -98,30 +111,30 @@ static func serialize(target: Variant) -> Variant:
 
 	return json
 
-## Serialize an object. To customize serialization for a class, implement a new `func _serialize() -> Variant`. It should return any value that you wish to be stored as JSON. If returning nothing or null, it will serialize all values belonging to the Object and which match PROPERTY_USAGE_STORAGE. Or, if it's a project resource with a valid resource_path, it will simply store the UID.
+## Serialize an object. To add additional properties to your object, create a method `func _serialize() -> Dictionary` which returns your custom data. This data will b e merged into the existing data. To completely override serialization, instead implement a new `func _serialize_custom() -> Variant`. It should return any value that you wish to be stored as JSON. Regardless of custom implmentations, if it's a project resource with a valid resource_path, it will simply store the UID.
 static func _serialize_object(obj: Object) -> Variant:
-	if obj.has_method(&"_serialize"):
-		var value = obj._serialize()
-		if value != null:
-			return value
-
-	if obj is Resource and not obj.resource_path.is_empty():
+	if obj is Resource and FileAccess.file_exists(obj.resource_path):
 		return ResourceUID.id_to_text(ResourceLoader.get_resource_uid(obj.resource_path))
+
+	if obj.has_method(&"_serialize_custom"):
+		return obj._serialize_custom()
 
 	var json := {}
 	for prop in obj.get_property_list():
 		if (
 				prop[&"name"][0] == "_"
-			or prop[&"name"] == "script"
+			or prop[&"name"] in IGNORED_PROPERTY_NAMES
 			or not prop[&"usage"] & PROPERTY_USAGE_STORAGE
-		):
-			continue
+		): continue
 
 		var value := serialize(obj.get(prop[&"name"]))
 		if value == null and not prop[&"usage"] & PROPERTY_USAGE_STORE_IF_NULL:
 			continue
 
 		json[prop[&"name"]] = value
+
+	if obj.has_method(&"_serialize"):
+		json.merge(obj._serialize())
 
 	return json
 
@@ -161,37 +174,32 @@ static func deserialize(json: Variant, context: Object = null) -> Variant:
 
 	return null
 
-## Deserializes an object. To customize deserialization for a class, implement a new `func _deserialize(json: Variant, context: Object = null) -> Variant`. Param `json` will be what `_serialize` created. Return a truthy value to override all deserialization for this object.
+## Deserializes an object from its JSON form. To customize deserialization for a class, implement a new `func _deserialize(json: Variant, context: Object = null) -> void`. Param `json` will be what `_serialize` created. Param `context` (advanced, not required in implementation) is the object that... tbh I don't even remember. It works.
 static func _deserialize_object(json: Variant, context: Object = null) -> Object:
 	if json[&"value"] is String and json[&"value"].begins_with("uid://"):
 		return load(json[&"value"])
 
 	var result: Object = ClassDB.instantiate(json[&"type"]) if context == null else context
-
-
 	var data = json[&"value"]
-	var new_script: Script = load(json[&"script"]) if json.has(&"script") else null
+	Myth.change_script(result, load(json[&"script"]) if json.has(&"script") else null, PROPERTY_USAGE_STORAGE, data.keys())
 
-	if result.has_method(&"_deserialize"):
-		Myth.change_script(result, new_script)
-
-		var value = result._deserialize(data, context)
-		if value:
-			if result.has_method(&"_deserialized"):
-				result._deserialized()
-			return result
-
-	else:
-		Myth.change_script(result, new_script, PROPERTY_USAGE_STORAGE, data.keys())
+	if result.has_method(&"_deserialize_custom"):
+		var args := [data, context]
+		args.resize(result.get_method_argument_count(&"_deserialize_custom"))
+		result._deserialize_custom.callv(args)
+		return result
 
 	for k: StringName in data.keys():
 		if k == &"script": continue
+
 		var value_prev = result.get(k)
 		var value = deserialize(data[k], value_prev if value_prev is Object else null)
 		result.set(k, value)
 
-	if result.has_method(&"_deserialized"):
-		result._deserialized()
+	if result.has_method(&"_deserialize"):
+		var args := [data, context]
+		args.resize(result.get_method_argument_count(&"_deserialize"))
+		result._deserialize.callv(args)
 
 	return result
 

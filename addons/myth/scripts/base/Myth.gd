@@ -12,10 +12,13 @@ static func change_script(obj: Object, new_script: Script, preserve_usage_flags:
 
 	var preserve: Dictionary[StringName, Variant]
 	for prop in obj.get_property_list():
-		if prop[&"name"] == &"script": continue
-		if prop[&"name"] in ignore_prop_names: continue
-		if prop[&"usage"] & preserve_usage_flags:
-			preserve[prop[&"name"]] = obj.get(prop[&"name"])
+		if (
+				prop[&"name"] == &"script"
+			or prop[&"name"] in ignore_prop_names
+			or prop[&"usage"] & preserve_usage_flags
+		): continue
+
+		preserve[prop[&"name"]] = obj.get(prop[&"name"])
 
 	obj.set_script(new_script)
 	assert(obj.get_script() != null, "Attempted to change the script of an object, but couldn't set the script. Make sure that it has an _init() method with 0 *required* arguments.")

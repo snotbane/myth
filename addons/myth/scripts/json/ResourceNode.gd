@@ -35,6 +35,9 @@ var _resource: Resource
 
 		_resource = value
 
+		if _resource is JsonResource:
+			_resource.touch()
+
 		if _resource:
 			_resource.changed.connect(on_resource_changed)
 			for sig in resource_signals:
@@ -74,7 +77,6 @@ var resource_signals: Dictionary[StringName, Array]
 
 
 func _ready() -> void:
-	resource = resource
 	fallback_type = fallback_type
 
 
