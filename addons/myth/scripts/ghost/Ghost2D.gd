@@ -6,15 +6,20 @@ const DEFAULT_SCENE: PackedScene = preload("res://addons/myth/scripts/ghost/ghos
 static var inst: Ghost2D
 
 
-static func instantiate_from_camera(parent: Node, camera: Camera2D = parent.get_viewport().get_camera_2d(), tform: Transform2D = camera.global_transform) -> Ghost2D:
+static func instantiate_from_parent(parent: Node, tform: Transform2D = Transform2D.IDENTITY, camera: Camera2D = null) -> Ghost2D:
+	if camera == null:
+		camera = parent.get_viewport().get_camera_2d()
+		camera = camera.duplicate(0) if camera else Camera2D.new()
+
+	assert(camera != null)
+
 	var result: Ghost2D = DEFAULT_SCENE.instantiate()
 	parent.add_child(result)
 
 	result.global_transform = tform
-	var new_camera: Camera2D = camera.duplicate(0)
-	new_camera.transform = Transform2D.IDENTITY
-	result.add_child(new_camera)
-	new_camera.make_current()
+	camera.transform = Transform2D.IDENTITY
+	result.add_child(camera)
+	camera.make_current()
 
 	return result
 

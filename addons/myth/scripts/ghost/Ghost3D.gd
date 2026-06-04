@@ -3,18 +3,21 @@ class_name Ghost3D extends Node3D
 
 const DEFAULT_SCENE = preload("res://addons/myth/scripts/ghost/ghost_3d.tscn")
 
-static var inst: Ghost3D
 
+static func instantiate_from_parent(parent: Node, tform: Transform3D = Transform3D.IDENTITY, camera: Camera3D = null) -> Ghost3D:
+	if camera == null:
+		camera = parent.get_viewport().get_camera_3d()
+		camera = camera.duplicate(0) if camera else Camera3D.new()
 
-static func instantiate_from_camera(parent: Node, camera: Camera3D = null, tform: Transform3D = null) -> Ghost3D:
+	assert(camera != null)
+
 	var result: Ghost3D = DEFAULT_SCENE.instantiate()
 	parent.add_child(result)
 
 	result.global_transform = tform
-	var new_camera := camera.duplicate(0)
-	new_camera.transform = Transform3D.IDENTITY
-	result.add_child(new_camera)
-	new_camera.make_current()
+	camera.transform = Transform3D.IDENTITY
+	result.add_child(camera)
+	camera.make_current()
 
 	return result
 
@@ -41,9 +44,7 @@ var is_sprinting: bool
 
 
 func _init() -> void:
-	if inst: inst.queue_free()
-
-	inst = self
+	GhostAutoload.ghost = self
 
 
 func _unhandled_input(event: InputEvent) -> void:
