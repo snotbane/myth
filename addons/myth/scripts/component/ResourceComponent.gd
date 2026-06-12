@@ -1,5 +1,5 @@
 ## Adds a hook for a [Resource] such that it can be treated like a [Node].
-class_name ResourceComponent extends Node
+class_name ResourceComponent extends Component
 
 
 static func get_nearest_ancestor_sibling(node: Node, type: String = "ResourceComponent") -> ResourceComponent:
@@ -49,7 +49,9 @@ var _resource: Resource
 
 		on_resource_changed()
 
-@export_enum("None", "Descendant", "Ancestor", "Ancestor or Sibling") var fallback_type: int:
+
+## If [member resource] is not set, it will refer to this [Node]'s [member resource] instead.
+@export_enum("None", "Closest Descendant", "Closest Parent", "Closest Ancestor") var fallback_type: int = 3:
 	set(value):
 		fallback_type = value
 		if not is_node_ready(): return
@@ -78,7 +80,7 @@ var _resource: Resource
 @export_custom(PROPERTY_HINT_GROUP_ENABLE, "") var json_enabled: bool = true
 
 ## Determines when [JsonResource]s should be saved.
-@export_flags("On Resource Change:1", "On Exit Tree:2") var json_auto_save: int = 1
+@export_flags("On Resource Change:1", "On Exit Tree:2") var json_auto_save: int = 3
 
 ## Determines when [JsonResource]s should be touched.
 @export_flags("On Resource Change:1") var json_auto_touch: int = 1
@@ -104,9 +106,11 @@ func emit_resource_changed() -> void:
 	if resource == null: return
 	resource.changed.emit()
 func on_fallback_resource_changed() -> void:
-	if _resource: return
+	if _resource != null: return
 	on_resource_changed()
 func on_resource_changed() -> void:
+	if not enabled: return
+
 	match when_resource_is_null:
 		1: get_parent().visible = resource != null
 		2: get_parent().visible = resource == null

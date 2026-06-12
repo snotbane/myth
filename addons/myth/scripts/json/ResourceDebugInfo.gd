@@ -1,8 +1,8 @@
-## Helper node that displays information about a specific [ResourceNode], or a sibling or ancestor's [ResourceNode].
+## Helper node that displays information about a specific [ResourceComponent], or a sibling or ancestor's [ResourceComponent].
 class_name ResourceDebugInfo extends PanelContainer
 
-## The [ResourceNode] which we will watch and update. If unassigned, we will look for siblings, ancestors, and ancestor's siblings to find a [ResourceNode] to fallback to.
-@export var resource_node: ResourceNode:
+## The [ResourceComponent] which we will watch and update. If unassigned, we will look for siblings, ancestors, and ancestor's siblings to find a [ResourceComponent] to fallback to.
+@export var resource_node: ResourceComponent:
 	set(value):
 		if resource_node:
 			resource_node.resource_changed.disconnect(_resource_changed)
@@ -19,14 +19,14 @@ class_name ResourceDebugInfo extends PanelContainer
 		_scroll_container.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED if value else ScrollContainer.SCROLL_MODE_AUTO
 
 
-var _child_resource_node: ResourceNode
+var _child_resource_node: ResourceComponent
 var _scroll_container: ScrollContainer
 var _margin_container: MarginContainer
 var _rich_text_label: RichTextLabel
 
 
 func _init() -> void:
-	_child_resource_node = ResourceNode.new()
+	_child_resource_node = ResourceComponent.new()
 	_child_resource_node.fallback_type = 1
 	add_child(_child_resource_node)
 

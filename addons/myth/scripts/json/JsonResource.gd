@@ -5,13 +5,6 @@ class_name JsonResource extends Resource
 
 const DATA_PATH := "__DATA__.json"
 
-const SECONDS_IN_DAY := 86400
-const SECONDS_IN_HOUR := 3600
-const SECONDS_IN_MINUTE := 60
-
-const K_TIME_CREATED := &"time_created"
-const K_TIME_MODIFIED := &"time_modified"
-
 const KEY_SIZE := 16
 const IV_SIZE := 16
 
@@ -51,20 +44,7 @@ static var NOW: int:
 
 ## Adapted from:	https://github.com/godotengine/godot-proposals/issues/5515#issuecomment-1409971613
 static func get_local_datetime(unix_time: int) -> int:
-	return unix_time + Time.get_time_zone_from_system().bias * SECONDS_IN_MINUTE
-
-
-## Creates a new [JsonResource] and loads it from the given [param path]. If [param touch] is enabled, the file will be created if it does not already exist.
-static func new_from_path(path: String, touch_script: Script = null) -> JsonResource:
-	if FileAccess.file_exists(path):
-		return JsonResource.new().load(path)
-	elif touch_script:
-		var result := JsonResource.new()
-		Myth.change_script(result, touch_script)
-		result.save(path)
-		return result
-	else:
-		return null
+	return unix_time + Time.get_time_zone_from_system().bias * 60
 
 #endregion
 
@@ -216,6 +196,9 @@ signal deleted
 
 #endregion
 
+
+#region Properties
+
 ## The file_path_relative to save to, relative to [member parent_dir]. Make sure extension is included. If left blank, a random file_path_relative located in `user://` will be assigned.
 @export var _file_path_relative: String
 
@@ -254,9 +237,9 @@ var file_path: String:
 
 		_parent = find_parent_from_path(value)
 		_file_path_relative = value.substr(parent_dir.length() + 1) if _parent else value
-		_save_as_dir = DirAccess.dir_exists_absolute(file_path)
 
-		# if value.is_empty(): return
+		if FileAccess.file_exists(file_path):
+			_save_as_dir = DirAccess.dir_exists_absolute(file_path)
 
 		if FileAccess.file_exists(file_path_prev):
 			DirAccess.rename_absolute(file_path_prev, file_path)
@@ -354,20 +337,22 @@ var __encryption_password: String
 var _encryption_password_quantized: String:
 	get: return _encryption_password # TODO: ensure it's the same size as KEY_SIZE
 
+#endregion
+
 
 @export_storage var time_created: int
-@export_storage var time_modified: int
+@export_storage var time_changed: int
 @export_storage var tags: Variant
 
 
 func _init() -> void:
 	time_created = NOW
-	time_modified = time_created
+	time_changed = time_created
 	_init_tags()
 	_save_as_dir = _get_save_as_dir_default()
 
-	if not changed.is_connected(_changed):
-		changed.connect(_changed)
+	if not changed.is_connected(on_changed):
+		changed.connect(on_changed)
 
 
 var _is_ready: bool = false
@@ -380,8 +365,10 @@ func request_ready() -> void:
 func _get_save_as_dir_default() -> bool: return false
 
 
-func _changed() -> void:
-	time_modified = NOW
+func on_changed() -> void:
+	time_changed = NOW
+	_changed()
+func _changed() -> void: pass
 
 
 func _saving() -> void: pass
@@ -404,9 +391,8 @@ func touch(__file_path__: String = file_path) -> JsonResource:
 
 
 ## Serializes object data, and saves the [JsonResource] to the file system.
-func save(__file_path__: String = file_path, __save_as_dir__: bool = _save_as_dir) -> JsonResource:
+func save(__file_path__: String = file_path) -> JsonResource:
 	file_path = __file_path__
-	_save_as_dir = __save_as_dir__
 
 	var data_dir_touch_err := DirAccess.make_dir_recursive_absolute(data_dir_absolute)
 	if data_dir_touch_err != OK:
@@ -422,7 +408,6 @@ func save(__file_path__: String = file_path, __save_as_dir__: bool = _save_as_di
 
 	emit_changed()
 	var json := JSON.stringify(serialize(self ), "\t" if OS.is_debug_build() else "", OS.is_debug_build(), true)
-	# print("json : %s" % [ json ])
 	_save(file, json)
 
 	_touched()

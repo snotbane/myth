@@ -6,11 +6,12 @@
 class_name ResourcePropertyComponent extends ResourceComponent
 
 static var AUTO_PROPERTIES: Dictionary = {
+	&"action": [&"Dictionary", &"action_changed"],
+	&"elements": [&"Array", &"elements_changed"],
 	&"icon": [&"Texture2D", &"icon_changed"],
+	&"selected": [&"int", &"item_selected"],
 	&"text": [&"String", &"text_changed"],
 	&"value": [&"int", &"value_changed"],
-	&"selected": [&"int", &"item_selected"],
-	&"action": [&"Dictionary", &"action_changed"]
 }
 
 static func add_auto_property(prop_name: StringName, prop_type: StringName, signal_name: StringName):
@@ -43,7 +44,7 @@ var _node_target: Node
 	set(value): _node_target = value
 
 
-## The name of the property to read/write in the [member node_target]. An empty value will attempt to be assigned on ready.
+## The name of the property to read/write in the [member node_target]. An empty value will attempt to be assigned on ready, from a predefined list.
 @export var node_property_name: StringName
 
 ## Editor-only value used to verify the type of [member node_property_name]. Leave blank to do no assertion, or auto-assign if [member node_property_name] is also blank.
@@ -52,6 +53,7 @@ var _node_target: Node
 	set(value): set_meta(&"_custom_type", value)
 
 
+## If this signal is emitted from [member node_target], this will set the [member resource]'s value to match the signal's return value. The signal's return value should be the same type as [member resource_property_name].
 @export var node_signal: StringName:
 	set(value):
 		if not is_node_ready():
@@ -74,14 +76,7 @@ var property_value: Variant:
 var _is_setting_property: bool = false
 
 
-# func _init() -> void:
-# 	fallback_type = 2
-
-
 func _ready() -> void:
-	super._ready()
-	node_signal = node_signal
-
 	if node_property_name.is_empty():
 		var prop_list := node_target.get_property_list()
 		for k in AUTO_PROPERTIES:
@@ -97,14 +92,17 @@ func _ready() -> void:
 
 			break
 
-	assert(not node_property_name.is_empty(), "Attempted to auto-assign node_property_name in target node '%s', but no viable property exists." % [node_target.name])
+		assert(not node_property_name.is_empty(), "Attempted to auto-assign node_property_name in target node '%s', but no viable property exists." % [node_target.name])
 
+	node_signal = node_signal
+
+	super._ready()
 
 func _resource_changed() -> void:
 	if resource == null or not is_node_ready() or _is_setting_property: return
 
 	var value = resource.get(resource_property_name)
-	assert(node_property_type.is_empty() or Myth.is_value_of_type(value, node_property_type), "The value of ResourcePropertyComponent '%s' must match the type '%s'" % [resource_property_name, node_property_type])
+	assert(node_property_type.is_empty() or Myth.is_value_of_type(value, node_property_type), "The value of ResourcePropertyComponent '%s' must match the type '%s'. Actual value: '%s'" % [resource_property_name, node_property_type, str(value)])
 
 	node_target.set(node_property_name, value)
 

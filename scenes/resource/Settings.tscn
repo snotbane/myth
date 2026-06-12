@@ -1,9 +1,9 @@
 [gd_scene format=3 uid="uid://qaeefni22cwm"]
 
-[ext_resource type="Script" uid="uid://coksmubhy87xv" path="res://addons/myth/scripts/json/JsonResourceNode.gd" id="1_ep0bq"]
+[ext_resource type="Script" uid="uid://coksmubhy87xv" path="res://addons/myth/scripts/json/JsonResourceComponent.gd" id="1_ep0bq"]
 [ext_resource type="Script" uid="uid://c7hcf3fykjk88" path="res://addons/myth/scripts/json/SettingContainer.gd" id="1_t2hvj"]
 [ext_resource type="Script" uid="uid://bvp4qvuvvars2" path="res://addons/myth/scripts/json/SettingLayoutGroup.gd" id="2_axiek"]
-[ext_resource type="Script" uid="uid://d3f8jstcrmiht" path="res://addons/myth/scripts/json/ResourcePropertyNode.gd" id="3_ep0bq"]
+[ext_resource type="Script" uid="uid://d3f8jstcrmiht" path="res://addons/myth/scripts/json/ResourcePropertyComponent.gd" id="3_ep0bq"]
 [ext_resource type="Script" uid="uid://ckcd6xukn3h6u" path="res://scenes/resource/TestResourceA.gd" id="4_axiek"]
 [ext_resource type="Script" uid="uid://cu8dfaktbh2ki" path="res://addons/myth/scripts/misc/WindowModeSelector.gd" id="5_yxrdi"]
 [ext_resource type="Script" uid="uid://dwm22iqtauis3" path="res://addons/myth/scripts/misc/WindowFocusAudioBusMuter.gd" id="6_7u362"]
@@ -43,7 +43,7 @@ theme_override_constants/margin_bottom = 16
 [node name="PanelContainer" type="PanelContainer" parent="MarginContainer" unique_id=787431364]
 layout_mode = 2
 
-[node name="JsonResourceNode" type="Node" parent="MarginContainer/PanelContainer" unique_id=1088886198]
+[node name="JsonResourceComponent" type="Node" parent="MarginContainer/PanelContainer" unique_id=1088886198]
 script = ExtResource("1_ep0bq")
 resource_initial_path = "user://test.json"
 resource = SubResource("Resource_yxrdi")
@@ -103,7 +103,7 @@ metadata/_custom_type_script = "uid://c7hcf3fykjk88"
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="ResourcePropertyNode" type="Node" parent="MarginContainer/PanelContainer/MarginContainer/VBoxContainer/SettingContainer4/LineEdit" unique_id=2052813750]
+[node name="ResourcePropertyComponent" type="Node" parent="MarginContainer/PanelContainer/MarginContainer/VBoxContainer/SettingContainer4/LineEdit" unique_id=2052813750]
 script = ExtResource("3_ep0bq")
 resource_property_name = &"text"
 fallback_type = 2
@@ -122,7 +122,7 @@ metadata/_custom_type_script = "uid://c7hcf3fykjk88"
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="ResourcePropertyNode" type="Node" parent="MarginContainer/PanelContainer/MarginContainer/VBoxContainer/SettingContainer2/LineEdit" unique_id=777327793]
+[node name="ResourcePropertyComponent" type="Node" parent="MarginContainer/PanelContainer/MarginContainer/VBoxContainer/SettingContainer2/LineEdit" unique_id=777327793]
 script = ExtResource("3_ep0bq")
 resource_property_name = &"text"
 fallback_type = 2
@@ -143,7 +143,7 @@ input_name = &"test_1"
 conflict_enabled = false
 metadata/_custom_type_script = "uid://bgsuunw8n3e3"
 
-[node name="ResourcePropertyNode" type="Node" parent="MarginContainer/PanelContainer/MarginContainer/VBoxContainer/SettingContainer3/InputBinder" unique_id=315915706]
+[node name="ResourcePropertyComponent" type="Node" parent="MarginContainer/PanelContainer/MarginContainer/VBoxContainer/SettingContainer3/InputBinder" unique_id=315915706]
 script = ExtResource("3_ep0bq")
 resource_property_name = &"text"
 fallback_type = 2
@@ -157,6 +157,6 @@ text = "Save"
 [node name="music" type="AudioStreamPlayer" parent="." unique_id=394647439]
 stream = ExtResource("9_kfwal")
 
-[connection signal="resource_changed" from="MarginContainer/PanelContainer/MarginContainer/VBoxContainer/SettingContainer4/LineEdit/ResourcePropertyNode" to="MarginContainer/PanelContainer/MarginContainer/VBoxContainer/SettingContainer4/LineEdit/ResourcePropertyNode" method="test"]
-[connection signal="resource_changed" from="MarginContainer/PanelContainer/MarginContainer/VBoxContainer/SettingContainer2/LineEdit/ResourcePropertyNode" to="MarginContainer/PanelContainer/MarginContainer/VBoxContainer/SettingContainer2/LineEdit/ResourcePropertyNode" method="test"]
-[connection signal="resource_changed" from="MarginContainer/PanelContainer/MarginContainer/VBoxContainer/SettingContainer3/InputBinder/ResourcePropertyNode" to="MarginContainer/PanelContainer/MarginContainer/VBoxContainer/SettingContainer3/InputBinder/ResourcePropertyNode" method="test"]
+[connection signal="resource_changed" from="MarginContainer/PanelContainer/MarginContainer/VBoxContainer/SettingContainer4/LineEdit/ResourcePropertyComponent" to="MarginContainer/PanelContainer/MarginContainer/VBoxContainer/SettingContainer4/LineEdit/ResourcePropertyComponent" method="test"]
+[connection signal="resource_changed" from="MarginContainer/PanelContainer/MarginContainer/VBoxContainer/SettingContainer2/LineEdit/ResourcePropertyComponent" to="MarginContainer/PanelContainer/MarginContainer/VBoxContainer/SettingContainer2/LineEdit/ResourcePropertyComponent" method="test"]
+[connection signal="resource_changed" from="MarginContainer/PanelContainer/MarginContainer/VBoxContainer/SettingContainer3/InputBinder/ResourcePropertyComponent" to="MarginContainer/PanelContainer/MarginContainer/VBoxContainer/SettingContainer3/InputBinder/ResourcePropertyComponent" method="test"]

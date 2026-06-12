@@ -27,6 +27,18 @@ static func change_script(obj: Object, new_script: Script, preserve_usage_flags:
 		obj.set(k, preserve[k])
 
 
+## Compares the order of [param a] and [param b] for use in [Array.sort_custom]. If either is an [Object] with its own method `compare(other: Variant) -> bool`, that method will be used. If neither fit the criteria, it will simply return `a < b`.
+static func compare(a, b) -> bool:
+	if a is Object and a.has_method(&"compare"):
+		return a.compare(b)
+	elif b is Object and b.has_method(&"compare"):
+		return not b.compare(a)
+	elif a is not Object and b is not Object:
+		return a < b
+	else:
+		return false
+
+
 #endregion
 #region FileAccess
 
@@ -105,8 +117,11 @@ static func is_prop_of_type(name: StringName, type: String, props: Array[Diction
 			return type_string(prop[&"type"]) == type
 
 
-static func is_value_of_type(value, type: String) -> bool:
+static func is_value_of_type(value, type: String, null_ok: bool = true) -> bool:
 	match typeof(value):
+		TYPE_NIL when null_ok:
+			return true
+
 		TYPE_OBJECT:
 			if value == null or type.is_empty(): return false
 			if ClassDB.is_parent_class(value.get_class(), type): return true
@@ -117,6 +132,7 @@ static func is_value_of_type(value, type: String) -> bool:
 				script = script.get_base_script()
 
 			return false
+
 		_:
 			return type_string(typeof(value)) == type
 

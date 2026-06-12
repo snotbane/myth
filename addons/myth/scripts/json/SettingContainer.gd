@@ -1,4 +1,4 @@
-## Gives a label_text label to a [ResourcePropertyNode], and optionally, allows you to reset_mode its value.
+## Gives a label_text label to a [ResourcePropertyComponent], and optionally, allows you to reset_mode its value.
 @tool class_name SettingContainer extends HBoxContainer
 
 const RESET_ICON := preload("res://addons/myth/icons/ReloadSmall.svg")
