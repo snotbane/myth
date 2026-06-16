@@ -51,7 +51,7 @@ var _resource: Resource
 
 
 ## If [member resource] is not set, it will refer to this [Node]'s [member resource] instead.
-@export_enum("None", "Closest Descendant", "Closest Parent", "Closest Ancestor") var fallback_type: int = 3:
+@export_enum("None", "Closest Descendant", "Closest Parent or Ancestor") var fallback_type: int = 2:
 	set(value):
 		fallback_type = value
 		if not is_node_ready(): return
@@ -63,7 +63,6 @@ var _resource: Resource
 			0: fallback_node = null
 			1: fallback_node = Myth.find_descendant_of_type(self , "ResourceComponent", true)
 			2: fallback_node = Myth.find_ancestor_sibling_of_type(self , "ResourceComponent", true, false)
-			3: fallback_node = Myth.find_ancestor_sibling_of_type(self , "ResourceComponent", true, true)
 
 		if fallback_node:
 			fallback_node.resource_changed.connect(on_fallback_resource_changed)
@@ -139,3 +138,10 @@ func disconnect_resource_signal(sig: StringName, callable: Callable) -> void:
 
 	if resource:
 		resource.disconnect(sig, callable)
+
+
+## Calls a method on [member resource]. If it is currently unset, nothing will happen.
+func call_resource_method(method: StringName, arg_array: Array = []) -> void:
+	if resource == null: return
+
+	resource.callv(method, arg_array)

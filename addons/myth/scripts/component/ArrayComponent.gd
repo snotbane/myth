@@ -16,19 +16,19 @@ var _elements_prev: Array
 	get: return element_nodes.keys()
 	set(value):
 		if not is_node_ready():
-			_element_nodes.clear()
-			for k in value:
-				_element_nodes[k] = null
-			return
+			await ready
+			await get_tree().process_frame
 
-		var registered_children := _element_nodes.values()
-		for child in parent.get_children():
-			if not registered_children.has(child): continue
-			child.queue_free()
+		var __elements__ := elements
 
-		_element_nodes.clear()
-		for k in value:
-			_element_nodes[k] = null
+		for e in __elements__:
+			if e in value: continue
+			_element_nodes[e].queue_free()
+			_element_nodes.erase(e)
+
+		for e in value:
+			if e in __elements__: continue
+			_element_nodes[e] = null
 
 		refresh_elements()
 
@@ -47,14 +47,14 @@ var managed_children: Array[Node]:
 
 
 func refresh_elements() -> void:
-	assert(elements_scene != null, "elements_scene is not set. Cannot create any children.")
+	assert(elements_scene != null or _element_nodes.is_empty(), "elements_scene is not set. Cannot create any children.")
 
 	for k in _elements_prev:
 		if k is not Resource: continue
 		k.changed.disconnect(refresh_element)
 
 	for k in _element_nodes:
-		if (Engine.is_editor_hint() or elements_always_rebuild) and _element_nodes[k] is Node:
+		if elements_always_rebuild and _element_nodes[k] is Node:
 			_element_nodes[k].queue_free()
 			_element_nodes[k] = null
 
@@ -68,21 +68,18 @@ func refresh_elements() -> void:
 
 	_elements_prev = elements
 	refresh_child_order()
-	# elements_changed.emit(_elements_prev)
+	elements_changed.emit(_elements_prev)
 
 
 func refresh_child_order() -> void:
 	var children := managed_children
-	for child in children:
-		if not child.is_inside_tree(): continue
-		assert(child.get_parent() == parent, "The child's parent was changed elsewhere.")
-
-		parent.remove_child(child)
-
 	children.sort_custom(_sort_children)
 
-	for child in children:
-		parent.add_child.call_deferred(child)
+	for i in children.size():
+		if not children[i].is_inside_tree():
+			parent.add_child(children[i])
+
+		parent.move_child(children[i], i)
 
 
 func get_element_node(e) -> Node:
@@ -98,15 +95,15 @@ func remove_element(e) -> void:
 	_element_nodes.erase(e)
 	refresh_elements()
 
-
+var refreshing_elements: Array
 func refresh_element(e) -> void:
-	_element_nodes[e].populate(e)
+	if e in refreshing_elements: return
+
+	refreshing_elements.push_back(e)
+	await _element_nodes[e].populate(e)
 	refresh_child_order()
+	refreshing_elements.erase(e)
 
 
 func _sort_children(a: Node, b: Node) -> bool:
 	return Myth.compare(a, b)
-
-
-func _ready() -> void:
-	refresh_elements()
