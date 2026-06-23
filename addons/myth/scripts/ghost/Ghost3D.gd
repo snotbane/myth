@@ -1,7 +1,7 @@
 ## Allows the user to freely move around 3D scenes for debugging purposes.
 class_name Ghost3D extends Node3D
 
-const DEFAULT_SCENE = preload("res://addons/myth/scripts/ghost/ghost_3d.tscn")
+const DEFAULT_SCENE = preload("res://addons/myth/scripts/ghost/Ghost3D.tscn")
 
 
 static func instantiate_from_parent(parent: Node, tform: Transform3D = Transform3D.IDENTITY, camera: Camera3D = null) -> Ghost3D:
@@ -48,7 +48,7 @@ func _init() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if InputNode.is_input_restricted(self ):
+	if InputNode.is_input_restricted(self):
 		move_input_vector = Vector3.ZERO
 		turn_input_vector = Vector2.ZERO
 		is_sprinting = false

@@ -1,7 +1,7 @@
 ## Allows the user to freely move around 2D scenes for debugging purposes.
 class_name Ghost2D extends Node2D
 
-const DEFAULT_SCENE: PackedScene = preload("res://addons/myth/scripts/ghost/ghost_2d.tscn")
+const DEFAULT_SCENE: PackedScene = preload("res://addons/myth/scripts/ghost/Ghost2D.tscn")
 
 static var inst: Ghost2D
 
@@ -53,7 +53,7 @@ func _init() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if InputNode.is_input_restricted(self ):
+	if InputNode.is_input_restricted(self):
 		move_input_vector = Vector2.ZERO
 		is_sprinting = false
 		return
