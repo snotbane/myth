@@ -1,5 +1,6 @@
 ## Ensures that the parent [Node] only exists when certain engine features are present. See [member OS.has_feature] and [url=https://docs.godotengine.org/en/stable/tutorials/export/feature_tags.html]Feature Tags[/url] docs. This is evaluated and processed on [member ready], after which this Node is always destroyed.
-class_name FeatureComponent extends Component
+class_name FeatureDependency
+extends Component
 
 ## This determines which action to perform on [member parent], if the criteria is NOT met. (If the criteria is met, nothing will happen.)
 @export_enum("Queue Free", "Hide") var discard_action: int = 0

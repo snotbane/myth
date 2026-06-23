@@ -1,17 +1,14 @@
 ## A resource which can be saved as, and loaded from, a JSON file. Useful for any kind of user save data. This does NOT provide any access to available save files on the system. Typical usage includes prompting for a file_path_relative using [FileDialog] and then either saving or loading to a new [JsonResource] instance.
-class_name JsonResource extends Resource
+@abstract
+class_name JsonResource
+extends Resource
 
 #region Statics
 
-const DATA_PATH := "__DATA__.json"
+const DATA_NAME := "__DATA__"
 
 const KEY_SIZE := 16
 const IV_SIZE := 16
-
-const IGNORED_PROPERTY_NAMES := [
-	"script",
-	"metadata/_custom_type_script"
-]
 
 static var DIRECTORY_RESOURCES: Dictionary
 
@@ -49,143 +46,6 @@ static func get_local_datetime(unix_time: int) -> int:
 #endregion
 
 
-#region Serialization
-
-## Converts a [Variant] into a JSON-compatible typed [Dictionary].
-static func serialize(target: Variant) -> Variant:
-	var json: Dictionary
-	var type := typeof(target)
-
-	match type:
-		TYPE_OBJECT:
-			json[&"type"] = target.get_class()
-			if target.get_script():
-				json[&"script"] = ResourceUID.id_to_text(ResourceLoader.get_resource_uid(target.get_script().resource_path))
-
-		_:
-			json[&"type"] = type
-
-	match type:
-		TYPE_OBJECT:
-			json[&"value"] = _serialize_object(target)
-
-		TYPE_DICTIONARY:
-			json[&"value"] = {}
-			for k in target.keys():
-				json[&"value"][k] = serialize(target[k])
-
-		TYPE_ARRAY:
-			json[&"value"] = []
-			json[&"value"].resize(target.size())
-			for i in target.size():
-				json[&"value"][i] = serialize(target[i])
-
-		TYPE_CALLABLE:
-			json[&"value"] = null
-
-		TYPE_COLOR:
-			json[&"value"] = target.to_html()
-
-		_:
-			return target
-
-	return json
-
-## Serialize an object. To add additional properties to your object, create a method `func _serialize() -> Dictionary` which returns your custom data. This data will b e merged into the existing data. To completely override serialization, instead implement a new `func _serialize_custom() -> Variant`. It should return any value that you wish to be stored as JSON. Regardless of custom implmentations, if it's a project resource with a valid resource_path, it will simply store the UID.
-static func _serialize_object(obj: Object) -> Variant:
-	if obj is Resource and FileAccess.file_exists(obj.resource_path):
-		return ResourceUID.id_to_text(ResourceLoader.get_resource_uid(obj.resource_path))
-
-	if obj.has_method(&"_serialize_custom"):
-		return obj._serialize_custom()
-
-	var json := {}
-	for prop in obj.get_property_list():
-		if (
-				prop[&"name"][0] == "_"
-			or prop[&"name"] in IGNORED_PROPERTY_NAMES
-			or not prop[&"usage"] & PROPERTY_USAGE_STORAGE
-		): continue
-
-		var value := serialize(obj.get(prop[&"name"]))
-		if value == null and not prop[&"usage"] & PROPERTY_USAGE_STORE_IF_NULL:
-			continue
-
-		json[prop[&"name"]] = value
-
-	if obj.has_method(&"_serialize"):
-		json.merge(obj._serialize())
-
-	return json
-
-
-## Converts a JSON dictionary created using [member serialize()]. If a context object is specified, the context object will be updated, rather than replaced, so all references to it will be kept.
-static func deserialize(json: Variant, context: Object = null) -> Variant:
-	if json is not Dictionary:
-		return json
-
-	if json[&"type"] is String:
-		return _deserialize_object(json, context)
-
-	if json[&"type"] is float: ## Use float because JSON.parse_string() always imports numbers as floats.
-		match int(json[&"type"]):
-			TYPE_DICTIONARY:
-				var result: Dictionary = {}
-				for k in json[&"value"].keys():
-					var value = json[&"value"][k]
-					result[k] = deserialize(json[&"value"][k])
-				return result
-
-			TYPE_ARRAY:
-				var result: Array = []
-				result.resize(json[&"value"].size())
-				for i in result.size():
-					result[i] = deserialize(json[&"value"][i])
-				return result
-
-			TYPE_CALLABLE:
-				return null
-
-			TYPE_COLOR:
-				return Color.html(json[&"value"])
-
-			_:
-				return json[&"value"]
-
-	return null
-
-## Deserializes an object from its JSON form. To customize deserialization for a class, implement a new `func _deserialize(json: Variant, context: Object = null) -> void`. Param `json` will be what `_serialize` created. Param `context` (advanced, not required in implementation) is the object that... tbh I don't even remember. It works.
-static func _deserialize_object(json: Variant, context: Object = null) -> Object:
-	if json[&"value"] is String and json[&"value"].begins_with("uid://"):
-		return load(json[&"value"])
-
-	var result: Object = ClassDB.instantiate(json[&"type"]) if context == null else context
-	var data = json[&"value"]
-	Myth.change_script(result, load(json[&"script"]) if json.has(&"script") else null, PROPERTY_USAGE_STORAGE, data.keys())
-
-	if result.has_method(&"_deserialize_custom"):
-		var args := [data, context]
-		args.resize(result.get_method_argument_count(&"_deserialize_custom"))
-		result._deserialize_custom.callv(args)
-		return result
-
-	for k: StringName in data.keys():
-		if k == &"script": continue
-
-		var value_prev = result.get(k)
-		var value = deserialize(data[k], value_prev if value_prev is Object else null)
-		result.set(k, value)
-
-	if result.has_method(&"_deserialize"):
-		var args := [data, context]
-		args.resize(result.get_method_argument_count(&"_deserialize"))
-		result._deserialize.callv(args)
-
-	return result
-
-#endregion
-
-
 #region Signals
 
 ## Emitted when [member _ready] is called.
@@ -199,8 +59,26 @@ signal deleted
 
 #region Properties
 
+## The time at which this [Resource] was originally created.
+@export_storage var time_created: int
+
+## The time at which this [Resource] was last [member changed].
+@export_storage var time_changed: int
+
+
+## Returns true if the [member file_exists], and custom conditions defined in [member _get_is_valid] pass.
+var is_valid: bool:
+	get: return file_exists and _get_is_valid()
+
+## Custom implementation to check if the data is valid.
+func _get_is_valid() -> bool: return true
+
+
+#region Path
+
 ## The file_path_relative to save to, relative to [member parent_dir]. Make sure extension is included. If left blank, a random file_path_relative located in `user://` will be assigned.
 @export var _file_path_relative: String
+
 
 ## The file path, relative to [member parent_dir]. Changing this will move the file on the system.
 var file_path_relative: String:
@@ -265,6 +143,13 @@ var file_dir_absolute: String:
 var parent: JsonResource:
 	get: return _parent
 
+func set_parent_and_path(new_parent: JsonResource, new_relative_path: String = "") -> void:
+	assert(new_parent != null or not new_relative_path.is_empty(), "Either one of 'new_parent' or 'new_relative_path' must be valid.")
+	if new_relative_path.is_empty():
+		new_relative_path = file_path_relative
+
+	file_path = new_parent.file_path.path_join(new_relative_path) if new_parent else new_relative_path
+
 ## If we have a [member parent], this is a shorthand for its file path. If no [member parent] exists, it will return [member file_dir_relative].
 var parent_dir: String:
 	get: return _parent.file_path if _parent else file_dir_relative
@@ -288,9 +173,9 @@ var _save_as_dir: bool
 		if _save_as_dir:
 			DIRECTORY_RESOURCES[file_path] = self
 
-## The path of the location of the actual JSON file, relative to [member file_path]. Only relevant if [member save_as_dir] is true
+## The path of the location of the actual JSON file, relative to [member file_path]. Only relevant if [member save_as_dir] is true.
 var data_path_relative: String:
-	get: return DATA_PATH
+	get: return "%s.%s" % [DATA_NAME, file_ext]
 
 ## The path of the actual JSON file. Only relevant if [member save_as_dir] is true, otherwise it will be the same as [member file_path].
 var data_path: String:
@@ -312,13 +197,10 @@ var data_dir_absolute: String:
 var file_exists: bool:
 	get: return FileAccess.file_exists(data_path)
 
-## Returns true if the [member file_exists], and custom conditions defined in [member _get_is_valid] pass.
-var is_valid: bool:
-	get: return file_exists and _get_is_valid()
+#endregion
 
-## Custom implementation to check if the data is valid.
-func _get_is_valid() -> bool: return true
 
+#region Encryption
 
 var _aes: AESContext
 var _crypto: Crypto
@@ -337,18 +219,101 @@ var __encryption_password: String
 var _encryption_password_quantized: String:
 	get: return _encryption_password # TODO: ensure it's the same size as KEY_SIZE
 
+
+@export var _auto_save_on_changed: bool = true
+
 #endregion
 
 
-@export_storage var time_created: int
-@export_storage var time_changed: int
-@export_storage var tags: Variant
+#region Tags
 
+enum {
+	OK,
+	NULL_TAG_LIST,
+	TAG_ALREADY_EXISTS,
+	TAG_EMPTY_OR_WHITESPACE,
+	TAG_DOES_NOT_EXIST,
+}
+
+static var ERROR_STRINGS: Dictionary[int, String] = {
+	OK: "",
+	TAG_ALREADY_EXISTS: "A similar tag already exists.",
+	TAG_EMPTY_OR_WHITESPACE: "Tag must contain at least one non-whitespace character.",
+	TAG_DOES_NOT_EXIST: "No matching or similar tag exists."
+
+}
+
+static func tag_error_string(code: int) -> String:
+	return ERROR_STRINGS[code]
+
+
+static var TAG_REMOVE_WHITESPACE_REGEX := RegEx.create_from_string(r"^\s+|\s+$|[\n\t]+|(?:\b +(?= )\b)")
+
+static func format_string_for_tag(s: String) -> String:
+	return TAG_REMOVE_WHITESPACE_REGEX.sub(s, "")
+
+
+## A collection of tags to assist in filtering this [JsonResource] among others. It is a [Variant] so that one can use either an [Array] or an [Object].
+@export var tags: Variant
+
+
+## Custom override to initialize [member tags]. This should return whatever kind of tag collection you wish to use.
+func _tags_init() -> Variant:
+	return PackedStringArray()
+
+
+# ## Custom override to check if a [Variant] [param tag] matches the given [param text].
+# func _tag_matches_text(tag, text: String) -> bool:
+# 	return str(tag) == format_string_for_tag(text)
+
+
+## Returns true if the given [param tag] exists in [member tags].
+func has_tag(tag: Variant) -> bool:
+	return tag in tags
+
+
+## Returns true if the given [param text] matches any tag in [member tags]. If [member tags] is an array of [String]s, this is equivalent to [member has_tag].
+func has_tag_by_name(text: String) -> bool:
+	return find_tag_by_name(text) != null
+
+
+## Returns the first tag in [member tags] that matches the given [param text].
+func find_tag_by_name(text: String) -> Variant:
+	text = format_string_for_tag(text)
+
+	for tag in tags:
+		# if _tag_matches_text(tag, text): return tag
+		if str(tag) == text: return tag
+
+	return null
+
+
+## Creates a new tag, assuming that it does not already exist. Returns an error if unsuccessful.
+func create_tag_by_name(text: String) -> int:
+	text = format_string_for_tag(text)
+
+	if text.is_empty(): return TAG_EMPTY_OR_WHITESPACE
+	if has_tag_by_name(text): return TAG_ALREADY_EXISTS
+
+	_create_tag_by_name(text)
+	return OK
+
+
+## Custom implementation for adding a tag by string name. Assumes that all validation checks have passed and the tag is formatted properly.
+func _create_tag_by_name(text: String) -> void:
+	tags.push_back(text)
+
+#endregion
+
+#endregion
+
+
+#region Methods
 
 func _init() -> void:
 	time_created = NOW
 	time_changed = time_created
-	_init_tags()
+	tags = _tags_init()
 	_save_as_dir = _get_save_as_dir_default()
 
 	if not changed.is_connected(on_changed):
@@ -368,6 +333,8 @@ func _get_save_as_dir_default() -> bool: return false
 func on_changed() -> void:
 	time_changed = NOW
 	_changed()
+	if _auto_save_on_changed and file_exists:
+		save()
 func _changed() -> void: pass
 
 
@@ -383,6 +350,8 @@ func open(flags: FileAccess.ModeFlags) -> FileAccess:
 
 ## Loads the [JsonResource] if it exists, or creates the file if it does not.
 func touch(__file_path__: String = file_path) -> JsonResource:
+	if _is_manipulating_file: return self
+
 	file_path = __file_path__
 	if file_exists:
 		return self.load()
@@ -390,24 +359,30 @@ func touch(__file_path__: String = file_path) -> JsonResource:
 		return self.save()
 
 
+var _is_manipulating_file: bool
+
 ## Serializes object data, and saves the [JsonResource] to the file system.
 func save(__file_path__: String = file_path) -> JsonResource:
+	if _is_manipulating_file: return self
+	_is_manipulating_file = true
+
 	file_path = __file_path__
 
 	var data_dir_touch_err := DirAccess.make_dir_recursive_absolute(data_dir_absolute)
 	if data_dir_touch_err != OK:
-		printerr("Failed to save %s at path '%s': while attempting to touch directory: %s" % [ self , data_dir_absolute, error_string(data_dir_touch_err)])
+		printerr("Failed to save %s at path '%s': while attempting to touch directory: %s" % [self, data_dir_absolute, error_string(data_dir_touch_err)])
+		_is_manipulating_file = false
 		return null
 
 	var file := open(FileAccess.WRITE)
 	if file == null:
-		printerr("Failed to save %s at data path '%s': while opening file: %s" % [ self , data_path_absolute, error_string(FileAccess.get_open_error())])
+		printerr("Failed to save %s at data path '%s': while opening file: %s" % [self, data_path_absolute, error_string(FileAccess.get_open_error())])
 		return null
 
 	_saving()
 
 	emit_changed()
-	var json := JSON.stringify(serialize(self ), "\t" if OS.is_debug_build() else "", OS.is_debug_build(), true)
+	var json := JSON.stringify(Serialization.serialize(self), "\t" if OS.is_debug_build() else "", OS.is_debug_build(), true)
 	_save(file, json)
 
 	_touched()
@@ -417,6 +392,7 @@ func save(__file_path__: String = file_path) -> JsonResource:
 		_is_ready = true
 		ready.emit()
 
+	_is_manipulating_file = false
 	return self
 
 ## Saves the given stringified JSON text to the file.
@@ -445,18 +421,22 @@ func _save(file: FileAccess, json: String) -> void:
 
 ## Loads the [JsonResource] from the file system, deserializes the JSON data, and updates object fields to match.
 func load(__file_path__: String = file_path) -> JsonResource:
+	if _is_manipulating_file: return self
+	_is_manipulating_file = true
+
 	file_path = __file_path__
 
 	var file := open(FileAccess.READ)
 	if file == null:
-		printerr("Failed to load JsonResource. Error code: %s (%s)." % [FileAccess.get_open_error(), tag_error_string(FileAccess.get_open_error())])
+		printerr("Failed to load JsonResource. Error code: %s (%s) at path: %s" % [FileAccess.get_open_error(), error_string(FileAccess.get_open_error()), data_path])
+		_is_manipulating_file = false
 		return null
 
 	var json_string = _load(file)
 	var json = JSON.parse_string(json_string)
 	assert(json != null, "Couldn't parse string to json at file_path_relative: %s" % data_path)
 
-	deserialize(json, self )
+	Serialization.deserialize(json, self)
 	_loaded()
 	_touched()
 
@@ -465,6 +445,7 @@ func load(__file_path__: String = file_path) -> JsonResource:
 		_is_ready = true
 		ready.emit()
 
+	_is_manipulating_file = false
 	return self
 
 ## Loads the given file as stringified JSON text.
@@ -488,6 +469,19 @@ func _load(file: FileAccess) -> String:
 
 	file.close()
 	return result
+
+
+func save_child(child: JsonResource, relative_path: String = file_path_relative) -> JsonResource:
+	return child.save(self.file_path.path_join(relative_path))
+
+
+func get_children_load_paths(relative_dir: String = "") -> PackedStringArray:
+	return Myth.get_paths_in_folder(
+		file_path.path_join(relative_dir) if relative_dir else file_path,
+		true,
+		null,
+		RegEx.create_from_string("^%s\\..*$" % DATA_NAME)
+	)
 
 
 ## Opens [member data_path_absolute] using [OS.shell_open].
@@ -529,72 +523,5 @@ func delete() -> void:
 		return
 
 	deleted.emit()
-
-#region Tags
-
-enum {
-	OK,
-	NULL_TAG_LIST,
-	TAG_ALREADY_EXISTS,
-	TAG_EMPTY_OR_WHITESPACE,
-	TAG_DOES_NOT_EXIST,
-}
-static var ERROR_STRINGS: Dictionary[int, String] = {
-	OK: "",
-	TAG_ALREADY_EXISTS: "A similar tag already exists.",
-	TAG_EMPTY_OR_WHITESPACE: "Tag must contain at least one non-whitespace character.",
-	TAG_DOES_NOT_EXIST: "No matching or similar tag exists."
-
-}
-static func tag_error_string(code: int) -> String:
-	return ERROR_STRINGS[code]
-
-
-static var REGEX_TAGS_REMOVE_WHITESPACE := RegEx.create_from_string(r"^\s+|\s+$|[\n\t]+|(?:\b +(?= )\b)")
-static func format_string_for_tag(s: String) -> String:
-	return REGEX_TAGS_REMOVE_WHITESPACE.sub(s, "")
-
-
-## Use this method to define how/if tags should be stored.
-func _init_tags() -> void:
-	tags = PackedStringArray()
-
-
-## Returns true if the given [param tag] exists in [member tags].
-func has_tag(tag: Variant) -> bool:
-	return tag in tags
-
-
-## Returns true if the given [param text] matches any tag in [member tags]. If [member tags] is an array of [String]s, this is equivalent to [member has_tag].
-func has_tag_by_name(text: String) -> bool:
-	return find_tag_by_name(text) != null
-
-
-## Returns the first tag in [member tags] that matches the given [param text].
-func find_tag_by_name(text: String) -> Variant:
-	for tag in tags:
-		if _tag_matches_text(tag, text): return tag
-	return null
-
-
-## Custom override to check if a [Variant] [param tag] matches the given [param text]. By default, it assumes that [param tag] is a [String] (and [member tags] is an array of [String]s).
-func _tag_matches_text(tag, text: String) -> bool:
-	return tag == text
-
-
-## Creates a new tag, assuming that it does not already exist. Returns an error if unsuccessful.
-func create_tag_by_name(text: String) -> int:
-	text = format_string_for_tag(text)
-
-	if text.is_empty(): return TAG_EMPTY_OR_WHITESPACE
-	if has_tag_by_name(text): return TAG_ALREADY_EXISTS
-
-	_create_tag_by_name(text)
-	return OK
-
-
-## Custom implementation for adding a tag by string name. Assumes that all validation checks have passed and the tag is formatted properly.
-func _create_tag_by_name(text: String) -> void:
-	tags.push_back(text)
 
 #endregion

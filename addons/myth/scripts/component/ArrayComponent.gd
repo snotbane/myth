@@ -3,21 +3,22 @@ class_name ArrayComponent extends Component
 
 signal elements_changed(new_elements: Array)
 
-## If enabled, this will always destroy and recreate an [member elements_scene] instead of updating it.
+## If enabled, this will always destroy and recreate an [member elements_fallback_scene] instead of updating it.
 @export var elements_always_rebuild: bool = false
 
+## If set, this property of each element will be used as the scene to instantiate for it, assuming it is an [Object]. If blank, [member elements_fallback_scene will be used.
+@export var elements_scene_property: StringName
 
-## Each element will instantiate and/or update one of this scene to represent itself. The root Node in the scene should either have a `value` property, or a `populate(source)` method which accepts the element.
-@export var elements_scene: PackedScene
+## Any element without the property [member elements_scene_property] will use this scene to display itself.
+@export var elements_fallback_scene: PackedScene
 
 
 var _elements_prev: Array
 @export var elements: Array:
 	get: return element_nodes.keys()
 	set(value):
-		if not is_node_ready():
-			await ready
-			await get_tree().process_frame
+		if not get_parent().is_node_ready():
+			await get_parent().ready
 
 		var __elements__ := elements
 
@@ -47,24 +48,35 @@ var managed_children: Array[Node]:
 
 
 func refresh_elements() -> void:
-	assert(elements_scene != null or _element_nodes.is_empty(), "elements_scene is not set. Cannot create any children.")
-
 	for k in _elements_prev:
 		if k is not Resource: continue
 		k.changed.disconnect(refresh_element)
 
-	for k in _element_nodes:
-		if elements_always_rebuild and _element_nodes[k] is Node:
-			_element_nodes[k].queue_free()
-			_element_nodes[k] = null
+	for e in _element_nodes:
+		var child: Node = _element_nodes[e]
+		var child_visible_prev = child.get(&"visible") if child else null
 
-		if _element_nodes[k] == null:
-			_element_nodes[k] = elements_scene.instantiate()
+		if elements_always_rebuild and child is Node:
+			child.queue_free()
+			child = null
 
-		_element_nodes[k].populate(k)
+		if child == null:
+			var element_scene: PackedScene = e.get(elements_scene_property) if elements_scene_property and e is Object else null
+			if element_scene == null:
+				element_scene = elements_fallback_scene
+			assert(element_scene != null, "No scene could be created for element '%s', and no fallback scene is set." % [e])
 
-		if k is Resource:
-			k.changed.connect(refresh_element.bind(k))
+			child = element_scene.instantiate()
+
+		assert(child.has_method(&"populate"), "The target Node for element '%s' must contain a method 'populate'." % [e])
+		child.populate(e)
+		if child_visible_prev != null:
+			child.visible = child_visible_prev
+
+		_element_nodes[e] = child
+
+		if e is Resource:
+			e.changed.connect(refresh_element.bind(e))
 
 	_elements_prev = elements
 	refresh_child_order()
@@ -75,11 +87,24 @@ func refresh_child_order() -> void:
 	var children := managed_children
 	children.sort_custom(_sort_children)
 
+	if not parent.is_node_ready():
+		await parent.ready
+		await get_tree().process_frame
+
 	for i in children.size():
 		if not children[i].is_inside_tree():
 			parent.add_child(children[i])
 
+	for i in children.size():
 		parent.move_child(children[i], i)
+
+
+func filter_elements(method: Callable) -> void:
+	assert(method.is_valid(), "Filter method is not valid.")
+	for e in elements:
+		assert(_element_nodes[e].get(&"visible") != null, "Can't filter a node without a `visible` property.")
+
+		_element_nodes[e].visible = method.call(e)
 
 
 func get_element_node(e) -> Node:

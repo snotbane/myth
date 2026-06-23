@@ -82,4 +82,4 @@ func _resource_changed() -> void:
 			if resource_node.resource is JsonResource else
 			("%s: " % str(resource_node.resource))
 		)
-		_rich_text_label.append_text(JSON.stringify(JsonResource.serialize(resource_node.resource), "\t", true))
+		_rich_text_label.append_text(JSON.stringify(Serialization.serialize(resource_node.resource), "\t", true))
