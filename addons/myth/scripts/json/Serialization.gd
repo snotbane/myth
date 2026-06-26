@@ -1,4 +1,3 @@
-## Provides methods for serializing and deserializing values into JSON-compatible dictionaries.
 class_name Serialization
 
 const IGNORED_PROPERTY_NAMES := [

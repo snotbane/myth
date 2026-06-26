@@ -295,13 +295,36 @@ func create_tag_by_name(text: String) -> int:
 	if text.is_empty(): return TAG_EMPTY_OR_WHITESPACE
 	if has_tag_by_name(text): return TAG_ALREADY_EXISTS
 
-	_create_tag_by_name(text)
+	var err := _create_tag_by_name(text)
+	if err: return err
+
+	emit_changed()
+	return OK
+
+## Custom implementation for adding a tag by name. Assumes that all validation checks have passed and the tag is formatted properly.
+func _create_tag_by_name(text: String) -> int:
+	tags.push_back(text)
 	return OK
 
 
-## Custom implementation for adding a tag by string name. Assumes that all validation checks have passed and the tag is formatted properly.
-func _create_tag_by_name(text: String) -> void:
-	tags.push_back(text)
+## Removes an existing tag. Returns an error if unsuccessful.
+func remove_tag_by_name(text: String) -> int:
+	text = format_string_for_tag(text)
+
+	if text.is_empty(): return TAG_EMPTY_OR_WHITESPACE
+	if not has_tag_by_name(text): return TAG_DOES_NOT_EXIST
+
+	var err := _remove_tag_by_name(text)
+	if err: return err
+
+	emit_changed()
+	return OK
+
+## Custom implementation for removing a tag by name.
+func _remove_tag_by_name(text: String) -> int:
+	tags.erase(text)
+	return OK
+
 
 #endregion
 
@@ -475,13 +498,23 @@ func save_child(child: JsonResource, relative_path: String = file_path_relative)
 	return child.save(self.file_path.path_join(relative_path))
 
 
+## Loads all child [JsonResource]s in the path [param relative_dir]. A [param template] must be supplied to define the class/script of the object.
+func load_children(template: JsonResource, relative_dir: String = "") -> Array:
+	var result: Array
+
+	for path in get_children_load_paths(relative_dir):
+		result.push_back(template.duplicate().load(path))
+
+	return result
+
+
 func get_children_load_paths(relative_dir: String = "") -> PackedStringArray:
 	return Myth.get_paths_in_folder(
 		file_path.path_join(relative_dir) if relative_dir else file_path,
 		true,
 		null,
 		RegEx.create_from_string("^%s\\..*$" % DATA_NAME)
-	)
+	) if save_as_dir else []
 
 
 ## Opens [member data_path_absolute] using [OS.shell_open].
@@ -489,6 +522,7 @@ func shell_open() -> void:
 	var err := OS.shell_open(data_path_absolute)
 	if err != OK:
 		printerr("Error opening JsonResource at '%s': code %s (%s)." % [file_path_absolute, err, error_string(err)])
+
 
 ## Opens [member file_path_absolute] using [OS.shell_show_in_file_manager].
 func shell_reveal() -> void:

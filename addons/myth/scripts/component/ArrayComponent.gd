@@ -24,14 +24,15 @@ var _elements_prev: Array
 
 		for e in __elements__:
 			if e in value: continue
-			_element_nodes[e].queue_free()
+			if _element_nodes[e] is Node:
+				_element_nodes[e].queue_free()
 			_element_nodes.erase(e)
 
 		for e in value:
 			if e in __elements__: continue
 			_element_nodes[e] = null
 
-		refresh_elements()
+		await refresh_elements()
 
 
 var _element_nodes: Dictionary[Variant, Node]
@@ -39,7 +40,7 @@ var element_nodes: Dictionary[Variant, Node]:
 	get: return _element_nodes
 	set(value):
 		_element_nodes = value
-		refresh_elements()
+		await refresh_elements()
 		elements_changed.emit()
 
 
@@ -47,43 +48,69 @@ var managed_children: Array[Node]:
 	get: return _element_nodes.values()
 
 
-func refresh_elements() -> void:
+func refresh_elements():
 	for k in _elements_prev:
-		if k is not Resource: continue
+		if k is not Resource or k in _element_nodes: continue
 		k.changed.disconnect(refresh_element)
 
-	for e in _element_nodes:
-		var child: Node = _element_nodes[e]
-		var child_visible_prev = child.get(&"visible") if child else null
+	var _elements_visible: Dictionary
+	for k in _element_nodes:
+		var child: Node = _element_nodes[k]
+		_elements_visible[k] = child.get(&"visible") if child else null
 
 		if elements_always_rebuild and child is Node:
 			child.queue_free()
 			child = null
 
 		if child == null:
-			var element_scene: PackedScene = e.get(elements_scene_property) if elements_scene_property and e is Object else null
+			var element_scene: PackedScene = k.get(elements_scene_property) if elements_scene_property and k is Object else null
 			if element_scene == null:
 				element_scene = elements_fallback_scene
-			assert(element_scene != null, "No scene could be created for element '%s', and no fallback scene is set." % [e])
+			assert(element_scene != null, "No scene could be created for element '%s', and no fallback scene is set." % [k])
 
 			child = element_scene.instantiate()
 
-		assert(child.has_method(&"populate"), "The target Node for element '%s' must contain a method 'populate'." % [e])
-		child.populate(e)
-		if child_visible_prev != null:
-			child.visible = child_visible_prev
+		_element_nodes[k] = child
 
-		_element_nodes[e] = child
+	refresh_child_order()
 
-		if e is Resource:
-			e.changed.connect(refresh_element.bind(e))
+	for k in _element_nodes:
+		var child := _element_nodes[k]
+		await populate_child(k, child)
+
+		if _elements_visible[k] != null:
+			child.visible = _elements_visible[k]
+
+		if k is Resource and k not in _elements_prev:
+			k.changed.connect(refresh_element.bind(k))
 
 	_elements_prev = elements
-	refresh_child_order()
 	elements_changed.emit(_elements_prev)
 
 
-func refresh_child_order() -> void:
+func populate_child(element, child: Node):
+	if child.has_method(&"populate"):
+		child.populate(element)
+	else:
+		if not await _populate_child(element, child):
+			assert(false, "Child '%s' must have a method 'populate_child', or this ArrayComponent '%s' must implement '_populate_child' such that it can accept element '%s'." % [child, self, element])
+
+
+func _populate_child(element, child: Node):
+	if element is not Resource: return false
+
+	if not child.is_node_ready():
+		await child.ready
+
+	var resource_component: ResourceComponent = Myth.find_child_of_type(child, "ResourceComponent")
+	assert(resource_component != null, "Child '%s' must have a ResourceComponent child in order to auto-populate_child.")
+
+	resource_component.resource = element
+
+	return true
+
+
+func refresh_child_order():
 	var children := managed_children
 	children.sort_custom(_sort_children)
 
@@ -96,7 +123,7 @@ func refresh_child_order() -> void:
 			parent.add_child(children[i])
 
 	for i in children.size():
-		parent.move_child(children[i], i)
+		parent.move_child.call_deferred(children[i], i)
 
 
 func filter_elements(method: Callable) -> void:
@@ -113,19 +140,19 @@ func get_element_node(e) -> Node:
 
 func add_element(e) -> void:
 	_element_nodes[e] = null
-	refresh_elements()
+	await refresh_elements()
 
 
 func remove_element(e) -> void:
 	_element_nodes.erase(e)
-	refresh_elements()
+	await refresh_elements()
 
 var refreshing_elements: Array
 func refresh_element(e) -> void:
 	if e in refreshing_elements: return
 
 	refreshing_elements.push_back(e)
-	await _element_nodes[e].populate(e)
+	await populate_child(e, _element_nodes[e])
 	refresh_child_order()
 	refreshing_elements.erase(e)
 
