@@ -30,7 +30,7 @@ func _init() -> void:
 	_child_resource_node.fallback_type = 1
 	add_child(_child_resource_node)
 
-	var feature_node := FeatureDependentNode.new()
+	var feature_node := FeatureDependency.new()
 	feature_node.features = ["editor_hint", "editor_runtime"]
 	add_child(feature_node)
 

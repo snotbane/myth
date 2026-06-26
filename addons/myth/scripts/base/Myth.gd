@@ -1,4 +1,7 @@
-@tool class_name Myth
+@tool
+class_name Myth
+
+static var is_application_closing: bool = false
 
 #region Objects
 
@@ -39,38 +42,45 @@ static func compare(a, b) -> bool:
 		return false
 
 
+static func transfer_array(dest: Array, from: Array) -> void:
+	dest.resize(from.size())
+	for i in dest.size():
+		dest[i] = from[i]
+
+
 #endregion
 #region FileAccess
+
+static func get_file_path_no_dir(path: String) -> String:
+	return path.right(path.rfind("/") + 1)
 
 static func get_parent_folder(path: String, levels: int = 1) -> String:
 	if levels <= 0: return path
 	if path.is_empty(): return String()
 
 	var end := path.rfind("/")
-	if end == -1: return ""
-
-	return get_parent_folder(path.left(end), levels - 1)
+	return get_parent_folder(path.left(end), levels - 1) if end >= 0 else ""
 
 
-static func get_paths_in_folder(root := "res://", include: RegEx = null, exclude: RegEx = null) -> PackedStringArray:
+static func get_paths_in_folder(root: String, include_dirs: bool = false, include: RegEx = null, exclude: RegEx = null) -> PackedStringArray:
 	var dir := DirAccess.open(root)
 	if not dir: return []
 
 	var result: PackedStringArray = []
 
-	if include == null or include.search(root) != null:
-		result.push_back(root)
-
 	dir.list_dir_begin()
 	var file: String = dir.get_next()
 	while file:
-		var next := root.path_join(file)
-		if (include == null or include.search(file) != null) \
-			and (exclude == null or exclude.search(file) == null):
+		var next: String = root.path_join(file)
+		if (
+			(include_dirs or not dir.current_is_dir())
+			and (include == null or include.search(file) != null)
+			and (exclude == null or exclude.search(file) == null)
+		):
 			result.push_back(next)
 
 		if dir.current_is_dir():
-			result.append_array(get_paths_in_folder(next, include))
+			result.append_array(get_paths_in_folder(next, include_dirs, include, exclude))
 
 		file = dir.get_next()
 	return result
@@ -247,6 +257,8 @@ static func cache_children(node: Node, type: String = "") -> Array[Node]:
 
 
 #endregion
+
+
 #region Physics
 
 ## Teleports a [PhysicsBody3D] to the specified [transform]. Only intended to be used in special situations; do NOT use every frame.
