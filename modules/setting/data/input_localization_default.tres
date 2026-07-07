@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="InputLocalization" format=3 uid="uid://by4uei1ro2t8y"]
+
+[ext_resource type="Script" uid="uid://b8v1iiv7neaxt" path="res://addons/snotbane/modules/setting/SettingInput_Localization.gd" id="1_bp3rp"]
+
+[sub_resource type="InputEventKey" id="InputEventKey_bp3rp"]
+keycode = 4194305
+
+[sub_resource type="InputEventJoypadButton" id="InputEventJoypadButton_o6crn"]
+button_index = 6
+
+[resource]
+script = ExtResource("1_bp3rp")
+escape_inputs = Array[InputEvent]([SubResource("InputEventKey_bp3rp"), SubResource("InputEventJoypadButton_o6crn")])
+joypad_button_labels = Dictionary[StringName, PackedStringArray]({
+&"_": PackedStringArray("A", "B", "X", "Y", "Back", "Guide", "Start", "L Stick", "R Stick", "L Shoulder", "R Shoulder", "D-Pad Up", "D-Pad Down", "D-Pad Left", "D-Pad Right", "Misc 1", "Paddle 1", "Paddle 2", "Paddle 3", "Paddle 4", "Touchpad"),
+&"nintendo": PackedStringArray("B", "A", "Y", "X", "-", "", "+", "LS", "RS", "L", "R", "", "", "", "", "Capture", "", "", "", "", ""),
+&"sony": PackedStringArray("Cross", "Circle", "Square", "Triangle", "Select", "PS", "Options", "L3", "R3", "L1", "R1", "D-Pad Up", "D-Pad Down", "D-Pad Left", "D-Pad Right", "Microphone", "", "", "", "", ""),
+&"xbox": PackedStringArray("", "", "", "", "", "Home", "Menu", "LS", "RS", "LB", "RB", "D-Pad Up", "D-Pad Down", "D-Pad Left", "D-Pad Right", "Share", "", "", "", "", "")
+})
+joypad_motion_labels = Dictionary[StringName, PackedStringArray]({
+&"_": PackedStringArray("LS X", "LS Y", "RS X", "RS Y", "LT", "RT"),
+&"nintendo": PackedStringArray("", "", "", "", "ZL", "ZR"),
+&"sony": PackedStringArray("", "", "", "", "L2", "R2")
+})
+mouse_button_labels = Dictionary[StringName, PackedStringArray]({
+&"_": PackedStringArray("???", "Mouse Left", "Mouse Right", "Mouse Middle", "Scroll Up", "Scroll Down", "Scroll Left", "Scroll Right", "Thumb 1", "Thumb 2")
+})
+metadata/_custom_type_script = "uid://b8v1iiv7neaxt"
