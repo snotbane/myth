@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://c1nlgw0r4lj06"]
 
-[ext_resource type="Script" uid="uid://colsjxiky4rbu" path="res://addons/myth/scripts/misc/FeatureDependentNode.gd" id="1_5cwqd"]
+[ext_resource type="Script" uid="uid://colsjxiky4rbu" path="res://addons/myth/scripts/component/FeatureDependency.gd" id="1_5cwqd"]
 [ext_resource type="Script" uid="uid://0eapfr5it6l8" path="res://addons/myth/scripts/misc/MouseModeUser.gd" id="1_iglwo"]
 [ext_resource type="Script" uid="uid://br7j4h4ldm16k" path="res://addons/myth/scripts/terminal/TerminalVisibilityController.gd" id="2_td1pb"]
 [ext_resource type="Script" uid="uid://cpwwo6awt2tc4" path="res://addons/myth/scripts/terminal/TerminalCommandHost.gd" id="3_d1c5l"]

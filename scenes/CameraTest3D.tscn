@@ -1,0 +1,73 @@
+[gd_scene format=3 uid="uid://dalklyu7m8v5n"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_c0ut6"]
+sky_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
+ground_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
+
+[sub_resource type="Sky" id="Sky_qxjjf"]
+sky_material = SubResource("ProceduralSkyMaterial_c0ut6")
+
+[sub_resource type="Environment" id="Environment_xwjkp"]
+background_mode = 2
+sky = SubResource("Sky_qxjjf")
+
+[sub_resource type="BoxMesh" id="BoxMesh_igc1g"]
+
+[sub_resource type="GDScript" id="GDScript_g5yut"]
+script/source = "@tool
+extends MeshInstance3D
+
+
+# Called when the node enters the scene tree for the first time.
+func _ready() -> void:
+	pass # Replace with function body.
+
+
+# Called every frame. 'delta' is the elapsed time since the previous frame.
+func _process(delta: float) -> void:
+	global_rotation_degrees.y += 30.0 * delta
+"
+
+[sub_resource type="GDScript" id="GDScript_c0ut6"]
+script/source = "@tool
+extends Label3D
+
+
+# Called when the node enters the scene tree for the first time.
+func _ready() -> void:
+	pass # Replace with function body.
+
+
+# Called every frame. 'delta' is the elapsed time since the previous frame.
+func _process(delta: float) -> void:
+	text = str(Time.get_ticks_usec())
+"
+
+[node name="CameraTest3d" type="Node3D" unique_id=749331022]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=149235884]
+environment = SubResource("Environment_xwjkp")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1938769900]
+transform = Transform3D(0.069467306, -0.8639334, 0.49879205, 2.7805946e-08, 0.49999994, 0.86602545, -0.9975842, -0.060160488, 0.03473364, 0, 0, 0)
+shadow_enabled = true
+
+[node name="Camera3D" type="Camera3D" parent="." unique_id=942416384]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 2)
+
+[node name="Camera3D2" type="Camera3D" parent="." unique_id=1107237386]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 2, 0)
+
+[node name="Camera3D3" type="Camera3D" parent="." unique_id=1152783698]
+transform = Transform3D(1, 0, 0, 0, 1.3113416e-07, -1, 0, 1, 1.3113416e-07, 0, -2, 0)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=107857934]
+transform = Transform3D(0.9938372, 0, -0.10948432, 0, 1, 0, 0.10948432, 0, 0.9938372, 0, 0, 0)
+mesh = SubResource("BoxMesh_igc1g")
+script = SubResource("GDScript_g5yut")
+
+[node name="Label3D" type="Label3D" parent="." unique_id=1933243571]
+billboard = 1
+no_depth_test = true
+text = "1374244210"
+script = SubResource("GDScript_c0ut6")

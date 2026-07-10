@@ -1,3 +1,5 @@
+## Provides methods for awaiting multiple callables and/or signals.
+@tool
 class_name Async
 
 ## Calls all provided callables. Then waits for ALL of the callables/signals to finish awaiting. They can be completed in any order but must all return before continuing. Returns an array with the results of each one, in order of completion.

@@ -3,12 +3,12 @@
 importer="svg"
 type="DPITexture"
 uid="uid://da04krtpviega"
-path="res://.godot/imported/FileBrowse.svg-55a356d410756a4fdea09e57c34c9bb1.dpitex"
+path="res://.godot/imported/FileBrowse.svg-627534b059da1bcc20f67052116f4486.dpitex"
 
 [deps]
 
-source_file="res://addons/snotbane/icons/FileBrowse.svg"
-dest_files=["res://.godot/imported/FileBrowse.svg-55a356d410756a4fdea09e57c34c9bb1.dpitex"]
+source_file="res://addons/myth/icons/FileBrowse.svg"
+dest_files=["res://.godot/imported/FileBrowse.svg-627534b059da1bcc20f67052116f4486.dpitex"]
 
 [params]
 

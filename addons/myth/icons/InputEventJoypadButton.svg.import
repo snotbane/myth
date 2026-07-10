@@ -15,4 +15,6 @@ dest_files=["res://.godot/imported/InputEventJoypadButton.svg-50948c4e258c5c5c16
 base_scale=1.0
 saturation=1.0
 color_map={}
+fix_alpha_border=false
+premult_alpha=false
 compress=true

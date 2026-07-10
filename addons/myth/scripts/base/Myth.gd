@@ -259,6 +259,21 @@ static func cache_children(node: Node, type: String = "") -> Array[Node]:
 #endregion
 
 
+#region Cinema
+
+static func create_subviewport_from_project_settings() -> SubViewport:
+	var result := SubViewport.new()
+
+	result.msaa_2d = ProjectSettings.get_setting(&"rendering/anti_aliasing/quality/msaa_2d")
+	result.msaa_3d = ProjectSettings.get_setting(&"rendering/anti_aliasing/quality/msaa_3d")
+	result.screen_space_aa = ProjectSettings.get_setting(&"rendering/anti_aliasing/quality/screen_space_aa")
+	result.use_taa = ProjectSettings.get_setting(&"rendering/anti_aliasing/quality/use_taa")
+
+	return result
+
+#endregion
+
+
 #region Physics
 
 ## Teleports a [PhysicsBody3D] to the specified [transform]. Only intended to be used in special situations; do NOT use every frame.
