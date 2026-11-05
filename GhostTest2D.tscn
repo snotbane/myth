@@ -1,0 +1,27 @@
+[gd_scene format=3 uid="uid://cyo7u6bpdr8a4"]
+
+[ext_resource type="Script" uid="uid://doxqkyqy42b34" path="res://addons/myth/script/component/misc/EditorCameraManifest.gd" id="1_f73rt"]
+[ext_resource type="Texture2D" uid="uid://ba0bv6xuey8bo" path="res://addons/myth/asset/icons/icon.svg" id="2_iduty"]
+[ext_resource type="Script" uid="uid://bwkdfln3bmpoi" path="res://addons/myth/script/debug_draw/spatial_grid/SpatialGrid2D.gd" id="3_tlrtn"]
+[ext_resource type="Script" uid="uid://2riw1kg25qqm" path="res://addons/myth/script/component/tribute/ghost/Ghost.gd" id="4_1gpda"]
+
+[node name="ghost_test_2d" type="Node2D" unique_id=1490697779]
+
+[node name="editor_camera_manifest" type="Node" parent="." unique_id=195540192]
+script = ExtResource("1_f73rt")
+affect_enabled = false
+editor_global_transform_3d = Transform3D(0.87758255, -0.22984886, 0.42073548, 0, 0.87758255, 0.47942555, -0.47942555, -0.4207355, 0.77015114, 1.682942, 1.9177022, 3.0806046)
+editor_global_transform_2d = Transform2D(1, 0, 0, 1, 1, 1)
+metadata/_custom_type_script = "uid://doxqkyqy42b34"
+
+[node name="sprite_2d" type="Sprite2D" parent="." unique_id=1815456010]
+texture = ExtResource("2_iduty")
+
+[node name="camera_2d" type="Camera2D" parent="." unique_id=1943246925]
+
+[node name="spatial_grid_2d" type="Node2D" parent="." unique_id=1460787511]
+script = ExtResource("3_tlrtn")
+
+[node name="ghost" type="Node" parent="." unique_id=734807330]
+script = ExtResource("4_1gpda")
+metadata/_custom_type_script = "uid://2riw1kg25qqm"

@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="SystemPrefs" format=3 uid="uid://j3w4nm31bj7r"]
+
+[ext_resource type="Script" uid="uid://c36pv483k0xqu" path="res://addons/myth/script/utility/system_prefs/SystemPrefs.gd" id="1_cwxlj"]
+
+[resource]
+script = ExtResource("1_cwxlj")
+metadata/_custom_type_script = "uid://c36pv483k0xqu"

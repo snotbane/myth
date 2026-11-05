@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="PropertyDrawerSet" format=3 uid="uid://c0o4m7oe1sw6o"]
+
+[ext_resource type="Script" uid="uid://svdqmog7cq06" path="res://addons/myth/script/debug_draw/property_drawer/PropertyDrawer.gd" id="1_qdqx3"]
+[ext_resource type="Script" uid="uid://bmggkkxx4m7te" path="res://addons/myth/script/debug_draw/property_drawer/PropertyDrawerSet.gd" id="2_43rqr"]
+
+[sub_resource type="Resource" id="Resource_oh6ef"]
+script = ExtResource("1_qdqx3")
+path = NodePath("..:global_position")
+text_format = "%01.02f"
+visual_enabled = false
+visual_global_space = true
+metadata/_custom_type_script = "uid://svdqmog7cq06"
+
+[sub_resource type="Resource" id="Resource_2656r"]
+script = ExtResource("1_qdqx3")
+path = NodePath("..:global_basis")
+text_enabled = false
+text_format = "%01.02f"
+visual_shape = 4
+metadata/_custom_type_script = "uid://svdqmog7cq06"
+
+[resource]
+script = ExtResource("2_43rqr")
+properties = Array[ExtResource("1_qdqx3")]([SubResource("Resource_oh6ef"), SubResource("Resource_2656r")])
+metadata/_custom_type_script = "uid://bmggkkxx4m7te"

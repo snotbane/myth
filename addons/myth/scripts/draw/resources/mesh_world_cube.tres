@@ -1,5 +1,0 @@
-[gd_resource type="BoxMesh" load_steps=0 format=3 uid="uid://pqjfvxv40wmq"]
-
-[resource]
-custom_aabb = AABB(-100000, -100000, -100000, 200000, 200000, 200000)
-flip_faces = true

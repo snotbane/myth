@@ -1,0 +1,6 @@
+[gd_resource type="ShaderMaterial" format=3 uid="uid://ce2avvgmebxea"]
+
+[ext_resource type="Shader" uid="uid://d1vrmps1op7bb" path="res://addons/myth/script/debug_draw/spatial_grid/SpatialGrid2D_shader.gdshader" id="1_kiamu"]
+
+[resource]
+shader = ExtResource("1_kiamu")

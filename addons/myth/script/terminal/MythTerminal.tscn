@@ -1,0 +1,91 @@
+[gd_scene format=3 uid="uid://47dn4a4hikmq"]
+
+[ext_resource type="SystemFont" uid="uid://bnofqiws4uen" path="res://addons/myth/asset/font/myth_mono_system_font.tres" id="1_0q28p"]
+[ext_resource type="Script" uid="uid://bnjwjjlqy307w" path="res://addons/myth/script/terminal/MythTerminal.gd" id="2_0q28p"]
+[ext_resource type="Script" uid="uid://bipo33hxhdkqk" path="res://addons/myth/script/terminal/MythTerminalLineEdit.gd" id="3_ioy3c"]
+
+[sub_resource type="StyleBoxLine" id="StyleBoxLine_ioy3c"]
+content_margin_left = 4.0
+content_margin_top = 0.0
+content_margin_right = 4.0
+content_margin_bottom = 0.0
+color = Color(0.5, 0.5, 0.5, 1)
+grow_begin = -2.0
+grow_end = -2.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0q28p"]
+content_margin_left = 0.0
+content_margin_top = 0.0
+content_margin_right = 0.0
+content_margin_bottom = 0.0
+bg_color = Color(0.101960786, 0.101960786, 0.101960786, 0.8)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+corner_detail = 5
+
+[sub_resource type="Theme" id="Theme_igc1g"]
+default_font = ExtResource("1_0q28p")
+default_font_size = 14
+HSeparator/styles/separator = SubResource("StyleBoxLine_ioy3c")
+MarginContainer/constants/margin_bottom = 8
+MarginContainer/constants/margin_left = 8
+MarginContainer/constants/margin_right = 8
+MarginContainer/constants/margin_top = 8
+PanelContainer/styles/panel = SubResource("StyleBoxFlat_0q28p")
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_8h0k4"]
+
+[node name="myth_terminal" type="Control" unique_id=815439504]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = SubResource("Theme_igc1g")
+script = ExtResource("2_0q28p")
+
+[node name="margin_container" type="MarginContainer" parent="." unique_id=1921566830]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="panel_container" type="PanelContainer" parent="margin_container" unique_id=1508595347]
+layout_mode = 2
+
+[node name="v_box_container" type="VBoxContainer" parent="margin_container/panel_container" unique_id=1189534961]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="margin_container" type="MarginContainer" parent="margin_container/panel_container/v_box_container" unique_id=2014446047]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="log" type="RichTextLabel" parent="margin_container/panel_container/v_box_container/margin_container" unique_id=1105558070]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+bbcode_enabled = true
+scroll_following = true
+
+[node name="h_separator" type="HSeparator" parent="margin_container/panel_container/v_box_container" unique_id=1772884748]
+layout_mode = 2
+
+[node name="line_edit" type="LineEdit" parent="margin_container/panel_container/v_box_container" unique_id=2029557658]
+layout_mode = 2
+theme_override_constants/outline_size = 4
+theme_override_styles/focus = SubResource("StyleBoxEmpty_8h0k4")
+keep_editing_on_text_submit = true
+flat = true
+caret_blink = true
+caret_mid_grapheme = true
+script = ExtResource("3_ioy3c")
+
+[connection signal="visibility_changed" from="margin_container/panel_container/v_box_container/line_edit" to="margin_container/panel_container/v_box_container/line_edit" method="grab_focus"]

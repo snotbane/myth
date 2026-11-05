@@ -1,0 +1,422 @@
+[gd_scene format=3 uid="uid://ce4tum05xm5yd"]
+
+[ext_resource type="Script" uid="uid://bsk25gt166keh" path="res://addons/myth/script/ui/setting/Setting.gd" id="1_30kxb"]
+[ext_resource type="Theme" uid="uid://bc3ed0744j0gx" path="res://new_theme.tres" id="1_higry"]
+[ext_resource type="Script" uid="uid://c36pv483k0xqu" path="res://addons/myth/script/utility/system_prefs/SystemPrefs.gd" id="2_higry"]
+[ext_resource type="Script" uid="uid://byafjekbp4kd6" path="res://addons/myth/script/component/tribute/mouse/MouseComponent.gd" id="2_wxvyr"]
+[ext_resource type="Script" uid="uid://d4lpd1pg6y8s2" path="res://addons/myth/script/component/feature/ProjectSettingDependency.gd" id="4_higry"]
+
+[sub_resource type="GDScript" id="GDScript_higry"]
+script/source = "extends ResourceNodeExternal
+
+func _init() -> void:
+	resource_value_changed.connect((func(resource: Resource) -> void:
+		if resource == null:
+			return
+
+		resource.populate(get_tree())
+	), ConnectFlags.CONNECT_ONE_SHOT)
+"
+
+[sub_resource type="Resource" id="Resource_igc1g"]
+script = ExtResource("2_higry")
+window_mode = null
+window_ui_scale = null
+render_resolution_percent = null
+render_upscaling_mode = null
+render_upscaling_sharpness = null
+render_msaa = null
+render_ssaa = null
+render_taa = null
+render_vsync = null
+metadata/_custom_type_script = "uid://c36pv483k0xqu"
+
+[sub_resource type="GDScript" id="GDScript_wxvyr"]
+script/source = "extends PropertyMapper
+
+func create_save_sync_binding(from: Node, save_prop_name: String, from_prop_name: String = \"child_value\") -> PropertySyncer:
+	return (
+		PropertySyncer.new(self)
+			.add_connection_push(
+				NodePath(\":resource:\" + save_prop_name + \"_changed\"),
+				NodePath(\":resource:\" + save_prop_name),
+				%save_data
+			)
+			.add_connection_pull(
+				NodePath(\":\" + from_prop_name + \"_changed\"),
+				NodePath(\":\" + from_prop_name),
+				from
+			)
+	)
+
+func _create_map() -> void:
+	map = [
+		create_save_sync_binding(%window_mode, \"window_mode\"),
+		create_save_sync_binding(%ui_scale, \"window_ui_scale\"),
+		create_save_sync_binding(%resolution_percent, \"render_resolution_percent\"),
+		create_save_sync_binding(%upscaling_mode, \"render_upscaling_mode\"),
+		create_save_sync_binding(%upscaling_sharpness, \"render_upscaling_sharpness\"),
+		create_save_sync_binding(%vsync, \"render_vsync\"),
+		create_save_sync_binding(%msaa, \"render_msaa\"),
+		create_save_sync_binding(%ssaa, \"render_ssaa\"),
+		create_save_sync_binding(%taa, \"render_taa\"),
+	]
+"
+
+[node name="system_prefs_gui" type="Control" unique_id=647201518]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("1_higry")
+
+[node name="mouse_component" type="Node" parent="." unique_id=1926460326]
+script = ExtResource("2_wxvyr")
+priority = 1
+metadata/_custom_type_script = "uid://byafjekbp4kd6"
+
+[node name="save_data" type="Node" parent="." unique_id=1372369203]
+unique_name_in_owner = true
+script = SubResource("GDScript_higry")
+path = "user://system_prefs.tres"
+template = SubResource("Resource_igc1g")
+save_if_null = true
+save_on_change = true
+metadata/_custom_type_script = "uid://cn6mqa541d5ii"
+
+[node name="property_mapper" type="Node" parent="." unique_id=188518431]
+script = SubResource("GDScript_wxvyr")
+metadata/_custom_type_script = "uid://d1g3d6e3q3bbg"
+
+[node name="v_box_container" type="TabContainer" parent="." unique_id=1398152836]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+current_tab = 0
+
+[node name="Game" type="Control" parent="v_box_container" unique_id=744088458]
+layout_mode = 2
+metadata/_tab_index = 0
+
+[node name="scroll_container" type="ScrollContainer" parent="v_box_container/Game" unique_id=1389286924]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+horizontal_scroll_mode = 0
+
+[node name="v_box_container" type="VBoxContainer" parent="v_box_container/Game/scroll_container" unique_id=1759104706]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="general" type="FoldableContainer" parent="v_box_container/Game/scroll_container/v_box_container" unique_id=63821931]
+layout_mode = 2
+title = "General"
+
+[node name="Video" type="Control" parent="v_box_container" unique_id=335654406]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 1
+
+[node name="scroll_container" type="ScrollContainer" parent="v_box_container/Video" unique_id=461274264]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+horizontal_scroll_mode = 0
+
+[node name="v_box_container" type="VBoxContainer" parent="v_box_container/Video/scroll_container" unique_id=477784725]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="revert" type="Button" parent="v_box_container/Video/scroll_container/v_box_container" unique_id=815027298]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Revert to Defaults"
+
+[node name="window" type="FoldableContainer" parent="v_box_container/Video/scroll_container/v_box_container" unique_id=910967551]
+layout_mode = 2
+title = "Window"
+
+[node name="v_box_container" type="VBoxContainer" parent="v_box_container/Video/scroll_container/v_box_container/window" unique_id=1763565804]
+layout_mode = 2
+
+[node name="ui_scale" type="HBoxContainer" parent="v_box_container/Video/scroll_container/v_box_container/window/v_box_container" unique_id=766405153]
+unique_name_in_owner = true
+layout_mode = 2
+script = ExtResource("1_30kxb")
+label_text = "UI Scale"
+metadata/_custom_type_script = "uid://bsk25gt166keh"
+
+[node name="label" type="Label" parent="v_box_container/Video/scroll_container/v_box_container/window/v_box_container/ui_scale" unique_id=1229092060]
+visible = false
+layout_mode = 2
+text = "100%"
+
+[node name="h_slider" type="HSlider" parent="v_box_container/Video/scroll_container/v_box_container/window/v_box_container/ui_scale" unique_id=562224956]
+custom_minimum_size = Vector2(180, 0)
+layout_mode = 2
+size_flags_vertical = 1
+min_value = 0.5
+max_value = 4.0
+step = 0.5
+value = 1.0
+scrollable = false
+tick_count = 5
+
+[node name="window_mode" type="HBoxContainer" parent="v_box_container/Video/scroll_container/v_box_container/window/v_box_container" unique_id=1923648562]
+unique_name_in_owner = true
+layout_mode = 2
+script = ExtResource("1_30kxb")
+reset_enabled = false
+label_text = "Window Mode"
+metadata/_custom_type_script = "uid://bsk25gt166keh"
+
+[node name="option_button" type="OptionButton" parent="v_box_container/Video/scroll_container/v_box_container/window/v_box_container/window_mode" unique_id=1532111274]
+layout_mode = 2
+selected = 0
+item_count = 3
+popup/item_0/text = "Windowed"
+popup/item_0/id = 0
+popup/item_1/text = "Fullscreen"
+popup/item_1/id = 3
+popup/item_2/text = "Exclusive Fullscreen"
+popup/item_2/id = 4
+
+[node name="render" type="FoldableContainer" parent="v_box_container/Video/scroll_container/v_box_container" unique_id=1262980033]
+layout_mode = 2
+title = "Quality"
+
+[node name="v_box_container" type="VBoxContainer" parent="v_box_container/Video/scroll_container/v_box_container/render" unique_id=1840165406]
+layout_mode = 2
+
+[node name="resolution_percent" type="HBoxContainer" parent="v_box_container/Video/scroll_container/v_box_container/render/v_box_container" unique_id=153261126]
+unique_name_in_owner = true
+layout_mode = 2
+script = ExtResource("1_30kxb")
+label_text = "Resolution Scale"
+metadata/_custom_type_script = "uid://bsk25gt166keh"
+
+[node name="label" type="Label" parent="v_box_container/Video/scroll_container/v_box_container/render/v_box_container/resolution_percent" unique_id=1829119095]
+visible = false
+layout_mode = 2
+text = "100%"
+
+[node name="h_slider" type="HSlider" parent="v_box_container/Video/scroll_container/v_box_container/render/v_box_container/resolution_percent" unique_id=907605305]
+custom_minimum_size = Vector2(180, 0)
+layout_mode = 2
+size_flags_vertical = 1
+max_value = 1.0
+step = 0.125
+value = 1.0
+scrollable = false
+tick_count = 5
+
+[node name="upscaling_mode" type="HBoxContainer" parent="v_box_container/Video/scroll_container/v_box_container/render/v_box_container" unique_id=483895431]
+unique_name_in_owner = true
+layout_mode = 2
+script = ExtResource("1_30kxb")
+label_text = "Upscaling"
+metadata/_custom_type_script = "uid://bsk25gt166keh"
+
+[node name="option_button" type="OptionButton" parent="v_box_container/Video/scroll_container/v_box_container/render/v_box_container/upscaling_mode" unique_id=145187340]
+layout_mode = 2
+selected = 0
+item_count = 2
+popup/item_0/text = "None"
+popup/item_0/id = 0
+popup/item_1/text = "FSR"
+popup/item_1/id = 2
+
+[node name="upscaling_sharpness" type="HBoxContainer" parent="v_box_container/Video/scroll_container/v_box_container/render/v_box_container" unique_id=2036515673]
+unique_name_in_owner = true
+layout_mode = 2
+script = ExtResource("1_30kxb")
+label_text = "        Sharpness"
+metadata/_custom_type_script = "uid://bsk25gt166keh"
+
+[node name="label" type="Label" parent="v_box_container/Video/scroll_container/v_box_container/render/v_box_container/upscaling_sharpness" unique_id=1181671458]
+visible = false
+layout_mode = 2
+text = "100%"
+
+[node name="h_slider" type="HSlider" parent="v_box_container/Video/scroll_container/v_box_container/render/v_box_container/upscaling_sharpness" unique_id=1180528615]
+custom_minimum_size = Vector2(180, 0)
+layout_mode = 2
+size_flags_vertical = 1
+max_value = 2.0
+step = 0.1
+value = 0.2
+scrollable = false
+tick_count = 6
+
+[node name="vsync" type="HBoxContainer" parent="v_box_container/Video/scroll_container/v_box_container/render/v_box_container" unique_id=136469033]
+unique_name_in_owner = true
+layout_mode = 2
+script = ExtResource("1_30kxb")
+label_text = "V-Sync"
+metadata/_custom_type_script = "uid://bsk25gt166keh"
+
+[node name="option_button" type="OptionButton" parent="v_box_container/Video/scroll_container/v_box_container/render/v_box_container/vsync" unique_id=717672531]
+layout_mode = 2
+selected = 1
+item_count = 4
+popup/item_0/text = "Disabled"
+popup/item_0/id = 0
+popup/item_1/text = "Standard"
+popup/item_1/id = 1
+popup/item_2/text = "Adaptive"
+popup/item_2/id = 2
+popup/item_3/text = "Mailbox"
+popup/item_3/id = 3
+
+[node name="msaa" type="HBoxContainer" parent="v_box_container/Video/scroll_container/v_box_container/render/v_box_container" unique_id=223214712]
+unique_name_in_owner = true
+layout_mode = 2
+script = ExtResource("1_30kxb")
+label_text = "Multisample AA"
+metadata/_custom_type_script = "uid://bsk25gt166keh"
+
+[node name="option_button" type="OptionButton" parent="v_box_container/Video/scroll_container/v_box_container/render/v_box_container/msaa" unique_id=1269725612]
+layout_mode = 2
+selected = 0
+item_count = 4
+popup/item_0/text = "None"
+popup/item_0/id = 0
+popup/item_1/text = "2x"
+popup/item_1/id = 1
+popup/item_2/text = "4x"
+popup/item_2/id = 2
+popup/item_3/text = "8x"
+popup/item_3/id = 3
+
+[node name="ssaa" type="HBoxContainer" parent="v_box_container/Video/scroll_container/v_box_container/render/v_box_container" unique_id=541702951]
+unique_name_in_owner = true
+layout_mode = 2
+script = ExtResource("1_30kxb")
+label_text = "Screen Space AA"
+metadata/_custom_type_script = "uid://bsk25gt166keh"
+
+[node name="option_button" type="OptionButton" parent="v_box_container/Video/scroll_container/v_box_container/render/v_box_container/ssaa" unique_id=635699922]
+layout_mode = 2
+selected = 0
+item_count = 3
+popup/item_0/text = "None"
+popup/item_0/id = 0
+popup/item_1/text = "FXAA"
+popup/item_1/id = 1
+popup/item_2/text = "SMAA"
+popup/item_2/id = 2
+
+[node name="taa" type="HBoxContainer" parent="v_box_container/Video/scroll_container/v_box_container/render/v_box_container" unique_id=58952161]
+unique_name_in_owner = true
+layout_mode = 2
+script = ExtResource("1_30kxb")
+label_text = "Temporal AA"
+metadata/_custom_type_script = "uid://bsk25gt166keh"
+
+[node name="project_setting_dependency" type="Node" parent="v_box_container/Video/scroll_container/v_box_container/render/v_box_container/taa" unique_id=1241515706]
+script = ExtResource("4_higry")
+settings = Dictionary[String, Variant]({
+"rendering/renderer/rendering_method": "forward_plus"
+})
+inactive_action = 1
+metadata/_custom_type_script = "uid://d4lpd1pg6y8s2"
+
+[node name="check_button" type="CheckButton" parent="v_box_container/Video/scroll_container/v_box_container/render/v_box_container/taa" unique_id=372399668]
+layout_mode = 2
+
+[node name="Audio" type="Control" parent="v_box_container" unique_id=1916298085]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 2
+
+[node name="scroll_container" type="ScrollContainer" parent="v_box_container/Audio" unique_id=1137337609]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+horizontal_scroll_mode = 0
+
+[node name="v_box_container" type="VBoxContainer" parent="v_box_container/Audio/scroll_container" unique_id=1743559767]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="audio" type="FoldableContainer" parent="v_box_container/Audio/scroll_container/v_box_container" unique_id=534415346]
+layout_mode = 2
+
+[node name="v_box_container" type="VBoxContainer" parent="v_box_container/Audio/scroll_container/v_box_container/audio" unique_id=2143789306]
+layout_mode = 2
+
+[node name="mute_unfocused" type="HBoxContainer" parent="v_box_container/Audio/scroll_container/v_box_container/audio/v_box_container" unique_id=775815628]
+unique_name_in_owner = true
+layout_mode = 2
+script = ExtResource("1_30kxb")
+label_text = "Unfocused Mute"
+metadata/_custom_type_script = "uid://bsk25gt166keh"
+
+[node name="check_button" type="CheckButton" parent="v_box_container/Audio/scroll_container/v_box_container/audio/v_box_container/mute_unfocused" unique_id=1129724173]
+layout_mode = 2
+button_pressed = true
+
+[node name="volume_master" type="HBoxContainer" parent="v_box_container/Audio/scroll_container/v_box_container/audio/v_box_container" unique_id=1791913650]
+unique_name_in_owner = true
+layout_mode = 2
+script = ExtResource("1_30kxb")
+label_text = "Master Volume"
+metadata/_custom_type_script = "uid://bsk25gt166keh"
+
+[node name="h_slider" type="HSlider" parent="v_box_container/Audio/scroll_container/v_box_container/audio/v_box_container/volume_master" unique_id=1296674324]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+max_value = 1.0
+step = 0.1
+value = 1.0
+
+[node name="Input" type="Control" parent="v_box_container" unique_id=278065471]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 3
+
+[node name="scroll_container" type="ScrollContainer" parent="v_box_container/Input" unique_id=2124229100]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+horizontal_scroll_mode = 0
+
+[node name="v_box_container" type="VBoxContainer" parent="v_box_container/Input/scroll_container" unique_id=1266487617]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="general" type="FoldableContainer" parent="v_box_container/Input/scroll_container/v_box_container" unique_id=959792782]
+layout_mode = 2
+title = "General"
+
+[node name="mouse" type="FoldableContainer" parent="v_box_container/Input/scroll_container/v_box_container" unique_id=599929305]
+layout_mode = 2
+title = "Mouse"
+
+[node name="bindings" type="FoldableContainer" parent="v_box_container/Input/scroll_container/v_box_container" unique_id=874811190]
+layout_mode = 2
+title = "Bindings"
+
+[connection signal="pressed" from="v_box_container/Video/scroll_container/v_box_container/revert" to="v_box_container/Video/scroll_container/v_box_container/window/v_box_container/ui_scale" method="reset"]

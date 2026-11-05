@@ -1,0 +1,9 @@
+[gd_resource type="ShaderMaterial" format=3 uid="uid://d140iohxxs0d6"]
+
+[ext_resource type="Shader" uid="uid://cvm07oev1scc0" path="res://addons/myth/script/debug_draw/property_drawer/material/PropertyDrawer3D_scalable.gdshader" id="1_irc1l"]
+
+[resource]
+render_priority = 0
+shader = ExtResource("1_irc1l")
+shader_parameter/keep_scale = true
+shader_parameter/base_size = 1.0

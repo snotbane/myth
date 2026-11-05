@@ -1,0 +1,23 @@
+[gd_scene format=3 uid="uid://b5a8omlphsx7q"]
+
+[ext_resource type="Script" uid="uid://cdejm7nn0oqnh" path="res://addons/myth/script/debug_draw/property_drawer/scene/PropertyDrawerVisual3D.gd" id="1_tnvkn"]
+[ext_resource type="ArrayMesh" uid="uid://bx1ydoua03ys7" path="res://addons/myth/script/debug_draw/property_drawer/mesh/PropertyDrawer3D_meshlib_line.res" id="2_4dyef"]
+[ext_resource type="ArrayMesh" uid="uid://ccmsqgxk0k7qq" path="res://addons/myth/script/debug_draw/property_drawer/mesh/PropertyDrawer3D_meshlib_arrow_head.res" id="3_4dyef"]
+
+[node name="visual_arrow_3d" type="Node3D" unique_id=1512267076]
+script = ExtResource("1_tnvkn")
+face_forward = true
+
+[node name="mesh_instance_3d" type="MeshInstance3D" parent="." unique_id=1978772329]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 0.94, 0, 0, 0)
+instance_shader_parameters/color = Color(1, 1, 1, 1)
+instance_shader_parameters/fixed_size = true
+instance_shader_parameters/size = 0.25
+mesh = ExtResource("2_4dyef")
+
+[node name="mesh_instance_3d_2" type="MeshInstance3D" parent="." unique_id=1213683822]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1)
+instance_shader_parameters/color = Color(1, 1, 1, 1)
+instance_shader_parameters/fixed_size = true
+instance_shader_parameters/size = 0.25
+mesh = ExtResource("3_4dyef")

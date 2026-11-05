@@ -1,0 +1,14 @@
+[gd_scene format=3 uid="uid://g06fv8ndyrsh"]
+
+[ext_resource type="Script" uid="uid://cdejm7nn0oqnh" path="res://addons/myth/script/debug_draw/property_drawer/scene/PropertyDrawerVisual3D.gd" id="1_go4sj"]
+[ext_resource type="ArrayMesh" uid="uid://dccu8o3cpg8kl" path="res://addons/myth/script/debug_draw/property_drawer/mesh/PropertyDrawer3D_meshlib_spike.res" id="2_go4sj"]
+
+[node name="visual_spike_3d" type="Node3D" unique_id=1512267076]
+script = ExtResource("1_go4sj")
+face_forward = true
+
+[node name="mesh_instance_3d" type="MeshInstance3D" parent="." unique_id=1978772329]
+instance_shader_parameters/color = Color(1, 1, 1, 1)
+instance_shader_parameters/fixed_size = true
+instance_shader_parameters/size = 0.25
+mesh = ExtResource("2_go4sj")

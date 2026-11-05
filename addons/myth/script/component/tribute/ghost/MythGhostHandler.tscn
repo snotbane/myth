@@ -1,0 +1,13 @@
+[gd_scene format=3 uid="uid://blcmx726ppxv0"]
+
+[ext_resource type="Script" uid="uid://2riw1kg25qqm" path="res://addons/myth/script/component/tribute/ghost/Ghost.gd" id="1_5u4y6"]
+[ext_resource type="Script" uid="uid://64pab4lqwg15" path="res://addons/myth/script/component/misc/Global.gd" id="2_7fstu"]
+
+[node name="myth_ghost_handler" type="Node" unique_id=1215814713]
+script = ExtResource("1_5u4y6")
+priority = -128
+metadata/_custom_type_script = "uid://2riw1kg25qqm"
+
+[node name="global" type="Node" parent="." unique_id=1162432695]
+script = ExtResource("2_7fstu")
+metadata/_custom_type_script = "uid://64pab4lqwg15"

@@ -1,0 +1,9 @@
+[gd_resource type="PhysicsMaterial" script_class="CharacterBasedPhysicsMaterial" format=3 uid="uid://d05qcy0mlmnkd"]
+
+[ext_resource type="AudioStream" uid="uid://bcinsxpkcsfc3" path="res://asset/sfx/tile.tres" id="1_4a6r7"]
+[ext_resource type="Script" uid="uid://bb21ro56415ni" path="res://addons/myth/script/component/character/CharacterBasedPhysicsMaterial.gd" id="2_6ytkj"]
+
+[resource]
+script = ExtResource("2_6ytkj")
+audio_stream_footstep = ExtResource("1_4a6r7")
+metadata/_custom_type_script = "uid://bb21ro56415ni"

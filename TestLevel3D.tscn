@@ -1,0 +1,219 @@
+[gd_scene format=3 uid="uid://bguh2b4spvwp3"]
+
+[ext_resource type="Script" uid="uid://doxqkyqy42b34" path="res://addons/myth/script/component/misc/EditorCameraManifest.gd" id="1_3g03d"]
+[ext_resource type="PackedScene" uid="uid://cxvn6vulols8q" path="res://GameMenu.tscn" id="1_oh6ef"]
+[ext_resource type="Script" uid="uid://2riw1kg25qqm" path="res://addons/myth/script/component/tribute/ghost/Ghost.gd" id="2_oh6ef"]
+[ext_resource type="Script" uid="uid://cjv6gjo8si7y6" path="res://addons/myth/script/debug_draw/property_drawer/PropertyDrawer3D.gd" id="3_2656r"]
+[ext_resource type="Resource" uid="uid://c0o4m7oe1sw6o" path="res://position_and_global_z.tres" id="4_2p1cj"]
+[ext_resource type="Script" uid="uid://byafjekbp4kd6" path="res://addons/myth/script/component/tribute/mouse/MouseComponent.gd" id="6_2p1cj"]
+[ext_resource type="PackedScene" uid="uid://bsatk3j4yolu5" path="res://addons/myth/template/FirstPersonCharacter3D.tscn" id="8_3g03d"]
+[ext_resource type="Script" uid="uid://01i7mp0ow5tg" path="res://addons/myth/script/debug_draw/spatial_grid/SpatialGrid3D.gd" id="8_f4dnm"]
+[ext_resource type="PhysicsMaterial" uid="uid://dbu72c81eqmdu" path="res://asset/physics_material/concrete.tres" id="9_oh6ef"]
+[ext_resource type="PhysicsMaterial" uid="uid://d05qcy0mlmnkd" path="res://asset/physics_material/tile.tres" id="10_2656r"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_a4doo"]
+sky_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
+ground_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
+
+[sub_resource type="Sky" id="Sky_8ykxu"]
+sky_material = SubResource("ProceduralSkyMaterial_a4doo")
+
+[sub_resource type="Environment" id="Environment_kuyva"]
+background_mode = 2
+sky = SubResource("Sky_8ykxu")
+tonemap_mode = 4
+glow_enabled = true
+
+[sub_resource type="GDScript" id="GDScript_igc1g"]
+script/source = "extends Node3D
+
+
+func _on_input_axis_2d_desired_input(vector: Vector2) -> void:
+	position.x += vector.x * +1.0
+	position.y += vector.y * -1.0
+"
+
+[sub_resource type="SphereMesh" id="SphereMesh_igc1g"]
+
+[sub_resource type="WorldBoundaryShape3D" id="WorldBoundaryShape3D_igc1g"]
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_g5yut"]
+height = 0.25
+radius = 4.0
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_igc1g"]
+top_radius = 4.0
+bottom_radius = 4.0
+height = 0.25
+
+[sub_resource type="PrismMesh" id="PrismMesh_uu0sq"]
+left_to_right = 0.0
+size = Vector3(8, 4, 8)
+
+[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_3g03d"]
+points = PackedVector3Array(-4, -2, -4, -4, 2, -4, 4, -2, -4, -4, -2, 4, -4, 2, 4, 4, -2, 4)
+
+[sub_resource type="PrismMesh" id="PrismMesh_2656r"]
+left_to_right = 0.0
+size = Vector3(4, 4, 8)
+
+[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_uea2g"]
+points = PackedVector3Array(2, -2, 4, -2, 2, 4, -2, -2, 4, 2, -2, -4, -2, 2, -4, -2, -2, -4)
+
+[sub_resource type="PrismMesh" id="PrismMesh_uea2g"]
+left_to_right = 0.0
+size = Vector3(2, 8, 8)
+
+[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_2656r"]
+points = PackedVector3Array(-1, 4, 4, -1, 4, -4, -1, -4, 4, 1, -4, 4, 1, -4, -4, -1, -4, -4)
+
+[node name="test_level_3d" type="Node3D" unique_id=1999000337]
+
+[node name="game_menu" parent="." unique_id=734476038 instance=ExtResource("1_oh6ef")]
+
+[node name="editor_camera_manifest" type="Node" parent="." unique_id=2108431072]
+script = ExtResource("1_3g03d")
+editor_global_transform_3d = Transform3D(0.9999362, -0.0017471593, 0.01115992, 0, 0.9879658, 0.15467258, -0.011295857, -0.15466271, 0.98790276, -17.737759, 9.528465, 23.91375)
+editor_global_transform_2d = Transform2D(1, 0, 0, 1, 308.5, 216)
+metadata/_custom_type_script = "uid://doxqkyqy42b34"
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1463623584]
+environment = SubResource("Environment_kuyva")
+
+[node name="ghost" type="Node" parent="." unique_id=2080043990]
+script = ExtResource("2_oh6ef")
+metadata/_custom_type_script = "uid://2riw1kg25qqm"
+
+[node name="node_3d" type="Node3D" parent="." unique_id=1726620687]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.15779561, 0, 0)
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="node_3d" unique_id=24121122]
+transform = Transform3D(-0.49657196, 0.84830225, -0.18384674, -0.76087767, -0.32348633, 0.56251377, 0.4177098, 0.41921344, 0.80608845, -0.5381229, 0.9168335, -0.051453084)
+
+[node name="property_drawer_3d" type="Node3D" parent="node_3d/DirectionalLight3D" unique_id=1221229302]
+script = ExtResource("3_2656r")
+property_set = ExtResource("4_2p1cj")
+metadata/_custom_type_script = "uid://cjv6gjo8si7y6"
+
+[node name="mouse_component" type="Node" parent="node_3d" unique_id=1832117440]
+script = ExtResource("6_2p1cj")
+mouse_mode = 2
+metadata/_custom_type_script = "uid://byafjekbp4kd6"
+
+[node name="node_3d_2" type="Node3D" parent="." unique_id=1054162263]
+script = SubResource("GDScript_igc1g")
+
+[node name="mesh_instance_3d" type="Node3D" parent="node_3d_2" unique_id=1907580367]
+transform = Transform3D(0.99999994, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+
+[node name="property_drawer_3d" type="Node3D" parent="node_3d_2/mesh_instance_3d" unique_id=640462266]
+script = ExtResource("3_2656r")
+property_set = ExtResource("4_2p1cj")
+metadata/_custom_type_script = "uid://cjv6gjo8si7y6"
+
+[node name="mouse_component" type="Node" parent="node_3d_2" unique_id=2092497097]
+script = ExtResource("6_2p1cj")
+mouse_mode = 2
+metadata/_custom_type_script = "uid://byafjekbp4kd6"
+
+[node name="spatial_grid_3d" type="VisualInstance3D" parent="." unique_id=139476643]
+unique_name_in_owner = false
+process_mode = 0
+process_priority = 0
+process_physics_priority = 0
+process_thread_group = 0
+physics_interpolation_mode = 0
+auto_translate_mode = 0
+editor_description = ""
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+rotation_edit_mode = 0
+rotation_order = 2
+top_level = false
+visible = true
+visibility_parent = NodePath("")
+layers = 1
+script = ExtResource("8_f4dnm")
+metadata/_custom_type_script = "uid://01i7mp0ow5tg"
+
+[node name="mesh_instance_3d" type="MeshInstance3D" parent="." unique_id=370700788]
+mesh = SubResource("SphereMesh_igc1g")
+
+[node name="first_person_character_3d" parent="." unique_id=948668199 instance=ExtResource("8_3g03d")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0958033, 0)
+
+[node name="static_body_3d" type="StaticBody3D" parent="." unique_id=1711545539]
+
+[node name="collision_shape_3d" type="CollisionShape3D" parent="static_body_3d" unique_id=881720177]
+shape = SubResource("WorldBoundaryShape3D_igc1g")
+
+[node name="static_body_3d_2" type="StaticBody3D" parent="." unique_id=256269560]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0, -5)
+physics_material_override = ExtResource("9_oh6ef")
+
+[node name="collision_shape_3d" type="CollisionShape3D" parent="static_body_3d_2" unique_id=567603835]
+shape = SubResource("CylinderShape3D_g5yut")
+
+[node name="mesh_instance_3d" type="MeshInstance3D" parent="static_body_3d_2" unique_id=1083210486]
+mesh = SubResource("CylinderMesh_igc1g")
+
+[node name="static_body_3d_3" type="StaticBody3D" parent="." unique_id=413269626]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 2, -5)
+physics_material_override = ExtResource("10_2656r")
+
+[node name="mesh_instance_3d" type="MeshInstance3D" parent="static_body_3d_3" unique_id=416718857]
+mesh = SubResource("PrismMesh_uu0sq")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="static_body_3d_3" unique_id=703929896]
+shape = SubResource("ConvexPolygonShape3D_3g03d")
+
+[node name="static_body_3d_4" type="StaticBody3D" parent="." unique_id=96227452]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13, 2, 3)
+physics_material_override = ExtResource("10_2656r")
+
+[node name="mesh_instance_3d" type="MeshInstance3D" parent="static_body_3d_4" unique_id=581724173]
+mesh = SubResource("PrismMesh_uu0sq")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="static_body_3d_4" unique_id=1172714788]
+shape = SubResource("ConvexPolygonShape3D_3g03d")
+
+[node name="static_body_3d_7" type="StaticBody3D" parent="." unique_id=1211615569]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -19, 6, 3)
+physics_material_override = ExtResource("10_2656r")
+
+[node name="mesh_instance_3d" type="MeshInstance3D" parent="static_body_3d_7" unique_id=383252686]
+mesh = SubResource("PrismMesh_2656r")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="static_body_3d_7" unique_id=2118762249]
+shape = SubResource("ConvexPolygonShape3D_uea2g")
+
+[node name="static_body_3d_8" type="StaticBody3D" parent="." unique_id=927050330]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22, 10, 3)
+physics_material_override = ExtResource("10_2656r")
+
+[node name="mesh_instance_3d" type="MeshInstance3D" parent="static_body_3d_8" unique_id=653325562]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
+mesh = SubResource("PrismMesh_uea2g")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="static_body_3d_8" unique_id=1291132134]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
+shape = SubResource("ConvexPolygonShape3D_2656r")
+
+[node name="static_body_3d_5" type="StaticBody3D" parent="." unique_id=1547664378]
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, -5, 2, 3.0000005)
+physics_material_override = ExtResource("10_2656r")
+
+[node name="mesh_instance_3d" type="MeshInstance3D" parent="static_body_3d_5" unique_id=1709995676]
+mesh = SubResource("PrismMesh_uu0sq")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="static_body_3d_5" unique_id=1472304348]
+shape = SubResource("ConvexPolygonShape3D_3g03d")
+
+[node name="static_body_3d_6" type="StaticBody3D" parent="." unique_id=78331903]
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, -13, 2, -5.0000005)
+physics_material_override = ExtResource("10_2656r")
+
+[node name="mesh_instance_3d" type="MeshInstance3D" parent="static_body_3d_6" unique_id=242381299]
+mesh = SubResource("PrismMesh_uu0sq")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="static_body_3d_6" unique_id=593889964]
+shape = SubResource("ConvexPolygonShape3D_3g03d")

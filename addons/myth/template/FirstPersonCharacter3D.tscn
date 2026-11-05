@@ -1,0 +1,96 @@
+[gd_scene format=3 uid="uid://bsatk3j4yolu5"]
+
+[ext_resource type="Script" uid="uid://d305bsfdv06py" path="res://addons/myth/script/component/character/CharacterPawn3D.gd" id="1_17o53"]
+[ext_resource type="Script" uid="uid://tph4mneuy50c" path="res://addons/myth/script/utility/audio/KeyedAudioStreamPlayer3D.gd" id="2_5svd3"]
+[ext_resource type="Script" uid="uid://cg0454hujlwfv" path="res://addons/myth/script/utility/remote_lag/RemoteLagTransform3D.gd" id="2_7hs6g"]
+[ext_resource type="Script" uid="uid://d201t4jfiho2x" path="res://addons/myth/script/component/input/InputAxis2DForCamera3D.gd" id="2_rco5e"]
+[ext_resource type="Script" uid="uid://cevp3pepp1wgl" path="res://addons/myth/script/component/character/CharacterWalkMotion3D.gd" id="3_4k5k4"]
+[ext_resource type="Script" uid="uid://c0kd3qhylrb13" path="res://addons/myth/script/component/input/InputAxis2D.gd" id="4_uu0sq"]
+[ext_resource type="Script" uid="uid://bw77utt2osdoh" path="res://addons/myth/script/component/character/CharacterGravityMotion3D.gd" id="5_rco5e"]
+[ext_resource type="Script" uid="uid://bolu65ie3sr1h" path="res://addons/myth/script/component/input/InputAction.gd" id="7_uu0sq"]
+[ext_resource type="Script" uid="uid://dktkhjmhr7pko" path="res://addons/myth/script/component/character/CharacterJumpMotion3D.gd" id="12_mxnyh"]
+[ext_resource type="Script" uid="uid://4jb16u4wio8k" path="res://addons/myth/script/component/input/InputActionBuffered.gd" id="13_vyuqr"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_igc1g"]
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_igc1g"]
+
+[node name="first_person_character_3d" type="CharacterBody3D" unique_id=948668199]
+floor_constant_speed = true
+script = ExtResource("1_17o53")
+air_delay = 0.25
+
+[node name="collision_shape_3d" type="CollisionShape3D" parent="." unique_id=1567048948]
+shape = SubResource("CapsuleShape3D_igc1g")
+
+[node name="mesh_instance_3d" type="MeshInstance3D" parent="." unique_id=114739802]
+mesh = SubResource("CapsuleMesh_igc1g")
+
+[node name="footstep_audio_3d" type="AudioStreamPlayer3D" parent="." unique_id=1709105503]
+max_polyphony = 6
+script = ExtResource("2_5svd3")
+
+[node name="camera_remote" type="RemoteTransform3D" parent="." unique_id=1814882836]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+remote_path = NodePath("camera_3d")
+update_position = false
+update_scale = false
+script = ExtResource("2_7hs6g")
+
+[node name="camera_3d" type="Camera3D" parent="camera_remote" unique_id=763949336]
+
+[node name="input_axis_2d_for_camera_3d" type="Node" parent="camera_remote" unique_id=97796458 node_paths=PackedStringArray("yaw_node")]
+script = ExtResource("2_rco5e")
+yaw_node = NodePath("../..")
+mouse_enabled = true
+mouse_sensitivity = Vector2(-10, -10)
+metadata/_custom_type_script = "uid://d201t4jfiho2x"
+
+[node name="gravity" type="Node" parent="." unique_id=95765363]
+script = ExtResource("5_rco5e")
+metadata/_custom_type_script = "uid://bw77utt2osdoh"
+
+[node name="strafe" type="Node" parent="." unique_id=594383593]
+script = ExtResource("3_4k5k4")
+air_friction = 0.1
+
+[node name="input_axis_2d" type="Node" parent="strafe" unique_id=1451764073]
+script = ExtResource("4_uu0sq")
+input_left = &"move_left"
+input_right = &"move_right"
+input_up = &"move_forward"
+input_down = &"move_back"
+metadata/_custom_type_script = "uid://c0kd3qhylrb13"
+
+[node name="input_sprint" type="Node" parent="strafe" unique_id=872553502]
+script = ExtResource("7_uu0sq")
+action_name = &"sprint"
+metadata/_custom_type_script = "uid://bolu65ie3sr1h"
+
+[node name="input_crouch" type="Node" parent="strafe" unique_id=1897151456]
+script = ExtResource("7_uu0sq")
+action_name = &"crouch"
+metadata/_custom_type_script = "uid://bolu65ie3sr1h"
+
+[node name="jump" type="Node" parent="." unique_id=296393909]
+script = ExtResource("12_mxnyh")
+jump_strength = 4.0
+cancel_velocity_mode = 2
+metadata/_custom_type_script = "uid://dktkhjmhr7pko"
+
+[node name="input_jump" type="Node" parent="jump" unique_id=237149568]
+script = ExtResource("13_vyuqr")
+process_callback = 1
+press_condition = NodePath("..:can_jump")
+press_buffer_duration = 0.2
+action_name = &"jump"
+metadata/_custom_type_script = "uid://4jb16u4wio8k"
+
+[connection signal="became_grounded" from="." to="footstep_audio_3d" method="play_last_key"]
+[connection signal="ground_physics_material_changed" from="." to="footstep_audio_3d" method="set_supplier"]
+[connection signal="footstepped" from="strafe" to="footstep_audio_3d" method="play_key" binds= [&"audio_stream_footstep"]]
+[connection signal="desired_input" from="strafe/input_axis_2d" to="strafe" method="_on_input_axis_2d_desired_input"]
+[connection signal="changed" from="strafe/input_sprint" to="strafe" method="set_sprint_desired"]
+[connection signal="changed" from="strafe/input_crouch" to="strafe" method="set_tiptoe_desired"]
+[connection signal="jumped" from="jump" to="footstep_audio_3d" method="play_last_key" binds= [10.0]]
+[connection signal="pressed" from="jump/input_jump" to="jump" method="jump"]

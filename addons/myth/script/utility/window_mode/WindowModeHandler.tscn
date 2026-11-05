@@ -1,0 +1,14 @@
+[gd_scene format=3 uid="uid://4w87ucqjaruy"]
+
+[ext_resource type="Script" uid="uid://bolu65ie3sr1h" path="res://addons/myth/script/component/input/InputAction.gd" id="1_7uhf1"]
+[ext_resource type="Script" uid="uid://cseudttyodlc5" path="res://addons/myth/script/utility/window_mode/WindowModeHandler.gd" id="1_cubbg"]
+
+[node name="window_mode_handler" type="Node" unique_id=806217653]
+script = ExtResource("1_cubbg")
+
+[node name="input_action" type="Node" parent="." unique_id=1510137030]
+script = ExtResource("1_7uhf1")
+action_name = &"_myth_fullscreen_toggle"
+metadata/_custom_type_script = "uid://bolu65ie3sr1h"
+
+[connection signal="pressed" from="input_action" to="." method="toggle_fullscreen"]

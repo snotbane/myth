@@ -1,0 +1,8 @@
+[gd_resource type="ShaderMaterial" format=3 uid="uid://b6844sxkpxb20"]
+
+[ext_resource type="Shader" uid="uid://dndenwliklof" path="res://addons/myth/script/debug_draw/spatial_grid/SpatialGrid3D_shader.gdshader" id="1_k7prw"]
+
+[resource]
+render_priority = 0
+shader = ExtResource("1_k7prw")
+shader_parameter/march_precision = 16

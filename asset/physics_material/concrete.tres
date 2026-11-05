@@ -1,0 +1,10 @@
+[gd_resource type="PhysicsMaterial" script_class="CharacterBasedPhysicsMaterial" format=3 uid="uid://dbu72c81eqmdu"]
+
+[ext_resource type="AudioStream" uid="uid://dpcfuvol6ujkw" path="res://asset/sfx/concrete.tres" id="1_7d1q1"]
+[ext_resource type="Script" uid="uid://bb21ro56415ni" path="res://addons/myth/script/component/character/CharacterBasedPhysicsMaterial.gd" id="1_ttmur"]
+
+[resource]
+rough = true
+script = ExtResource("1_ttmur")
+audio_stream_footstep = ExtResource("1_7d1q1")
+metadata/_custom_type_script = "uid://bb21ro56415ni"

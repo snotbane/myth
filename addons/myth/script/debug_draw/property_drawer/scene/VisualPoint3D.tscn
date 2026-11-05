@@ -1,0 +1,11 @@
+[gd_scene format=3 uid="uid://b8qmk3erui6wu"]
+
+[ext_resource type="Script" uid="uid://cdejm7nn0oqnh" path="res://addons/myth/script/debug_draw/property_drawer/scene/PropertyDrawerVisual3D.gd" id="1_72ka7"]
+[ext_resource type="ArrayMesh" uid="uid://b7f6fj8ncdnv4" path="res://addons/myth/script/debug_draw/property_drawer/mesh/PropertyDrawer3D_meshlib_point.res" id="1_v1c3q"]
+
+[node name="visual_point_3d" type="Node3D" unique_id=1512267076]
+script = ExtResource("1_72ka7")
+
+[node name="mesh_instance_3d" type="MeshInstance3D" parent="." unique_id=1978772329]
+instance_shader_parameters/color = Color(1, 1, 1, 1)
+mesh = ExtResource("1_v1c3q")
