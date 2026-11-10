@@ -2,9 +2,9 @@
 
 [ext_resource type="Script" uid="uid://d305bsfdv06py" path="res://addons/myth/script/component/character/CharacterPawn3D.gd" id="1_17o53"]
 [ext_resource type="Script" uid="uid://tph4mneuy50c" path="res://addons/myth/script/utility/audio/KeyedAudioStreamPlayer3D.gd" id="2_5svd3"]
-[ext_resource type="Script" uid="uid://ddjj2m1n1ljiy" path="res://addons/myth/script/utility/area/SensorArea3D.gd" id="2_7hs6g"]
 [ext_resource type="Script" uid="uid://d201t4jfiho2x" path="res://addons/myth/script/component/input/InputAxis2DForCamera3D.gd" id="2_rco5e"]
 [ext_resource type="Script" uid="uid://cevp3pepp1wgl" path="res://addons/myth/script/component/character/CharacterWalkMotion3D.gd" id="3_4k5k4"]
+[ext_resource type="Script" uid="uid://b8dtylr7phwi3" path="res://addons/myth/script/ui/ControlCastProjector3D.gd" id="3_m7ei3"]
 [ext_resource type="Script" uid="uid://bij5krbwt3sij" path="res://addons/myth/script/component/interact/Interactor.gd" id="4_7hs6g"]
 [ext_resource type="AudioStream" uid="uid://c16gr4k7qh8qo" path="res://asset/sfx/common/wpn_denyselect.ogg" id="4_pbyke"]
 [ext_resource type="Script" uid="uid://c0kd3qhylrb13" path="res://addons/myth/script/component/input/InputAxis2D.gd" id="4_uu0sq"]
@@ -14,13 +14,7 @@
 [ext_resource type="Texture2D" uid="uid://bf5n3fvqrituk" path="res://addons/myth/asset/icons/Reticle.svg" id="13_7hs6g"]
 [ext_resource type="Script" uid="uid://4jb16u4wio8k" path="res://addons/myth/script/component/input/InputActionBuffered.gd" id="13_vyuqr"]
 
-[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_g5yut"]
-height = 1.0
-
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_igc1g"]
-
-[sub_resource type="SphereShape3D" id="SphereShape3D_igc1g"]
-radius = 0.1
 
 [sub_resource type="GDScript" id="GDScript_j2q5q"]
 script/source = "extends Label
@@ -34,21 +28,10 @@ func _on_interaction_focus_changed(new_focus: Interactable) -> void:
 		text = new_focus.text
 "
 
-[node name="first_person_character_3d" type="CharacterBody3D" unique_id=948668199 node_paths=PackedStringArray("ceiling_sensor")]
+[node name="first_person_character_3d" type="CharacterBody3D" unique_id=948668199]
 floor_constant_speed = true
 script = ExtResource("1_17o53")
-ceiling_sensor = NodePath("headroom_area_3d")
 air_delay = 0.25
-
-[node name="headroom_area_3d" type="Area3D" parent="." unique_id=1029166933]
-collision_layer = 0
-monitorable = false
-script = ExtResource("2_7hs6g")
-metadata/_custom_type_script = "uid://ddjj2m1n1ljiy"
-
-[node name="collision_shape_3d" type="CollisionShape3D" parent="headroom_area_3d" unique_id=1449413367]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
-shape = SubResource("CapsuleShape3D_g5yut")
 
 [node name="collision_shape_3d" type="CollisionShape3D" parent="." unique_id=1567048948]
 shape = SubResource("CapsuleShape3D_igc1g")
@@ -56,26 +39,32 @@ shape = SubResource("CapsuleShape3D_igc1g")
 [node name="camera_3d" type="Camera3D" parent="collision_shape_3d" unique_id=763949336]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
 
-[node name="interaction_shape_cast_3d" type="ShapeCast3D" parent="collision_shape_3d/camera_3d" unique_id=1778978114]
-shape = SubResource("SphereShape3D_igc1g")
+[node name="interaction_cast_3d" type="RayCast3D" parent="collision_shape_3d/camera_3d" unique_id=2087460924]
 target_position = Vector3(0, 0, -2)
 collide_with_areas = true
 
-[node name="interaction" type="Node" parent="collision_shape_3d/camera_3d/interaction_shape_cast_3d" unique_id=1625716540]
+[node name="control_cast_projector_3d" type="Node" parent="collision_shape_3d/camera_3d/interaction_cast_3d" unique_id=1866080721 node_paths=PackedStringArray("source", "target", "camera")]
+script = ExtResource("3_m7ei3")
+source = NodePath("../../../../hud/reticle")
+target = NodePath("..")
+camera = NodePath("../..")
+metadata/_custom_type_script = "uid://b8dtylr7phwi3"
+
+[node name="interaction" type="Node" parent="collision_shape_3d/camera_3d/interaction_cast_3d" unique_id=1625716540]
 script = ExtResource("4_7hs6g")
 metadata/_custom_type_script = "uid://c5h7mlwpnpyjm"
 
-[node name="input_interact" type="Node" parent="collision_shape_3d/camera_3d/interaction_shape_cast_3d/interaction" unique_id=551156442]
+[node name="input_interact" type="Node" parent="collision_shape_3d/camera_3d/interaction_cast_3d/interaction" unique_id=551156442]
 script = ExtResource("13_vyuqr")
 press_condition = NodePath("..:is_focused")
 action_name = &"interact"
 metadata/_custom_type_script = "uid://4jb16u4wio8k"
 
-[node name="interaction_failure" type="AudioStreamPlayer" parent="collision_shape_3d/camera_3d/interaction_shape_cast_3d/interaction" unique_id=1445749515]
+[node name="interaction_failure" type="AudioStreamPlayer" parent="collision_shape_3d/camera_3d/interaction_cast_3d/interaction" unique_id=1445749515]
 stream = ExtResource("4_pbyke")
 volume_db = -8.0
 
-[node name="interaction_success" type="AudioStreamPlayer" parent="collision_shape_3d/camera_3d/interaction_shape_cast_3d/interaction" unique_id=956115339]
+[node name="interaction_success" type="AudioStreamPlayer" parent="collision_shape_3d/camera_3d/interaction_cast_3d/interaction" unique_id=956115339]
 stream = ExtResource("5_7hs6g")
 volume_db = -8.0
 
@@ -138,7 +127,7 @@ metadata/_custom_type_script = "uid://4jb16u4wio8k"
 
 [node name="hud" type="CanvasLayer" parent="." unique_id=882867998]
 
-[node name="control" type="Control" parent="hud" unique_id=812021384]
+[node name="reticle" type="Control" parent="hud" unique_id=812021384]
 layout_mode = 3
 anchors_preset = 8
 anchor_left = 0.5
@@ -149,7 +138,7 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="texture_rect" type="TextureRect" parent="hud/control" unique_id=1316749211]
+[node name="texture" type="TextureRect" parent="hud/reticle" unique_id=1316749211]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -166,7 +155,7 @@ mouse_filter = 2
 texture = ExtResource("13_7hs6g")
 expand_mode = 3
 
-[node name="interaction_label" type="Label" parent="hud/control" unique_id=790403011]
+[node name="interaction_label" type="Label" parent="hud/reticle" unique_id=790403011]
 layout_mode = 1
 offset_left = 5.0
 offset_right = 45.0
@@ -175,10 +164,11 @@ script = SubResource("GDScript_j2q5q")
 
 [connection signal="became_grounded" from="." to="footstep_audio_3d" method="play_last_key"]
 [connection signal="ground_physics_material_changed" from="." to="footstep_audio_3d" method="set_supplier"]
-[connection signal="focus_changed" from="collision_shape_3d/camera_3d/interaction_shape_cast_3d/interaction" to="hud/control/interaction_label" method="_on_interaction_focus_changed"]
-[connection signal="interact_failed" from="collision_shape_3d/camera_3d/interaction_shape_cast_3d/interaction" to="collision_shape_3d/camera_3d/interaction_shape_cast_3d/interaction/interaction_failure" method="play"]
-[connection signal="interact_started" from="collision_shape_3d/camera_3d/interaction_shape_cast_3d/interaction" to="collision_shape_3d/camera_3d/interaction_shape_cast_3d/interaction/interaction_success" method="play"]
-[connection signal="pressed" from="collision_shape_3d/camera_3d/interaction_shape_cast_3d/interaction/input_interact" to="collision_shape_3d/camera_3d/interaction_shape_cast_3d/interaction" method="_on_input_interact_pressed"]
+[connection signal="focus_changed" from="collision_shape_3d/camera_3d/interaction_cast_3d/interaction" to="hud/reticle/interaction_label" method="_on_interaction_focus_changed"]
+[connection signal="interact_failed" from="collision_shape_3d/camera_3d/interaction_cast_3d/interaction" to="collision_shape_3d/camera_3d/interaction_cast_3d/interaction/interaction_failure" method="play"]
+[connection signal="interact_started" from="collision_shape_3d/camera_3d/interaction_cast_3d/interaction" to="collision_shape_3d/camera_3d/interaction_cast_3d/interaction/interaction_success" method="play"]
+[connection signal="pressed" from="collision_shape_3d/camera_3d/interaction_cast_3d/interaction/input_interact" to="collision_shape_3d/camera_3d/interaction_cast_3d/interaction" method="_on_input_interact_pressed"]
+[connection signal="sequence_failed" from="collision_shape_3d/camera_3d/interaction_cast_3d/interaction/input_interact" to="collision_shape_3d/camera_3d/interaction_cast_3d/interaction/interaction_failure" method="play"]
 [connection signal="footstepped" from="strafe" to="footstep_audio_3d" method="play_key" binds= [&"audio_stream_footstep"]]
 [connection signal="desired_input" from="strafe/input_axis_2d" to="strafe" method="_on_input_axis_2d_desired_input"]
 [connection signal="changed" from="strafe/input_sprint" to="strafe" method="set_sprint_desired"]

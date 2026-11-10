@@ -5,6 +5,9 @@
 class_name InputActionBuffered
 extends InputAction
 
+## Emits if the action was pressed, and its condition was not met, and then the action was released.
+signal sequence_failed
+
 ## Determines which process method is used to check the input conditions.
 @export_enum("Process", "Physics")
 var process_callback: int = 0
@@ -52,6 +55,7 @@ func _buffer_update() -> void:
 			and release_condition_value
 			):
 				_release_buffer_stamp = INT64_MIN
+				_check_sequence()
 				is_pressed = false
 				is_pressed = is_pressed_absolute
 
@@ -135,8 +139,15 @@ var release_buffer_duration: float = 0.0:
 func release_try() -> void:
 	if release_enabled:
 		if release_condition_value:
+			_check_sequence()
 			is_pressed = false
 		else:
 			_release_buffer_stamp = Time.get_ticks_usec()
 	else:
+		_check_sequence()
 		is_pressed = false
+
+
+func _check_sequence() -> void:
+	if not is_pressed and not is_pressed_absolute:
+		sequence_failed.emit()
