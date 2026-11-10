@@ -4,7 +4,7 @@ class_name CharacterWalkMotion3D
 extends CharacterMotionComponent3D
 
 enum {
-	TIPTOEING,
+	CROUCHING,
 	NORMAL,
 	SPRINTING,
 	MAX
@@ -30,7 +30,7 @@ var normal_max_speed: float = 4.0
 @export
 var normal_footstep_interval: float = 0.4
 
-## Whether the character is walking, sprinting, or tiptoeing
+## Whether the character is walking, sprinting, or crouching
 var speed_state_desired: int = NORMAL
 
 var speed_state: int = NORMAL:
@@ -49,9 +49,36 @@ var speed_state: int = NORMAL:
 				current_max_speed = sprint_max_speed
 				current_footstep_interval = sprint_footstep_interval
 
-			TIPTOEING:
-				current_max_speed = tiptoe_max_speed
-				current_footstep_interval = tiptoe_footstep_interval
+			CROUCHING:
+				current_max_speed = crouch_max_speed
+				current_footstep_interval = crouch_footstep_interval
+
+
+		if crouch_shrink_shape:
+			if not pawn.air_is_airborne:
+				(
+					create_tween()
+					.tween_property(crouch_shrink_shape, "position:y", (-0.5) if speed_state == CROUCHING else 0.0, crouch_shrink_time)
+					.set_ease(Tween.EASE_IN)
+					.set_trans(Tween.TRANS_SINE)
+				)
+			(
+				create_tween()
+				.tween_property(crouch_shrink_shape.shape, "height", crouch_shrink_height if speed_state == CROUCHING else crouch_shrink_height_onready, crouch_shrink_time)
+				.set_ease(Tween.EASE_IN)
+				.set_trans(Tween.TRANS_SINE)
+			)
+			# (
+			# 	# create_tween()
+			# 	# .tween_property(pawn, "ceiling_sensor_length", (pawn.ceiling_sensor_length_onready + (crouch_shrink_height_onready - crouch_shrink_height)) if speed_state == CROUCHING else pawn.ceiling_sensor_length_onready, crouch_shrink_time)
+			# 	# .set_ease(Tween.EASE_IN)
+			# 	# .set_trans(Tween.TRANS_SINE)
+
+			# 	create_tween()
+			# 	.tween_property(pawn.ceiling_sensor, "target_position:y", (3.1) if speed_state == CROUCHING else 0.1, crouch_shrink_time)
+			# 	.set_ease(Tween.EASE_IN)
+			# 	.set_trans(Tween.TRANS_SINE)
+			# )
 
 		speed_state_changed.emit(speed_state)
 
@@ -123,45 +150,59 @@ var sprint_is_desired: bool = false:
 		speed_state_desired += +1 if sprint_is_desired else -1
 
 
-@export_group("Tiptoe", "tiptoe_")
+@export_group("Crouch", "crouch_")
 
 ## This uses identical logic to Sprinting, but is for use at speeds slower than [member normal_max_speed]. Can be used for handling crouching speed.
 @export_custom(PROPERTY_HINT_GROUP_ENABLE, "")
-var tiptoe_enabled: bool = true:
+var crouch_enabled: bool = true:
 	set(value):
-		tiptoe_enabled = value
+		crouch_enabled = value
 
-		if not tiptoe_enabled:
-			tiptoe_is_desired = false
+		if not crouch_enabled:
+			crouch_is_desired = false
 
 
 @export_range(0.0, 8.0, 0.01, "or_greater")
-var tiptoe_max_speed: float = 2.0
+var crouch_max_speed: float = 2.0
 
 
-## Keep at zero to use the proportion of tiptoe speed to normal speed.
+## Keep at zero to use the proportion of crouch speed to normal speed.
 @export_range(0.0, 1.0, 0.01, "or_greater")
-var tiptoe_footstep_interval: float = 0.0:
+var crouch_footstep_interval: float = 0.0:
 	set(value):
 		if value <= 0.0:
-			value = normal_footstep_interval * normal_max_speed / tiptoe_max_speed
+			value = normal_footstep_interval * normal_max_speed / crouch_max_speed
 
-		if tiptoe_footstep_interval == value:
+		if crouch_footstep_interval == value:
 			return
 
-		tiptoe_footstep_interval = value
+		crouch_footstep_interval = value
 
-func set_tiptoe_desired(value: bool) -> void:
-	tiptoe_is_desired = value
-var tiptoe_is_desired: bool = false:
+func set_crouch_desired(value: bool) -> void:
+	crouch_is_desired = value
+var crouch_is_desired: bool = false:
 	set(value):
-		value = value and tiptoe_enabled
-		if tiptoe_is_desired == value:
+		value = value and crouch_enabled
+		if crouch_is_desired == value:
 			return
 
-		tiptoe_is_desired = value
-		speed_state_desired -= +1 if tiptoe_is_desired else -1
+		crouch_is_desired = value
+		speed_state_desired -= +1 if crouch_is_desired else -1
 
+@export_subgroup("Shrink", "crouch_shrink_")
+
+## This shape's position and height will be shortened (from the bottom up) when crouching is enabled. If not set, shrinking will be disabled. NOTE: this will also make the shape unique.
+@export
+var crouch_shrink_shape: CollisionShape3D
+
+## The minimum height to shrink to.
+@export
+var crouch_shrink_height: float = 1.0
+
+@export
+var crouch_shrink_time: float = 0.25
+
+var crouch_shrink_height_onready: float
 
 # @export_range(0.0, 1.0, 0.001)
 var friction_scalar: float = 1.0
@@ -179,8 +220,17 @@ var current_footstep_interval: float = normal_footstep_interval
 
 
 func _ready() -> void:
+	super._ready()
+
 	sprint_footstep_interval = sprint_footstep_interval
-	tiptoe_footstep_interval = tiptoe_footstep_interval
+	crouch_footstep_interval = crouch_footstep_interval
+
+	if crouch_shrink_shape:
+		crouch_shrink_shape.shape = crouch_shrink_shape.shape.duplicate()
+		pawn.ground_sensor.shape = crouch_shrink_shape.shape
+		# pawn.ceiling_sensor.shape = crouch_shrink_shape.shape
+
+		crouch_shrink_height_onready = crouch_shrink_shape.shape.height
 
 	if speed_by_angle == null:
 		speed_by_angle = SPEED_BY_ANGLE_DEFAULT
@@ -194,7 +244,7 @@ func _ready() -> void:
 
 func _physics_process(delta: float) -> void:
 	match speed_state_desired:
-		NORMAL, TIPTOEING:
+		NORMAL, CROUCHING:
 			speed_state = speed_state_desired
 
 		SPRINTING:

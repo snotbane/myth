@@ -3,9 +3,8 @@
 [ext_resource type="Script" uid="uid://doxqkyqy42b34" path="res://addons/myth/script/component/misc/EditorCameraManifest.gd" id="1_3g03d"]
 [ext_resource type="PackedScene" uid="uid://cxvn6vulols8q" path="res://GameMenu.tscn" id="1_oh6ef"]
 [ext_resource type="Script" uid="uid://2riw1kg25qqm" path="res://addons/myth/script/component/tribute/ghost/Ghost.gd" id="2_oh6ef"]
-[ext_resource type="Script" uid="uid://cjv6gjo8si7y6" path="res://addons/myth/script/debug_draw/property_drawer/PropertyDrawer3D.gd" id="3_2656r"]
-[ext_resource type="Resource" uid="uid://c0o4m7oe1sw6o" path="res://position_and_global_z.tres" id="4_2p1cj"]
 [ext_resource type="Script" uid="uid://byafjekbp4kd6" path="res://addons/myth/script/component/tribute/mouse/MouseComponent.gd" id="6_2p1cj"]
+[ext_resource type="Script" uid="uid://c16er80fraghl" path="res://addons/myth/script/component/interact/Interactable.gd" id="7_oh6ef"]
 [ext_resource type="PackedScene" uid="uid://bsatk3j4yolu5" path="res://addons/myth/template/FirstPersonCharacter3D.tscn" id="8_3g03d"]
 [ext_resource type="Script" uid="uid://01i7mp0ow5tg" path="res://addons/myth/script/debug_draw/spatial_grid/SpatialGrid3D.gd" id="8_f4dnm"]
 [ext_resource type="PhysicsMaterial" uid="uid://dbu72c81eqmdu" path="res://asset/physics_material/concrete.tres" id="9_oh6ef"]
@@ -34,6 +33,13 @@ func _on_input_axis_2d_desired_input(vector: Vector2) -> void:
 "
 
 [sub_resource type="SphereMesh" id="SphereMesh_igc1g"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_igc1g"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_igc1g"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_g5yut"]
+albedo_color = Color(1, 1, 0, 1)
 
 [sub_resource type="WorldBoundaryShape3D" id="WorldBoundaryShape3D_igc1g"]
 
@@ -73,8 +79,8 @@ points = PackedVector3Array(-1, 4, 4, -1, 4, -4, -1, -4, 4, 1, -4, 4, 1, -4, -4,
 
 [node name="editor_camera_manifest" type="Node" parent="." unique_id=2108431072]
 script = ExtResource("1_3g03d")
-editor_global_transform_3d = Transform3D(0.9999362, -0.0017471593, 0.01115992, 0, 0.9879658, 0.15467258, -0.011295857, -0.15466271, 0.98790276, -17.737759, 9.528465, 23.91375)
-editor_global_transform_2d = Transform2D(1, 0, 0, 1, 308.5, 216)
+editor_global_transform_3d = Transform3D(0.10196063, -0.24735834, 0.9635445, 0, 0.96859235, 0.24865422, -0.99478847, -0.025352938, 0.09875828, 12.650035, 2.485941, -12.128786)
+editor_global_transform_2d = Transform2D(1.4641001, 0, 0, 1.4641001, 918.8881, 396.18738)
 metadata/_custom_type_script = "uid://doxqkyqy42b34"
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1463623584]
@@ -90,11 +96,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.15779561, 0, 0)
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="node_3d" unique_id=24121122]
 transform = Transform3D(-0.49657196, 0.84830225, -0.18384674, -0.76087767, -0.32348633, 0.56251377, 0.4177098, 0.41921344, 0.80608845, -0.5381229, 0.9168335, -0.051453084)
 
-[node name="property_drawer_3d" type="Node3D" parent="node_3d/DirectionalLight3D" unique_id=1221229302]
-script = ExtResource("3_2656r")
-property_set = ExtResource("4_2p1cj")
-metadata/_custom_type_script = "uid://cjv6gjo8si7y6"
-
 [node name="mouse_component" type="Node" parent="node_3d" unique_id=1832117440]
 script = ExtResource("6_2p1cj")
 mouse_mode = 2
@@ -105,11 +106,6 @@ script = SubResource("GDScript_igc1g")
 
 [node name="mesh_instance_3d" type="Node3D" parent="node_3d_2" unique_id=1907580367]
 transform = Transform3D(0.99999994, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
-
-[node name="property_drawer_3d" type="Node3D" parent="node_3d_2/mesh_instance_3d" unique_id=640462266]
-script = ExtResource("3_2656r")
-property_set = ExtResource("4_2p1cj")
-metadata/_custom_type_script = "uid://cjv6gjo8si7y6"
 
 [node name="mouse_component" type="Node" parent="node_3d_2" unique_id=2092497097]
 script = ExtResource("6_2p1cj")
@@ -141,6 +137,31 @@ mesh = SubResource("SphereMesh_igc1g")
 [node name="first_person_character_3d" parent="." unique_id=948668199 instance=ExtResource("8_3g03d")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0958033, 0)
 
+[node name="static_body_3d_9" type="StaticBody3D" parent="." unique_id=71157058]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.2317419, 1.095803, -0.3911062)
+
+[node name="collision_shape_3d" type="CollisionShape3D" parent="static_body_3d_9" unique_id=1677413665]
+shape = SubResource("BoxShape3D_igc1g")
+
+[node name="mesh_instance_3d" type="MeshInstance3D" parent="static_body_3d_9" unique_id=929744238]
+mesh = SubResource("BoxMesh_igc1g")
+surface_material_override/0 = SubResource("StandardMaterial3D_g5yut")
+
+[node name="interactable" type="Node" parent="static_body_3d_9" unique_id=1655430846]
+script = ExtResource("7_oh6ef")
+text = "Speak"
+metadata/_custom_type_script = "uid://c16er80fraghl"
+
+[node name="label_3d" type="Label3D" parent="static_body_3d_9" unique_id=1028637892]
+visible = false
+billboard = 1
+no_depth_test = true
+text = "Hello!"
+
+[node name="timer" type="Timer" parent="static_body_3d_9/label_3d" unique_id=159927252]
+wait_time = 3.0
+one_shot = true
+
 [node name="static_body_3d" type="StaticBody3D" parent="." unique_id=1711545539]
 
 [node name="collision_shape_3d" type="CollisionShape3D" parent="static_body_3d" unique_id=881720177]
@@ -154,6 +175,16 @@ physics_material_override = ExtResource("9_oh6ef")
 shape = SubResource("CylinderShape3D_g5yut")
 
 [node name="mesh_instance_3d" type="MeshInstance3D" parent="static_body_3d_2" unique_id=1083210486]
+mesh = SubResource("CylinderMesh_igc1g")
+
+[node name="static_body_3d_11" type="StaticBody3D" parent="." unique_id=1751203821]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 1.5, -15)
+physics_material_override = ExtResource("9_oh6ef")
+
+[node name="collision_shape_3d" type="CollisionShape3D" parent="static_body_3d_11" unique_id=1649690225]
+shape = SubResource("CylinderShape3D_g5yut")
+
+[node name="mesh_instance_3d" type="MeshInstance3D" parent="static_body_3d_11" unique_id=1901112801]
 mesh = SubResource("CylinderMesh_igc1g")
 
 [node name="static_body_3d_3" type="StaticBody3D" parent="." unique_id=413269626]
@@ -217,3 +248,8 @@ mesh = SubResource("PrismMesh_uu0sq")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="static_body_3d_6" unique_id=593889964]
 shape = SubResource("ConvexPolygonShape3D_3g03d")
+
+[connection signal="interact_started" from="static_body_3d_9/interactable" to="static_body_3d_9/label_3d" method="show"]
+[connection signal="interact_started" from="static_body_3d_9/interactable" to="static_body_3d_9/label_3d/timer" method="start"]
+[connection signal="ready" from="static_body_3d_9/label_3d/timer" to="static_body_3d_9/label_3d" method="hide"]
+[connection signal="timeout" from="static_body_3d_9/label_3d/timer" to="static_body_3d_9/label_3d" method="hide"]

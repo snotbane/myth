@@ -1,4 +1,4 @@
-## Base class for any Component of which there are many, and only one can be active.
+## Base class for any Component of which there are many, and only one in the entire game instance can be active.
 @abstract
 class_name TributeComponent
 extends Component

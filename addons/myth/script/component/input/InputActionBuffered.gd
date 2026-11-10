@@ -47,7 +47,10 @@ func _buffer_update() -> void:
 	if is_pressed:
 		if (
 			release_enabled
-			and	ticks_usec <= _release_buffer_stamp + _release_buffer_duration_usec
+			and	(
+				_release_buffer_duration_usec == 0
+				or ticks_usec <= _release_buffer_stamp + _release_buffer_duration_usec
+			)
 			and release_condition_value
 			):
 				_release_buffer_stamp = INT64_MIN
@@ -57,7 +60,10 @@ func _buffer_update() -> void:
 	else:
 		if (
 			press_enabled
-			and	ticks_usec <= _press_buffer_stamp + _press_buffer_duration_usec
+			and	(
+				_press_buffer_duration_usec == 0
+				or ticks_usec <= _press_buffer_stamp + _press_buffer_duration_usec
+			)
 			and press_condition_value
 			):
 				_press_buffer_stamp = INT64_MIN
@@ -74,15 +80,21 @@ var press_enabled: bool = true
 ## This condition is checked when pressing. If not met, keep trying to press until [member press_buffer_duration] runs out.
 @export
 var press_condition: NodePath
+
+
+@export
+var press_condition_invert: bool
+
+
 var press_condition_value: Variant:
-	get: return Myth.get_node_path_value(self, press_condition)
+	get: return Myth.get_node_path_value(self, press_condition) != press_condition_invert
 
 var _press_buffer_stamp: int = INT64_MIN
 var _press_buffer_duration_usec: int = 100_000
 
-## The length of time for which the condition will be checked each frame.
+## The length of time for which the condition will be checked each frame. 0.0 means we will check continuously until the condition is true, or until we become released.
 @export
-var press_buffer_duration: float = 0.1:
+var press_buffer_duration: float = 0.0:
 	get: return float(_press_buffer_duration_usec) * 0.00_000_1
 	set(value): _press_buffer_duration_usec = floori(value * 1_000_000)
 
@@ -104,16 +116,20 @@ var release_enabled: bool = false
 ## This condition is checked when releasing. If not met, keep trying to press until [member release_buffer_duration] runs out.
 @export
 var release_condition: NodePath
-var release_condition_value: Variant:
-	get: return Myth.get_node_path_value(self, release_condition)
 
+@export
+var release_condition_invert: bool
+
+
+var release_condition_value: Variant:
+	get: return Myth.get_node_path_value(self, release_condition) != release_condition_invert
 
 var _release_buffer_stamp: int = INT64_MIN
 var _release_buffer_duration_usec: int = 100_000
 
-## The length of time for which the condition will be checked each frame.
+## The length of time for which the condition will be checked each frame. 0.0 means we will check continuously until the condition is true, or until we become pressed.
 @export
-var release_buffer_duration: float = 0.1:
+var release_buffer_duration: float = 0.0:
 	get: return float(_release_buffer_duration_usec) * 0.00_000_1
 	set(value): _release_buffer_duration_usec = floori(value * 1_000_000)
 

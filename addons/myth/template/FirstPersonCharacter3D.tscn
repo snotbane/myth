@@ -2,57 +2,98 @@
 
 [ext_resource type="Script" uid="uid://d305bsfdv06py" path="res://addons/myth/script/component/character/CharacterPawn3D.gd" id="1_17o53"]
 [ext_resource type="Script" uid="uid://tph4mneuy50c" path="res://addons/myth/script/utility/audio/KeyedAudioStreamPlayer3D.gd" id="2_5svd3"]
-[ext_resource type="Script" uid="uid://cg0454hujlwfv" path="res://addons/myth/script/utility/remote_lag/RemoteLagTransform3D.gd" id="2_7hs6g"]
 [ext_resource type="Script" uid="uid://d201t4jfiho2x" path="res://addons/myth/script/component/input/InputAxis2DForCamera3D.gd" id="2_rco5e"]
 [ext_resource type="Script" uid="uid://cevp3pepp1wgl" path="res://addons/myth/script/component/character/CharacterWalkMotion3D.gd" id="3_4k5k4"]
+[ext_resource type="Script" uid="uid://bij5krbwt3sij" path="res://addons/myth/script/component/interact/Interactor.gd" id="4_7hs6g"]
+[ext_resource type="AudioStream" uid="uid://c16gr4k7qh8qo" path="res://asset/sfx/common/wpn_denyselect.ogg" id="4_pbyke"]
 [ext_resource type="Script" uid="uid://c0kd3qhylrb13" path="res://addons/myth/script/component/input/InputAxis2D.gd" id="4_uu0sq"]
+[ext_resource type="AudioStream" uid="uid://ck4og8qrnkdcy" path="res://asset/sfx/common/wpn_select.ogg" id="5_7hs6g"]
 [ext_resource type="Script" uid="uid://bw77utt2osdoh" path="res://addons/myth/script/component/character/CharacterGravityMotion3D.gd" id="5_rco5e"]
-[ext_resource type="Script" uid="uid://bolu65ie3sr1h" path="res://addons/myth/script/component/input/InputAction.gd" id="7_uu0sq"]
 [ext_resource type="Script" uid="uid://dktkhjmhr7pko" path="res://addons/myth/script/component/character/CharacterJumpMotion3D.gd" id="12_mxnyh"]
+[ext_resource type="Texture2D" uid="uid://bf5n3fvqrituk" path="res://addons/myth/asset/icons/Reticle.svg" id="13_7hs6g"]
 [ext_resource type="Script" uid="uid://4jb16u4wio8k" path="res://addons/myth/script/component/input/InputActionBuffered.gd" id="13_vyuqr"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_g5yut"]
+radius = 0.4
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_igc1g"]
 
-[sub_resource type="CapsuleMesh" id="CapsuleMesh_igc1g"]
+[sub_resource type="SphereShape3D" id="SphereShape3D_igc1g"]
+radius = 0.1
+
+[sub_resource type="GDScript" id="GDScript_j2q5q"]
+script/source = "extends Label
+
+func _ready() -> void:
+	hide()
+
+func _on_interaction_focus_changed(new_focus: Interactable) -> void:
+	visible = new_focus != null
+	if new_focus:
+		text = new_focus.text
+"
 
 [node name="first_person_character_3d" type="CharacterBody3D" unique_id=948668199]
 floor_constant_speed = true
 script = ExtResource("1_17o53")
 air_delay = 0.25
 
+[node name="headroom_area_3d" type="Area3D" parent="." unique_id=716329318]
+monitorable = false
+
+[node name="collision_shape_3d" type="CollisionShape3D" parent="headroom_area_3d" unique_id=1449413367]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
+shape = SubResource("CapsuleShape3D_g5yut")
+
 [node name="collision_shape_3d" type="CollisionShape3D" parent="." unique_id=1567048948]
 shape = SubResource("CapsuleShape3D_igc1g")
 
-[node name="mesh_instance_3d" type="MeshInstance3D" parent="." unique_id=114739802]
-mesh = SubResource("CapsuleMesh_igc1g")
+[node name="camera_3d" type="Camera3D" parent="collision_shape_3d" unique_id=763949336]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+
+[node name="interaction_shape_cast_3d" type="ShapeCast3D" parent="collision_shape_3d/camera_3d" unique_id=1778978114]
+shape = SubResource("SphereShape3D_igc1g")
+target_position = Vector3(0, 0, -2)
+collide_with_areas = true
+
+[node name="interaction" type="Node" parent="collision_shape_3d/camera_3d/interaction_shape_cast_3d" unique_id=1625716540]
+script = ExtResource("4_7hs6g")
+metadata/_custom_type_script = "uid://c5h7mlwpnpyjm"
+
+[node name="input_interact" type="Node" parent="collision_shape_3d/camera_3d/interaction_shape_cast_3d/interaction" unique_id=551156442]
+script = ExtResource("13_vyuqr")
+press_enabled = false
+action_name = &"interact"
+metadata/_custom_type_script = "uid://4jb16u4wio8k"
+
+[node name="interaction_failure" type="AudioStreamPlayer" parent="collision_shape_3d/camera_3d/interaction_shape_cast_3d" unique_id=1445749515]
+stream = ExtResource("4_pbyke")
+volume_db = -8.0
+
+[node name="interaction_success" type="AudioStreamPlayer" parent="collision_shape_3d/camera_3d/interaction_shape_cast_3d" unique_id=956115339]
+stream = ExtResource("5_7hs6g")
+volume_db = -8.0
+
+[node name="input_axis_2d_for_camera_3d" type="Node" parent="collision_shape_3d/camera_3d" unique_id=97796458 node_paths=PackedStringArray("yaw_node")]
+script = ExtResource("2_rco5e")
+yaw_node = NodePath("../../..")
+mouse_enabled = true
+mouse_sensitivity = Vector2(-10, -10)
+metadata/_custom_type_script = "uid://d201t4jfiho2x"
 
 [node name="footstep_audio_3d" type="AudioStreamPlayer3D" parent="." unique_id=1709105503]
 max_polyphony = 6
 script = ExtResource("2_5svd3")
 
-[node name="camera_remote" type="RemoteTransform3D" parent="." unique_id=1814882836]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
-remote_path = NodePath("camera_3d")
-update_position = false
-update_scale = false
-script = ExtResource("2_7hs6g")
-
-[node name="camera_3d" type="Camera3D" parent="camera_remote" unique_id=763949336]
-
-[node name="input_axis_2d_for_camera_3d" type="Node" parent="camera_remote" unique_id=97796458 node_paths=PackedStringArray("yaw_node")]
-script = ExtResource("2_rco5e")
-yaw_node = NodePath("../..")
-mouse_enabled = true
-mouse_sensitivity = Vector2(-10, -10)
-metadata/_custom_type_script = "uid://d201t4jfiho2x"
-
 [node name="gravity" type="Node" parent="." unique_id=95765363]
 script = ExtResource("5_rco5e")
 metadata/_custom_type_script = "uid://bw77utt2osdoh"
 
-[node name="strafe" type="Node" parent="." unique_id=594383593]
+[node name="strafe" type="Node" parent="." unique_id=594383593 node_paths=PackedStringArray("crouch_shrink_shape")]
 script = ExtResource("3_4k5k4")
 air_friction = 0.1
+crouch_shrink_time = 0.125
+crouch_shrink_shape = NodePath("../collision_shape_3d")
 
 [node name="input_axis_2d" type="Node" parent="strafe" unique_id=1451764073]
 script = ExtResource("4_uu0sq")
@@ -62,15 +103,19 @@ input_up = &"move_forward"
 input_down = &"move_back"
 metadata/_custom_type_script = "uid://c0kd3qhylrb13"
 
-[node name="input_sprint" type="Node" parent="strafe" unique_id=872553502]
-script = ExtResource("7_uu0sq")
+[node name="input_sprint" type="Node" parent="strafe" unique_id=517002631]
+script = ExtResource("13_vyuqr")
+press_enabled = false
 action_name = &"sprint"
-metadata/_custom_type_script = "uid://bolu65ie3sr1h"
+metadata/_custom_type_script = "uid://4jb16u4wio8k"
 
-[node name="input_crouch" type="Node" parent="strafe" unique_id=1897151456]
-script = ExtResource("7_uu0sq")
+[node name="input_crouch" type="Node" parent="strafe" unique_id=1784591815]
+script = ExtResource("13_vyuqr")
+press_enabled = false
+release_enabled = true
+release_condition = NodePath("../..:ceiling_area:is_empty")
 action_name = &"crouch"
-metadata/_custom_type_script = "uid://bolu65ie3sr1h"
+metadata/_custom_type_script = "uid://4jb16u4wio8k"
 
 [node name="jump" type="Node" parent="." unique_id=296393909]
 script = ExtResource("12_mxnyh")
@@ -86,11 +131,50 @@ press_buffer_duration = 0.2
 action_name = &"jump"
 metadata/_custom_type_script = "uid://4jb16u4wio8k"
 
+[node name="hud" type="CanvasLayer" parent="." unique_id=882867998]
+
+[node name="control" type="Control" parent="hud" unique_id=812021384]
+layout_mode = 3
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="texture_rect" type="TextureRect" parent="hud/control" unique_id=1316749211]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -8.0
+offset_top = -8.0
+offset_right = 8.0
+offset_bottom = 8.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("13_7hs6g")
+expand_mode = 3
+
+[node name="interaction_label" type="Label" parent="hud/control" unique_id=790403011]
+layout_mode = 1
+offset_left = 5.0
+offset_right = 45.0
+offset_bottom = 23.0
+script = SubResource("GDScript_j2q5q")
+
 [connection signal="became_grounded" from="." to="footstep_audio_3d" method="play_last_key"]
 [connection signal="ground_physics_material_changed" from="." to="footstep_audio_3d" method="set_supplier"]
-[connection signal="footstepped" from="strafe" to="footstep_audio_3d" method="play_key" binds= [&"audio_stream_footstep"]]
+[connection signal="focus_changed" from="collision_shape_3d/camera_3d/interaction_shape_cast_3d/interaction" to="hud/control/interaction_label" method="_on_interaction_focus_changed"]
+[connection signal="interact_failed" from="collision_shape_3d/camera_3d/interaction_shape_cast_3d/interaction" to="collision_shape_3d/camera_3d/interaction_shape_cast_3d/interaction_failure" method="play"]
+[connection signal="interact_started" from="collision_shape_3d/camera_3d/interaction_shape_cast_3d/interaction" to="collision_shape_3d/camera_3d/interaction_shape_cast_3d/interaction_success" method="play"]
+[connection signal="pressed" from="collision_shape_3d/camera_3d/interaction_shape_cast_3d/interaction/input_interact" to="collision_shape_3d/camera_3d/interaction_shape_cast_3d/interaction" method="_on_input_interact_pressed"]
 [connection signal="desired_input" from="strafe/input_axis_2d" to="strafe" method="_on_input_axis_2d_desired_input"]
 [connection signal="changed" from="strafe/input_sprint" to="strafe" method="set_sprint_desired"]
-[connection signal="changed" from="strafe/input_crouch" to="strafe" method="set_tiptoe_desired"]
-[connection signal="jumped" from="jump" to="footstep_audio_3d" method="play_last_key" binds= [10.0]]
+[connection signal="changed" from="strafe/input_crouch" to="strafe" method="set_crouch_desired"]
 [connection signal="pressed" from="jump/input_jump" to="jump" method="jump"]
