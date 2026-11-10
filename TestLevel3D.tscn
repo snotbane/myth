@@ -80,7 +80,7 @@ points = PackedVector3Array(-1, 4, 4, -1, 4, -4, -1, -4, 4, 1, -4, 4, 1, -4, -4,
 [node name="editor_camera_manifest" type="Node" parent="." unique_id=2108431072]
 script = ExtResource("1_3g03d")
 editor_global_transform_3d = Transform3D(0.10196063, -0.24735834, 0.9635445, 0, 0.96859235, 0.24865422, -0.99478847, -0.025352938, 0.09875828, 12.650035, 2.485941, -12.128786)
-editor_global_transform_2d = Transform2D(1, 0, 0, 1, 308, 227.5)
+editor_global_transform_2d = Transform2D(1, 0, 0, 1, 308, 228.5)
 metadata/_custom_type_script = "uid://doxqkyqy42b34"
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1463623584]
@@ -258,11 +258,13 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 
 [node name="rich_text_label" type="RichTextLabel" parent="canvas_layer/control" unique_id=828977552]
 layout_mode = 0
 offset_right = 366.0
 offset_bottom = 104.0
+mouse_filter = 2
 text = "- Picked up a shotgun
 - Picked up 32 rounds for shotgun"
 

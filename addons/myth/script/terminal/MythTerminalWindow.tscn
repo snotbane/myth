@@ -15,7 +15,7 @@ metadata/_custom_type_script = "uid://btbbh7mripihc"
 
 [node name="input_toggle" type="Node" parent="." unique_id=870250885]
 script = ExtResource("2_xhm3u")
-action_name = &"_myth_terminal_toggle"
+action = &"_myth_terminal_toggle"
 metadata/_custom_type_script = "uid://bolu65ie3sr1h"
 
 [node name="window" type="Window" parent="." unique_id=382796628]

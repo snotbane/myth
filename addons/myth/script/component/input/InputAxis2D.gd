@@ -116,19 +116,18 @@ func _unhandled_input(event: InputEvent) -> void:
 	if not enabled or input_callback != 0:
 		return
 
-	if _mouse_input(event):
-		pass
-	elif actions_are_valid:
+	if actions_are_valid:
 		component_input(event)
 
 
 func _input(event: InputEvent) -> void:
+	if _mouse_input(event):
+		return
+
 	if not enabled or input_callback != 1:
 		return
 
-	if _mouse_input(event):
-		pass
-	elif actions_are_valid:
+	if actions_are_valid:
 		component_input(event)
 
 

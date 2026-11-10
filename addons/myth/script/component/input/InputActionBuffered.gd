@@ -5,12 +5,32 @@
 class_name InputActionBuffered
 extends InputAction
 
+enum Continuity {
+	## No continuity. Only check the condition for the specified time frame after the initial press (or release).
+	NONE,
+
+	## Check the condition as long as the button is pressed (or released), and for the specified time frame after the release (or press), up to a maximum of one time. Ensures a single input action correlates to a single game action.
+	SINGLE,
+
+	## Check the condition as long as the button is pressed (or released), and for the specified time frame after the release (or press), with no limits on how many times the game action can trigger.
+	PERPETUAL,
+}
+
+func _init() -> void:
+	super._init()
+
+	press_buffer_timer = Timer.new()
+	press_buffer_timer.autostart = false
+	press_buffer_timer.one_shot = true
+	add_child(press_buffer_timer, false, INTERNAL_MODE_FRONT)
+
+	release_buffer_timer = press_buffer_timer.duplicate()
+	add_child(release_buffer_timer, false, INTERNAL_MODE_FRONT)
+
+
+
 ## Emits if the action was pressed, and its condition was not met, and then the action was released.
 signal sequence_failed
-
-## Determines which process method is used to check the input conditions.
-@export_enum("Process", "Physics")
-var process_callback: int = 0
 
 ## Returns true if the input is currently pressed. Unlike [member is_pressed], this will exactly correlate to the whether or not the physical button is being pressed.
 var is_pressed_absolute: bool:
@@ -24,93 +44,96 @@ var is_pressed_absolute: bool:
 			release_try()
 
 
-func _component_input(event: InputEvent) -> bool:
-	if event.is_action(action_name):
-		is_pressed_absolute = event.is_pressed()
-		return true
+func _get_is_pressed_desired() -> bool:
+	return is_pressed_absolute
 
-	return false
+
+func _set_is_pressed_desired(value: bool) -> void:
+	is_pressed_absolute = value
 
 
 func _process(delta: float) -> void:
-	if process_callback != 0: return
+	if press_valid:
+		if (press_buffer_timer.is_stopped() and not is_pressed_desired) or not press_condition_value:
+			return
 
-	_buffer_update()
+		press_buffer_timer.stop()
 
+		if press_continuity == Continuity.PERPETUAL:
+			is_pressed = false
 
-func _physics_process(delta: float) -> void:
-	if process_callback != 1: return
+		is_pressed = true
+		is_pressed = is_pressed_desired
 
-	_buffer_update()
+	if release_valid:
+		if (release_buffer_timer.is_stopped() and is_pressed_desired) or not release_condition_value:
+			return
 
+		release_buffer_timer.stop()
 
-func _buffer_update() -> void:
-	if is_pressed:
-		if (
-			release_enabled
-			and	(
-				(not is_pressed_absolute and _release_buffer_duration_usec == 0)
-				or Time.get_ticks_usec() <= _release_buffer_stamp + _release_buffer_duration_usec
-			)
-			and release_condition_value
-			):
-				_release_buffer_stamp = INT64_MIN
-				_check_sequence()
-				is_pressed = false
-				is_pressed = is_pressed_absolute
+		if release_continuity == Continuity.PERPETUAL:
+			is_pressed = true
 
-	else:
-		if (
-			press_enabled
-			and	(
-				(is_pressed_absolute and _press_buffer_duration_usec == 0)
-				or Time.get_ticks_usec() <= _press_buffer_stamp + _press_buffer_duration_usec
-			)
-			and press_condition_value
-			):
-				_press_buffer_stamp = INT64_MIN
-				is_pressed = true
-				is_pressed = is_pressed_absolute
+		_check_sequence()
+		is_pressed = false
+		is_pressed = is_pressed_desired
 
 
 @export_group("Press", "press_")
 
+var press_buffer_timer: Timer
+
+
 ## Enables input buffering for pressing the action.
 @export_custom(PROPERTY_HINT_GROUP_ENABLE, "")
 var press_enabled: bool = true
+
 
 ## This condition is checked when pressing. If not met, keep trying to press until [member press_buffer_duration] runs out.
 @export
 var press_condition: NodePath
 
 
+var press_valid: bool:
+	get: return press_enabled and not press_condition.is_empty()
+
+
 @export
 var press_condition_invert: bool
 
+## Determines if the condition is checked while holding press.
+@export
+var press_continuity := Continuity.NONE
 
 var press_condition_value: Variant:
 	get: return Myth.get_node_path_value(self, press_condition) != press_condition_invert
 
-var _press_buffer_stamp: int = INT64_MIN
-var _press_buffer_duration_usec: int = 0
-
 ## The length of time for which the condition will be checked each frame. 0.0 means we will check continuously, as long as the button is pressed (e.g. interacting the moment it becomes available, a la DRG).
-@export
+@export_range(0.0, 2.0, 0.01)
 var press_buffer_duration: float = 0.0:
-	get: return float(_press_buffer_duration_usec) * 0.00_000_1
-	set(value): _press_buffer_duration_usec = floori(value * 1_000_000)
+	set(value):
+		press_buffer_duration = value
+
+		if press_buffer_duration > 0.05:
+			press_buffer_timer.wait_time = press_buffer_duration
 
 
 func press_try() -> void:
-	if press_enabled:
+	if release_valid and release_buffer_duration and release_continuity:
+		release_buffer_timer.start()
+
+	if press_valid:
 		if press_condition_value:
 			is_pressed = true
-		else:
-			_press_buffer_stamp = Time.get_ticks_usec()
+		elif not press_continuity:
+			press_buffer_timer.start()
 	else:
 		is_pressed = true
 
+
 @export_group("Release", "release_")
+
+var release_buffer_timer: Timer
 
 @export_custom(PROPERTY_HINT_GROUP_ENABLE, "")
 var release_enabled: bool = false
@@ -119,35 +142,45 @@ var release_enabled: bool = false
 @export
 var release_condition: NodePath
 
+var release_valid: bool:
+	get: return release_enabled and not release_condition.is_empty()
+
 @export
 var release_condition_invert: bool
-
 
 var release_condition_value: Variant:
 	get: return Myth.get_node_path_value(self, release_condition) != release_condition_invert
 
-var _release_buffer_stamp: int = INT64_MIN
-var _release_buffer_duration_usec: int = 0
 
-## The length of time for which the condition will be checked each frame. 0.0 means we will check continuously, as long as the button is not pressed (e.g. uncrouching when there is a ceiling above).
+## Determines if the condition is checked while holding press.
+@export
+var release_continuity := Continuity.NONE
+
+
 @export
 var release_buffer_duration: float = 0.0:
-	get: return float(_release_buffer_duration_usec) * 0.00_000_1
-	set(value): _release_buffer_duration_usec = floori(value * 1_000_000)
+	set(value):
+		release_buffer_duration = value
+
+		if release_buffer_duration > 0.05:
+			release_buffer_timer.wait_time = release_buffer_duration
 
 
 func release_try() -> void:
-	if release_enabled:
+	if press_enabled and press_buffer_duration and press_continuity:
+		press_buffer_timer.start()
+
+	if release_valid:
 		if release_condition_value:
 			_check_sequence()
 			is_pressed = false
 		else:
-			_release_buffer_stamp = Time.get_ticks_usec()
+			release_buffer_timer.start()
 	else:
 		_check_sequence()
 		is_pressed = false
 
 
 func _check_sequence() -> void:
-	if not is_pressed and not is_pressed_absolute:
+	if not is_pressed and not is_pressed_desired:
 		sequence_failed.emit()

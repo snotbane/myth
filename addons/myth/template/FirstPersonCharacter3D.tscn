@@ -43,13 +43,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
 target_position = Vector3(0, 0, -2)
 collide_with_areas = true
 
-[node name="control_cast_projector_3d" type="Node" parent="collision_shape_3d/camera_3d/interaction_cast_3d" unique_id=1866080721 node_paths=PackedStringArray("source", "target", "camera")]
-script = ExtResource("3_m7ei3")
-source = NodePath("../../../../hud/reticle")
-target = NodePath("..")
-camera = NodePath("../..")
-metadata/_custom_type_script = "uid://b8dtylr7phwi3"
-
 [node name="interaction" type="Node" parent="collision_shape_3d/camera_3d/interaction_cast_3d" unique_id=1625716540]
 script = ExtResource("4_7hs6g")
 metadata/_custom_type_script = "uid://c5h7mlwpnpyjm"
@@ -57,16 +50,23 @@ metadata/_custom_type_script = "uid://c5h7mlwpnpyjm"
 [node name="input_interact" type="Node" parent="collision_shape_3d/camera_3d/interaction_cast_3d/interaction" unique_id=551156442]
 script = ExtResource("13_vyuqr")
 press_condition = NodePath("..:is_focused")
-action_name = &"interact"
+action = &"interact"
 metadata/_custom_type_script = "uid://4jb16u4wio8k"
 
-[node name="interaction_failure" type="AudioStreamPlayer" parent="collision_shape_3d/camera_3d/interaction_cast_3d/interaction" unique_id=1445749515]
+[node name="interaction_failure" type="AudioStreamPlayer" parent="collision_shape_3d/camera_3d/interaction_cast_3d/interaction/input_interact" unique_id=1445749515]
 stream = ExtResource("4_pbyke")
 volume_db = -8.0
 
-[node name="interaction_success" type="AudioStreamPlayer" parent="collision_shape_3d/camera_3d/interaction_cast_3d/interaction" unique_id=956115339]
+[node name="interaction_success" type="AudioStreamPlayer" parent="collision_shape_3d/camera_3d/interaction_cast_3d/interaction/input_interact" unique_id=956115339]
 stream = ExtResource("5_7hs6g")
 volume_db = -8.0
+
+[node name="control_cast_projector_3d" type="Node" parent="collision_shape_3d/camera_3d/interaction_cast_3d" unique_id=1866080721 node_paths=PackedStringArray("source", "target", "camera")]
+script = ExtResource("3_m7ei3")
+source = NodePath("../../../../hud/reticle")
+target = NodePath("..")
+camera = NodePath("../..")
+metadata/_custom_type_script = "uid://b8dtylr7phwi3"
 
 [node name="input_axis_2d_for_camera_3d" type="Node" parent="collision_shape_3d/camera_3d" unique_id=97796458 node_paths=PackedStringArray("yaw_node")]
 script = ExtResource("2_rco5e")
@@ -89,7 +89,7 @@ air_friction = 0.1
 crouch_shrink_shape = NodePath("../collision_shape_3d")
 crouch_shrink_time = 0.125
 
-[node name="input_axis_2d" type="Node" parent="strafe" unique_id=1451764073]
+[node name="input_move_2d" type="Node" parent="strafe" unique_id=1451764073]
 script = ExtResource("4_uu0sq")
 input_left = &"move_left"
 input_right = &"move_right"
@@ -100,15 +100,16 @@ metadata/_custom_type_script = "uid://c0kd3qhylrb13"
 [node name="input_sprint" type="Node" parent="strafe" unique_id=517002631]
 script = ExtResource("13_vyuqr")
 press_enabled = false
-action_name = &"sprint"
+action = &"sprint"
 metadata/_custom_type_script = "uid://4jb16u4wio8k"
 
-[node name="input_crouch" type="Node" parent="strafe" unique_id=1784591815]
+[node name="input_crouch" type="Node" parent="strafe" unique_id=2037506358]
 script = ExtResource("13_vyuqr")
 press_enabled = false
 release_enabled = true
 release_condition = NodePath("../..:ceiling_sensor:is_empty")
-action_name = &"crouch"
+action = &"crouch"
+toggle_release_mode = 1
 metadata/_custom_type_script = "uid://4jb16u4wio8k"
 
 [node name="jump" type="Node" parent="." unique_id=296393909]
@@ -119,10 +120,10 @@ metadata/_custom_type_script = "uid://dktkhjmhr7pko"
 
 [node name="input_jump" type="Node" parent="jump" unique_id=237149568]
 script = ExtResource("13_vyuqr")
-process_callback = 1
 press_condition = NodePath("..:can_jump")
-press_buffer_duration = 0.2
-action_name = &"jump"
+press_continuity = 2
+press_buffer_duration = 0.1
+action = &"jump"
 metadata/_custom_type_script = "uid://4jb16u4wio8k"
 
 [node name="hud" type="CanvasLayer" parent="." unique_id=882867998]
@@ -165,12 +166,12 @@ script = SubResource("GDScript_j2q5q")
 [connection signal="became_grounded" from="." to="footstep_audio_3d" method="play_last_key"]
 [connection signal="ground_physics_material_changed" from="." to="footstep_audio_3d" method="set_supplier"]
 [connection signal="focus_changed" from="collision_shape_3d/camera_3d/interaction_cast_3d/interaction" to="hud/reticle/interaction_label" method="_on_interaction_focus_changed"]
-[connection signal="interact_failed" from="collision_shape_3d/camera_3d/interaction_cast_3d/interaction" to="collision_shape_3d/camera_3d/interaction_cast_3d/interaction/interaction_failure" method="play"]
-[connection signal="interact_started" from="collision_shape_3d/camera_3d/interaction_cast_3d/interaction" to="collision_shape_3d/camera_3d/interaction_cast_3d/interaction/interaction_success" method="play"]
+[connection signal="interact_failed" from="collision_shape_3d/camera_3d/interaction_cast_3d/interaction" to="collision_shape_3d/camera_3d/interaction_cast_3d/interaction/input_interact/interaction_failure" method="play"]
+[connection signal="interact_started" from="collision_shape_3d/camera_3d/interaction_cast_3d/interaction" to="collision_shape_3d/camera_3d/interaction_cast_3d/interaction/input_interact/interaction_success" method="play"]
 [connection signal="pressed" from="collision_shape_3d/camera_3d/interaction_cast_3d/interaction/input_interact" to="collision_shape_3d/camera_3d/interaction_cast_3d/interaction" method="_on_input_interact_pressed"]
-[connection signal="sequence_failed" from="collision_shape_3d/camera_3d/interaction_cast_3d/interaction/input_interact" to="collision_shape_3d/camera_3d/interaction_cast_3d/interaction/interaction_failure" method="play"]
+[connection signal="sequence_failed" from="collision_shape_3d/camera_3d/interaction_cast_3d/interaction/input_interact" to="collision_shape_3d/camera_3d/interaction_cast_3d/interaction/input_interact/interaction_failure" method="play"]
 [connection signal="footstepped" from="strafe" to="footstep_audio_3d" method="play_key" binds= [&"audio_stream_footstep"]]
-[connection signal="desired_input" from="strafe/input_axis_2d" to="strafe" method="_on_input_axis_2d_desired_input"]
+[connection signal="desired_input" from="strafe/input_move_2d" to="strafe" method="_on_input_axis_2d_desired_input"]
 [connection signal="changed" from="strafe/input_sprint" to="strafe" method="set_sprint_desired"]
 [connection signal="changed" from="strafe/input_crouch" to="strafe" method="set_crouch_desired"]
 [connection signal="jumped" from="jump" to="footstep_audio_3d" method="play_last_key" binds= [10.0]]
