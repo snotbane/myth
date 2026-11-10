@@ -19,6 +19,9 @@ var focused_interactable: Interactable:
 
 		focus_changed.emit(focused_interactable)
 
+var is_focused: bool:
+	get: return focused_interactable != null
+
 signal focus_changed(new_focus: Interactable)
 
 

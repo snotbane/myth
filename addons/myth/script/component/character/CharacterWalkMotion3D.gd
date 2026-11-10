@@ -68,17 +68,6 @@ var speed_state: int = NORMAL:
 				.set_ease(Tween.EASE_IN)
 				.set_trans(Tween.TRANS_SINE)
 			)
-			# (
-			# 	# create_tween()
-			# 	# .tween_property(pawn, "ceiling_sensor_length", (pawn.ceiling_sensor_length_onready + (crouch_shrink_height_onready - crouch_shrink_height)) if speed_state == CROUCHING else pawn.ceiling_sensor_length_onready, crouch_shrink_time)
-			# 	# .set_ease(Tween.EASE_IN)
-			# 	# .set_trans(Tween.TRANS_SINE)
-
-			# 	create_tween()
-			# 	.tween_property(pawn.ceiling_sensor, "target_position:y", (3.1) if speed_state == CROUCHING else 0.1, crouch_shrink_time)
-			# 	.set_ease(Tween.EASE_IN)
-			# 	.set_trans(Tween.TRANS_SINE)
-			# )
 
 		speed_state_changed.emit(speed_state)
 

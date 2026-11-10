@@ -24,7 +24,7 @@ var ground_bias: float = 0.0
 
 
 var can_jump: bool:
-	get: return not pawn.air_is_airborne or jumps_left
+	get: return pawn.ceiling_sensor.is_empty and (not pawn.air_is_airborne or jumps_left)
 
 
 func _ready() -> void:

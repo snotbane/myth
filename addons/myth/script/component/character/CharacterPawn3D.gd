@@ -15,10 +15,6 @@ func _init() -> void:
 	ground_sensor.max_results = 1
 	ground_sensor.add_exception(self)
 
-	ceiling_area = SensorArea3D.new()
-	ceiling_area.add_exception(self)
-	add_child(ceiling_area, false, INTERNAL_MODE_FRONT)
-
 
 ## Ground is slightly different from floor. It measures the flat normal of the floor (as if the pawn is always a cylinder), and updates every frame, whereas the floor only updates the first time it collides.
 @export_group("Ground", "ground_")
@@ -59,7 +55,9 @@ func get_ground_angle_signed() -> float:
 
 @export_group("Ceiling", "ceiling_")
 
-var ceiling_area: SensorArea3D
+## Use this to manually define an area. This will be used for things like checking if the pawn can stand up after crouching. If unset, a default will be created from the first child [CollisionShape3D].
+@export
+var ceiling_sensor: SensorArea3D
 
 @export_group("Air", "air_")
 
@@ -98,14 +96,22 @@ func _ready() -> void:
 
 		collision_shape.add_child(ground_sensor, false, Node.INTERNAL_MODE_FRONT)
 
-		ceiling_area.collision_mask = collision_mask
+	if ceiling_sensor == null:
+		ceiling_sensor = SensorArea3D.new()
+		add_child(ceiling_sensor, false, INTERNAL_MODE_FRONT)
 
-		var ceiling_shape := collision_shape.duplicate()
-		Myth.clear_children(ceiling_shape)
-		ceiling_shape.shape = ceiling_shape.shape.duplicate()
-		ceiling_shape.shape.radius -= floor_snap_length
-		ceiling_shape.position.y += floor_snap_length
-		ceiling_area.add_child(ceiling_shape)
+		if collision_shape:
+			var ceiling_shape := collision_shape.duplicate()
+			Myth.clear_children(ceiling_shape)
+			ceiling_shape.shape = ceiling_shape.shape.duplicate()
+			ceiling_shape.position.y += ceiling_shape.shape.radius + floor_snap_length
+			ceiling_shape.shape.height -= ceiling_shape.shape.radius * 2.0
+			ceiling_sensor.add_child(ceiling_shape)
+
+	ceiling_sensor.collision_mask = collision_mask
+	ceiling_sensor.add_exception(self)
+
+
 
 
 func _physics_process(delta: float) -> void:
@@ -140,7 +146,3 @@ func _get_collider_physics_material(collider: Object) -> PhysicsMaterial:
 
 var speed: float:
 	get: return get_real_velocity().length()
-
-
-func printaaaa(extra_arg_0: String) -> void:
-	print(ground_physics_material)

@@ -42,14 +42,12 @@ func _physics_process(delta: float) -> void:
 
 
 func _buffer_update() -> void:
-	var ticks_usec := Time.get_ticks_usec()
-
 	if is_pressed:
 		if (
 			release_enabled
 			and	(
-				_release_buffer_duration_usec == 0
-				or ticks_usec <= _release_buffer_stamp + _release_buffer_duration_usec
+				(not is_pressed_absolute and _release_buffer_duration_usec == 0)
+				or Time.get_ticks_usec() <= _release_buffer_stamp + _release_buffer_duration_usec
 			)
 			and release_condition_value
 			):
@@ -61,8 +59,8 @@ func _buffer_update() -> void:
 		if (
 			press_enabled
 			and	(
-				_press_buffer_duration_usec == 0
-				or ticks_usec <= _press_buffer_stamp + _press_buffer_duration_usec
+				(is_pressed_absolute and _press_buffer_duration_usec == 0)
+				or Time.get_ticks_usec() <= _press_buffer_stamp + _press_buffer_duration_usec
 			)
 			and press_condition_value
 			):
@@ -90,9 +88,9 @@ var press_condition_value: Variant:
 	get: return Myth.get_node_path_value(self, press_condition) != press_condition_invert
 
 var _press_buffer_stamp: int = INT64_MIN
-var _press_buffer_duration_usec: int = 100_000
+var _press_buffer_duration_usec: int = 0
 
-## The length of time for which the condition will be checked each frame. 0.0 means we will check continuously until the condition is true, or until we become released.
+## The length of time for which the condition will be checked each frame. 0.0 means we will check continuously, as long as the button is pressed (e.g. interacting the moment it becomes available, a la DRG).
 @export
 var press_buffer_duration: float = 0.0:
 	get: return float(_press_buffer_duration_usec) * 0.00_000_1
@@ -125,9 +123,9 @@ var release_condition_value: Variant:
 	get: return Myth.get_node_path_value(self, release_condition) != release_condition_invert
 
 var _release_buffer_stamp: int = INT64_MIN
-var _release_buffer_duration_usec: int = 100_000
+var _release_buffer_duration_usec: int = 0
 
-## The length of time for which the condition will be checked each frame. 0.0 means we will check continuously until the condition is true, or until we become pressed.
+## The length of time for which the condition will be checked each frame. 0.0 means we will check continuously, as long as the button is not pressed (e.g. uncrouching when there is a ceiling above).
 @export
 var release_buffer_duration: float = 0.0:
 	get: return float(_release_buffer_duration_usec) * 0.00_000_1
