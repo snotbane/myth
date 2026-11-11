@@ -16,13 +16,10 @@ var input_callback: int = 0
 @export
 var consume: bool = true
 
+
 var actions_are_valid: bool
-
-
 func validate_actions() -> void:
 	actions_are_valid = _validate_actions()
-
-
 ## Returns true if the actions are valid. When actions are set, this is called. If it returns false, the component is automatically disabled.
 @abstract
 func _validate_actions() -> bool

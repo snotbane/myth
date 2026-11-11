@@ -1,3 +1,4 @@
+@icon("res://addons/myth/script/component/interact/Interactable.svg")
 class_name Interactable
 extends Component
 

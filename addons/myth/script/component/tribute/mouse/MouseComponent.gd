@@ -28,6 +28,12 @@ func _can_be_active() -> bool:
 	return mouse_mode != Input.MOUSE_MODE_MAX and parent_visible_in_tree
 
 
+func _became_current() -> void:
+	if mouse_mode == Input.MOUSE_MODE_MAX: return
+
+	Input.mouse_mode = mouse_mode
+
+
 func _ready() -> void:
 	super._ready()
 
@@ -35,7 +41,9 @@ func _ready() -> void:
 		parent.visibility_changed.connect(refresh_current)
 
 
-func _became_current() -> void:
-	if mouse_mode == Input.MOUSE_MODE_MAX: return
+func _input(event: InputEvent) -> void:
+	if not current:
+		return
 
-	Input.mouse_mode = mouse_mode
+	if event is InputEventMouseButton and event.is_pressed() and event.button_index == MOUSE_BUTTON_LEFT:
+		_became_current()

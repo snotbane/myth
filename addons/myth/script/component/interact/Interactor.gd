@@ -1,4 +1,5 @@
 ## Used to detect [Interactable]s. The parent of this child will determine how it handles interactions.
+@icon("res://addons/myth/script/component/interact/Interactor.svg")
 class_name Interactor
 extends Component
 

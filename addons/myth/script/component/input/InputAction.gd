@@ -36,20 +36,34 @@ signal sequence_failed
 
 func _init() -> void:
 	toggle_auto_timer = Timer.new()
+	toggle_auto_timer.name = &"toggle_auto_timer"
 	toggle_auto_timer.autostart = false
 	toggle_auto_timer.one_shot = true
-	toggle_auto_timer.wait_time = 0.5
+	toggle_auto_timer.wait_time = 0.25
 	add_child(toggle_auto_timer, false, INTERNAL_MODE_FRONT)
 
 	press_buffer_timer = toggle_auto_timer.duplicate()
+	press_buffer_timer.name = &"press_buffer_timer"
 	add_child(press_buffer_timer, false, INTERNAL_MODE_FRONT)
 
 	release_buffer_timer = toggle_auto_timer.duplicate()
+	release_buffer_timer.name = &"release_buffer_timer"
 	add_child(release_buffer_timer, false, INTERNAL_MODE_FRONT)
 
 
+func _ready() -> void:
+	match actuate_mode:
+		Actuation.TOGGLE, \
+		Actuation.AUTO:
+			is_pressed_desired = toggle_is_pressed_on_ready
+			is_pressed = toggle_is_pressed_on_ready
+			_actuate_sequence = 2 if toggle_is_pressed_on_ready else 0
+
+	super._ready()
+
+
 func _process(delta: float) -> void:
-	if press_valid:
+	if press_enabled:
 
 		if (press_continuity and is_pressed_desired) or not press_buffer_timer.is_stopped():
 			if not press_condition_value:
@@ -66,7 +80,7 @@ func _process(delta: float) -> void:
 			is_pressed = true
 			is_pressed = is_pressed_desired
 
-	if release_valid:
+	if release_enabled:
 		if (release_buffer_timer.is_stopped() and is_pressed_desired) or not release_condition_value:
 			return
 
@@ -85,10 +99,7 @@ func _validate_actions() -> bool:
 
 
 func _component_input(event: InputEvent) -> bool:
-	if event.is_echo():
-		return false
-
-	if event.is_action(action):
+	if event.is_action(action) and not event.is_echo():
 		_actuate_method.call(event)
 
 		return true
@@ -120,7 +131,7 @@ func _actuate_toggle(event: InputEvent) -> void:
 				_actuate_sequence = 2
 		2:
 			if event.is_pressed():
-				if toggle_release_mode == RELEASE_ON_PRESS:
+				if not toggle_release_on_release:
 					is_pressed_desired = false
 					_actuate_sequence = 0
 				else:
@@ -147,7 +158,7 @@ func _actuate_auto(event: InputEvent) -> void:
 					_actuate_sequence = 2
 		2:
 			if event.is_pressed():
-				if toggle_release_mode == RELEASE_ON_PRESS:
+				if not toggle_release_on_release:
 					is_pressed_desired = false
 					_actuate_sequence = 0
 				else:
@@ -213,16 +224,23 @@ var actuate_mode := Actuation.HOLD:
 			Actuation.AUTO: _actuate_method = _actuate_auto
 
 
+@export_group("Toggle", "toggle_")
+
 var toggle_auto_timer: Timer
 
-## If using [member actuate_mode] is [TOGGLE] or [AUTO], this will determine when the action will be released.
-@export_enum("On Press", "On Release")
-var toggle_release_mode: int = RELEASE_ON_PRESS
+## If enabled, the input will start actuated on ready.
+@export
+var toggle_is_pressed_on_ready: bool
+
+
+## If enabled, releasing the toggle will occur when the input is released (for the second time).
+@export
+var toggle_release_on_release: bool = false
 
 
 ## Only used if [member actuate_mode] is set to Auto. If the player presses and releases in under this amount of time, it will count as a toggle.
 @export_range(0.05, 2.0, 0.01)
-var toggle_auto_delay: float = 0.5:
+var toggle_auto_delay: float = 0.25:
 	get: return toggle_auto_timer.wait_time
 	set(value): toggle_auto_timer.wait_time = value
 
@@ -246,10 +264,6 @@ var press_enabled: bool = false
 var press_condition: NodePath
 
 
-var press_valid: bool:
-	get: return press_enabled and not press_condition.is_empty()
-
-
 @export
 var press_condition_invert: bool
 
@@ -258,7 +272,7 @@ var press_condition_invert: bool
 var press_continuity := Continuity.NONE
 
 var press_condition_value: Variant:
-	get: return Myth.get_node_path_value(self, press_condition) != press_condition_invert
+	get: return press_condition.is_empty() or Myth.get_node_path_value(self, press_condition) != press_condition_invert
 
 ## The length of time for which the condition will be checked each frame. 0.0 means we will check continuously, as long as the button is pressed (e.g. interacting the moment it becomes available, a la DRG).
 @export_range(0.0, 2.0, 0.01)
@@ -269,10 +283,10 @@ var press_buffer_duration: float = 0.0:
 
 
 func press_try() -> void:
-	if release_valid and release_buffer_duration and release_continuity:
+	if release_enabled and release_buffer_duration and release_continuity:
 		release_buffer_timer.start()
 
-	if press_valid:
+	if press_enabled:
 		if press_condition_value:
 			is_pressed = true
 		elif not press_continuity and press_buffer_duration:
@@ -299,14 +313,11 @@ var release_enabled: bool = false
 @export
 var release_condition: NodePath
 
-var release_valid: bool:
-	get: return release_enabled and not release_condition.is_empty()
-
 @export
 var release_condition_invert: bool
 
 var release_condition_value: Variant:
-	get: return Myth.get_node_path_value(self, release_condition) != release_condition_invert
+	get: return release_condition.is_empty() or Myth.get_node_path_value(self, release_condition) != release_condition_invert
 
 
 ## Determines if the condition is checked while holding press.
@@ -323,10 +334,10 @@ var release_buffer_duration: float = 0.0:
 
 
 func release_try() -> void:
-	if press_valid and press_buffer_duration and press_continuity:
+	if press_enabled and press_buffer_duration and press_continuity:
 		press_buffer_timer.start()
 
-	if release_valid:
+	if release_enabled:
 		if release_condition_value:
 			_check_sequence()
 			is_pressed = false

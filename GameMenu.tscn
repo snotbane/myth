@@ -4,11 +4,12 @@
 [ext_resource type="Script" uid="uid://cn6mqa541d5ii" path="res://addons/myth/script/utility/resource/ResourceNodeExternal.gd" id="1_mmtk5"]
 [ext_resource type="Script" uid="uid://78ysvniuqc2" path="res://addons/myth/script/component/misc/SoloComponent.gd" id="1_rtg43"]
 [ext_resource type="Resource" uid="uid://j3w4nm31bj7r" path="res://addons/myth/script/utility/system_prefs/system_prefs_default.tres" id="2_qsbh7"]
+[ext_resource type="Script" uid="uid://bp2dwa0a4vw8n" path="res://addons/myth/script/component/input/WindowInputAction.gd" id="3_qsbh7"]
 [ext_resource type="Script" uid="uid://byafjekbp4kd6" path="res://addons/myth/script/component/tribute/mouse/MouseComponent.gd" id="4_mmtk5"]
-[ext_resource type="Script" uid="uid://bolu65ie3sr1h" path="res://addons/myth/script/component/input/InputAction.gd" id="5_upkby"]
 [ext_resource type="PackedScene" uid="uid://ce4tum05xm5yd" path="res://addons/myth/script/utility/system_prefs/SystemPrefsGui.tscn" id="7_qsbh7"]
 
 [node name="game_menu" type="Node" unique_id=734476038]
+process_mode = 3
 
 [node name="resource_node_external" type="Node" parent="." unique_id=1648627066]
 script = ExtResource("1_mmtk5")
@@ -17,18 +18,18 @@ template = ExtResource("2_qsbh7")
 save_if_null = true
 save_on_change = true
 
-[node name="input_action" type="Node" parent="." unique_id=1115480333]
-script = ExtResource("5_upkby")
-action_name = &"menu"
-input_callback = 1
-metadata/_custom_type_script = "uid://bolu65ie3sr1h"
-
 [node name="window" type="Window" parent="." unique_id=345207210]
-handle_input_locally = false
 oversampling_override = 1.0
 initial_position = 1
 size = Vector2i(600, 400)
 visible = false
+
+[node name="input_toggle" type="Node" parent="window" unique_id=762884267]
+script = ExtResource("3_qsbh7")
+action = &"menu"
+actuate_mode = 2
+input_callback = 1
+metadata/_custom_type_script = "uid://bp2dwa0a4vw8n"
 
 [node name="control" type="ColorRect" parent="window" unique_id=512836410]
 anchors_preset = 15
@@ -49,6 +50,7 @@ priority = 1
 metadata/_custom_type_script = "uid://byafjekbp4kd6"
 
 [node name="system_prefs_gui" parent="window/control" unique_id=647201518 instance=ExtResource("7_qsbh7")]
+visible = false
 layout_mode = 1
 
-[connection signal="changed" from="input_action" to="window" method="set_visible"]
+[connection signal="changed" from="window/input_toggle" to="window" method="set_visible"]

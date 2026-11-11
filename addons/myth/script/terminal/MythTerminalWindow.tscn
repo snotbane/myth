@@ -1,30 +1,31 @@
 [gd_scene format=3 uid="uid://bpmirg5nfelx6"]
 
-[ext_resource type="Script" uid="uid://bseptutac16q0" path="res://addons/myth/script/terminal/MythTerminalWindow.gd" id="1_n3r4g"]
 [ext_resource type="Script" uid="uid://btbbh7mripihc" path="res://addons/myth/script/component/feature/FeatureDependency.gd" id="1_xhm3u"]
-[ext_resource type="Script" uid="uid://bolu65ie3sr1h" path="res://addons/myth/script/component/input/InputAction.gd" id="2_xhm3u"]
 [ext_resource type="PackedScene" uid="uid://47dn4a4hikmq" path="res://addons/myth/script/terminal/MythTerminal.tscn" id="3_uyg2i"]
+[ext_resource type="Script" uid="uid://bp2dwa0a4vw8n" path="res://addons/myth/script/component/input/WindowInputAction.gd" id="3_xhm3u"]
 [ext_resource type="Script" uid="uid://byafjekbp4kd6" path="res://addons/myth/script/component/tribute/mouse/MouseComponent.gd" id="4_5yaiq"]
 
 [node name="myth_terminal_window" type="Node" unique_id=1036668020]
+process_mode = 3
 
 [node name="feature_dependency" type="Node" parent="." unique_id=1523518918]
 script = ExtResource("1_xhm3u")
 features = PackedStringArray("debug")
 metadata/_custom_type_script = "uid://btbbh7mripihc"
 
-[node name="input_toggle" type="Node" parent="." unique_id=870250885]
-script = ExtResource("2_xhm3u")
-action = &"_myth_terminal_toggle"
-metadata/_custom_type_script = "uid://bolu65ie3sr1h"
-
 [node name="window" type="Window" parent="." unique_id=382796628]
-handle_input_locally = false
 oversampling_override = 1.0
 title = "Myth :: Terminal"
 initial_position = 1
 size = Vector2i(500, 300)
-script = ExtResource("1_n3r4g")
+
+[node name="input_toggle" type="Node" parent="window" unique_id=1341458396]
+script = ExtResource("3_xhm3u")
+action = &"_myth_terminal_toggle"
+actuate_mode = 2
+toggle_is_pressed_on_ready = true
+input_callback = 1
+metadata/_custom_type_script = "uid://bp2dwa0a4vw8n"
 
 [node name="myth_terminal" parent="window" unique_id=815439504 instance=ExtResource("3_uyg2i")]
 
@@ -33,4 +34,4 @@ script = ExtResource("4_5yaiq")
 priority = 128
 metadata/_custom_type_script = "uid://byafjekbp4kd6"
 
-[connection signal="pressed" from="input_toggle" to="window" method="_on_input_toggle_pressed"]
+[connection signal="changed" from="window/input_toggle" to="window" method="set_visible"]

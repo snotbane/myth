@@ -15,9 +15,14 @@ var enabled: bool = true:
 		if enabled == value: return
 		enabled = value
 
-		set_block_signals(not enabled)
+		if enabled:
+			set_block_signals(false)
+
 		process_mode = _process_mode_onready if enabled else PROCESS_MODE_DISABLED
 		enabled_changed.emit()
+
+		if not enabled:
+			set_block_signals(true)
 
 
 func enable() -> void: enabled = true

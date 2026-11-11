@@ -103,11 +103,14 @@ func _enter_tree() -> void:
 
 	var menu_input_0 := InputEventKey.new()
 	menu_input_0.physical_keycode = KEY_ESCAPE
-	var menu_input_1 := InputEventJoypadButton.new()
-	menu_input_1.button_index = JOY_BUTTON_START
+	var menu_input_1 := InputEventKey.new()
+	menu_input_1.physical_keycode = KEY_P
+	var menu_input_2 := InputEventJoypadButton.new()
+	menu_input_2.button_index = JOY_BUTTON_START
 	add_default_input_binding("menu", [
 		menu_input_0,
 		menu_input_1,
+		menu_input_2,
 	])
 
 	var move_left_input_0 := InputEventKey.new()

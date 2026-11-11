@@ -1,5 +1,11 @@
 [gd_resource type="SystemFont" format=3 uid="uid://bnofqiws4uen"]
 
+[ext_resource type="FontFile" uid="uid://bjv2w8tap6dcj" path="res://addons/myth/asset/font/NotoSansMono-VariableFont_wdth,wght.ttf" id="1_4lmq5"]
+
+[sub_resource type="SystemFont" id="SystemFont_dqflc"]
+font_names = PackedStringArray("Monospace")
+
 [resource]
-font_names = PackedStringArray("Fira Code", "Noto Mono", "Monospace")
+fallbacks = Array[Font]([ExtResource("1_4lmq5"), SubResource("SystemFont_dqflc")])
+font_names = PackedStringArray("Fira Code")
 font_weight = 500

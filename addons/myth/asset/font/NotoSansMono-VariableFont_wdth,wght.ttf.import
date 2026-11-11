@@ -1,0 +1,46 @@
+[remap]
+
+importer="font_data_dynamic"
+type="FontFile"
+uid="uid://bjv2w8tap6dcj"
+path="res://.godot/imported/NotoSansMono-VariableFont_wdth,wght.ttf-01796a2b70dd1526a2e64d5b8576071a.fontdata"
+
+[deps]
+
+source_file="res://addons/myth/asset/font/NotoSansMono-VariableFont_wdth,wght.ttf"
+dest_files=["res://.godot/imported/NotoSansMono-VariableFont_wdth,wght.ttf-01796a2b70dd1526a2e64d5b8576071a.fontdata"]
+
+[params]
+
+Rendering=null
+antialiasing=1
+generate_mipmaps=false
+disable_embedded_bitmaps=true
+multichannel_signed_distance_field=false
+msdf_pixel_range=8
+msdf_size=48
+allow_system_fallback=true
+force_autohinter=false
+modulate_color_glyphs=false
+hinting=3
+subpixel_positioning=4
+keep_rounding_remainders=true
+oversampling=0.0
+Fallbacks=null
+fallbacks=[null]
+Compress=null
+compress=true
+preload=[{
+"chars": [],
+"glyphs": [],
+"name": "New Configuration",
+"size": Vector2i(16, 0),
+&"variation_embolden": 0.0,
+&"variation_opentype": {
+2003072104: 100,
+2003265652: 500
+}
+}]
+language_support={}
+script_support={}
+opentype_features={}

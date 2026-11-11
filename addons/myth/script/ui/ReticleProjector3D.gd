@@ -1,5 +1,6 @@
 ## Pushes a [Control] [member source]'s center position to a [RayCast3D] or [ShapeCast3D] [member target], using a [Camera3D] as a reference. This allows you to, for example, offset the player's reticle such that they do not aim in the center of the screen.
-class_name ControlCastProjector3D
+@icon("res://addons/myth/script/ui/ReticleProjector3D.svg")
+class_name ReticleProjector3D
 extends Component
 
 @export

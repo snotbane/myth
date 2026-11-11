@@ -1,11 +1,11 @@
-## Standard walking motion for 1st person characters.
+## Standard walking motion for 1st person characters. Also handles sprinting and crouching.
 @icon("res://addons/myth/script/component/character/CharacterWalkMotion.svg")
 class_name CharacterWalkMotion3D
 extends CharacterMotionComponent3D
 
 enum {
 	CROUCHING,
-	NORMAL,
+	WALKING,
 	SPRINTING,
 	MAX
 }
@@ -31,9 +31,16 @@ var normal_max_speed: float = 4.0
 var normal_footstep_interval: float = 0.4
 
 ## Whether the character is walking, sprinting, or crouching
-var speed_state_desired: int = NORMAL
+var speed_state_desired: int = WALKING
 
-var speed_state: int = NORMAL:
+func _refresh_speed_state_desired() -> void:
+	speed_state_desired = (
+		CROUCHING if crouch_is_desired else
+		SPRINTING if sprint_is_desired else
+		WALKING
+	)
+
+var speed_state: int = WALKING:
 	set(value):
 		value = clampi(value, 0, MAX - 1)
 		if speed_state == value:
@@ -41,7 +48,7 @@ var speed_state: int = NORMAL:
 
 		speed_state = value
 		match speed_state:
-			NORMAL:
+			WALKING:
 				current_max_speed = normal_max_speed
 				current_footstep_interval = normal_footstep_interval
 
@@ -58,13 +65,25 @@ var speed_state: int = NORMAL:
 			if not pawn.air_is_airborne:
 				(
 					create_tween()
-					.tween_property(crouch_shrink_shape, "position:y", (-0.5) if speed_state == CROUCHING else 0.0, crouch_shrink_time)
+					.tween_property(
+						crouch_shrink_shape, "position:y",
+						((crouch_shrink_height - pawn_shape_height_onready) * 0.5)
+							if speed_state == CROUCHING
+							else 0.0,
+						crouch_shrink_time
+					)
 					.set_ease(Tween.EASE_IN)
 					.set_trans(Tween.TRANS_SINE)
 				)
 			(
 				create_tween()
-				.tween_property(crouch_shrink_shape.shape, "height", crouch_shrink_height if speed_state == CROUCHING else crouch_shrink_height_onready, crouch_shrink_time)
+				.tween_property(
+					crouch_shrink_shape.shape, "height",
+					crouch_shrink_height
+						if speed_state == CROUCHING
+						else pawn_shape_height_onready,
+					crouch_shrink_time
+				)
 				.set_ease(Tween.EASE_IN)
 				.set_trans(Tween.TRANS_SINE)
 			)
@@ -136,7 +155,7 @@ var sprint_is_desired: bool = false:
 			return
 
 		sprint_is_desired = value
-		speed_state_desired += +1 if sprint_is_desired else -1
+		_refresh_speed_state_desired()
 
 
 @export_group("Crouch", "crouch_")
@@ -176,7 +195,7 @@ var crouch_is_desired: bool = false:
 			return
 
 		crouch_is_desired = value
-		speed_state_desired -= +1 if crouch_is_desired else -1
+		_refresh_speed_state_desired()
 
 @export_subgroup("Shrink", "crouch_shrink_")
 
@@ -191,7 +210,7 @@ var crouch_shrink_height: float = 1.0
 @export
 var crouch_shrink_time: float = 0.25
 
-var crouch_shrink_height_onready: float
+var pawn_shape_height_onready: float
 
 # @export_range(0.0, 1.0, 0.001)
 var friction_scalar: float = 1.0
@@ -217,9 +236,8 @@ func _ready() -> void:
 	if crouch_shrink_shape:
 		crouch_shrink_shape.shape = crouch_shrink_shape.shape.duplicate()
 		pawn.ground_sensor.shape = crouch_shrink_shape.shape
-		# pawn.ceiling_sensor.shape = crouch_shrink_shape.shape
 
-		crouch_shrink_height_onready = crouch_shrink_shape.shape.height
+		pawn_shape_height_onready = crouch_shrink_shape.shape.height
 
 	if speed_by_angle == null:
 		speed_by_angle = SPEED_BY_ANGLE_DEFAULT
@@ -233,14 +251,14 @@ func _ready() -> void:
 
 func _physics_process(delta: float) -> void:
 	match speed_state_desired:
-		NORMAL, CROUCHING:
+		WALKING, CROUCHING:
 			speed_state = speed_state_desired
 
 		SPRINTING:
 			speed_state = (
 				SPRINTING
 				if input_vector.dot(Vector2.UP) >= _sprint_direction_dot
-				else NORMAL
+				else WALKING
 			)
 
 	if pawn.air_is_airborne and is_zero_approx(air_friction):

@@ -45,11 +45,6 @@ func _input(event: InputEvent) -> void:
 		if event.is_echo():
 			return
 
-		match event.keycode:
-			KEY_QUOTELEFT when Myth.Terminal.window:
-				Myth.Terminal.window.toggle_visibility()
-				get_viewport().set_input_as_handled()
-
 
 func _text_submitted(text: String) -> void:
 	Myth.Terminal.inst._on_line_edit_text_submitted(text)
