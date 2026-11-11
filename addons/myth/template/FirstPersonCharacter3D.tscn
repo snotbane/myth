@@ -6,13 +6,13 @@
 [ext_resource type="Script" uid="uid://cevp3pepp1wgl" path="res://addons/myth/script/component/character/CharacterWalkMotion3D.gd" id="3_4k5k4"]
 [ext_resource type="Script" uid="uid://b8dtylr7phwi3" path="res://addons/myth/script/ui/ControlCastProjector3D.gd" id="3_m7ei3"]
 [ext_resource type="Script" uid="uid://bij5krbwt3sij" path="res://addons/myth/script/component/interact/Interactor.gd" id="4_7hs6g"]
+[ext_resource type="Script" uid="uid://bolu65ie3sr1h" path="res://addons/myth/script/component/input/InputAction.gd" id="4_m7ei3"]
 [ext_resource type="AudioStream" uid="uid://c16gr4k7qh8qo" path="res://asset/sfx/common/wpn_denyselect.ogg" id="4_pbyke"]
 [ext_resource type="Script" uid="uid://c0kd3qhylrb13" path="res://addons/myth/script/component/input/InputAxis2D.gd" id="4_uu0sq"]
 [ext_resource type="AudioStream" uid="uid://ck4og8qrnkdcy" path="res://asset/sfx/common/wpn_select.ogg" id="5_7hs6g"]
 [ext_resource type="Script" uid="uid://bw77utt2osdoh" path="res://addons/myth/script/component/character/CharacterGravityMotion3D.gd" id="5_rco5e"]
 [ext_resource type="Script" uid="uid://dktkhjmhr7pko" path="res://addons/myth/script/component/character/CharacterJumpMotion3D.gd" id="12_mxnyh"]
 [ext_resource type="Texture2D" uid="uid://bf5n3fvqrituk" path="res://addons/myth/asset/icons/Reticle.svg" id="13_7hs6g"]
-[ext_resource type="Script" uid="uid://4jb16u4wio8k" path="res://addons/myth/script/component/input/InputActionBuffered.gd" id="13_vyuqr"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_igc1g"]
 
@@ -47,11 +47,13 @@ collide_with_areas = true
 script = ExtResource("4_7hs6g")
 metadata/_custom_type_script = "uid://c5h7mlwpnpyjm"
 
-[node name="input_interact" type="Node" parent="collision_shape_3d/camera_3d/interaction_cast_3d/interaction" unique_id=551156442]
-script = ExtResource("13_vyuqr")
-press_condition = NodePath("..:is_focused")
+[node name="input_interact" type="Node" parent="collision_shape_3d/camera_3d/interaction_cast_3d/interaction" unique_id=1434308157]
+script = ExtResource("4_m7ei3")
 action = &"interact"
-metadata/_custom_type_script = "uid://4jb16u4wio8k"
+press_enabled = true
+press_condition = NodePath("..:is_focused")
+press_continuity = 1
+metadata/_custom_type_script = "uid://bolu65ie3sr1h"
 
 [node name="interaction_failure" type="AudioStreamPlayer" parent="collision_shape_3d/camera_3d/interaction_cast_3d/interaction/input_interact" unique_id=1445749515]
 stream = ExtResource("4_pbyke")
@@ -97,20 +99,19 @@ input_up = &"move_forward"
 input_down = &"move_back"
 metadata/_custom_type_script = "uid://c0kd3qhylrb13"
 
-[node name="input_sprint" type="Node" parent="strafe" unique_id=517002631]
-script = ExtResource("13_vyuqr")
-press_enabled = false
+[node name="input_sprint" type="Node" parent="strafe" unique_id=1272742796]
+script = ExtResource("4_m7ei3")
 action = &"sprint"
-metadata/_custom_type_script = "uid://4jb16u4wio8k"
+metadata/_custom_type_script = "uid://bolu65ie3sr1h"
 
-[node name="input_crouch" type="Node" parent="strafe" unique_id=2037506358]
-script = ExtResource("13_vyuqr")
-press_enabled = false
+[node name="input_crouch" type="Node" parent="strafe" unique_id=2128048505]
+script = ExtResource("4_m7ei3")
+action = &"crouch"
+actuate_mode = 3
+toggle_release_mode = 1
 release_enabled = true
 release_condition = NodePath("../..:ceiling_sensor:is_empty")
-action = &"crouch"
-toggle_release_mode = 1
-metadata/_custom_type_script = "uid://4jb16u4wio8k"
+metadata/_custom_type_script = "uid://bolu65ie3sr1h"
 
 [node name="jump" type="Node" parent="." unique_id=296393909]
 script = ExtResource("12_mxnyh")
@@ -118,13 +119,14 @@ jump_strength = 4.0
 cancel_velocity_mode = 2
 metadata/_custom_type_script = "uid://dktkhjmhr7pko"
 
-[node name="input_jump" type="Node" parent="jump" unique_id=237149568]
-script = ExtResource("13_vyuqr")
+[node name="input_jump" type="Node" parent="jump" unique_id=1473025683]
+script = ExtResource("4_m7ei3")
+action = &"jump"
+press_enabled = true
 press_condition = NodePath("..:can_jump")
 press_continuity = 2
 press_buffer_duration = 0.1
-action = &"jump"
-metadata/_custom_type_script = "uid://4jb16u4wio8k"
+metadata/_custom_type_script = "uid://bolu65ie3sr1h"
 
 [node name="hud" type="CanvasLayer" parent="." unique_id=882867998]
 
