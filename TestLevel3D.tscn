@@ -1,12 +1,12 @@
 [gd_scene format=3 uid="uid://bguh2b4spvwp3"]
 
 [ext_resource type="Script" uid="uid://doxqkyqy42b34" path="res://addons/myth/script/component/misc/EditorCameraManifest.gd" id="1_3g03d"]
-[ext_resource type="PackedScene" uid="uid://cxvn6vulols8q" path="res://GameMenu.tscn" id="1_oh6ef"]
 [ext_resource type="Script" uid="uid://2riw1kg25qqm" path="res://addons/myth/script/component/tribute/ghost/Ghost.gd" id="2_oh6ef"]
 [ext_resource type="Script" uid="uid://byafjekbp4kd6" path="res://addons/myth/script/component/tribute/mouse/MouseComponent.gd" id="6_2p1cj"]
 [ext_resource type="Script" uid="uid://c16er80fraghl" path="res://addons/myth/script/component/interact/Interactable.gd" id="7_oh6ef"]
 [ext_resource type="PackedScene" uid="uid://bsatk3j4yolu5" path="res://addons/myth/template/FirstPersonCharacter3D.tscn" id="8_3g03d"]
 [ext_resource type="Script" uid="uid://01i7mp0ow5tg" path="res://addons/myth/script/debug_draw/spatial_grid/SpatialGrid3D.gd" id="8_f4dnm"]
+[ext_resource type="PackedScene" uid="uid://cxvn6vulols8q" path="res://GameMenu.tscn" id="9_2656r"]
 [ext_resource type="PhysicsMaterial" uid="uid://dbu72c81eqmdu" path="res://asset/physics_material/concrete.tres" id="9_oh6ef"]
 [ext_resource type="PhysicsMaterial" uid="uid://d05qcy0mlmnkd" path="res://asset/physics_material/tile.tres" id="10_2656r"]
 
@@ -19,6 +19,7 @@ sky_material = SubResource("ProceduralSkyMaterial_a4doo")
 
 [sub_resource type="Environment" id="Environment_kuyva"]
 background_mode = 2
+background_energy_multiplier = 0.1
 sky = SubResource("Sky_8ykxu")
 tonemap_mode = 4
 glow_enabled = true
@@ -33,6 +34,12 @@ func _on_input_axis_2d_desired_input(vector: Vector2) -> void:
 "
 
 [sub_resource type="SphereMesh" id="SphereMesh_igc1g"]
+radius = 2.0
+height = 4.0
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_0bw4t"]
+metallic_specular = 1.0
+roughness = 0.03
 
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_igc1g"]
 
@@ -77,12 +84,12 @@ points = PackedVector3Array(-1, 4, 4, -1, 4, -4, -1, -4, 4, 1, -4, 4, 1, -4, -4,
 
 [node name="test_level_3d" type="Node3D" unique_id=1999000337]
 
-[node name="game_menu" parent="." unique_id=734476038 instance=ExtResource("1_oh6ef")]
+[node name="game_menu" parent="." unique_id=345207210 instance=ExtResource("9_2656r")]
 
 [node name="editor_camera_manifest" type="Node" parent="." unique_id=2108431072]
 script = ExtResource("1_3g03d")
-editor_global_transform_3d = Transform3D(0.49397278, -0.26720914, 0.8273997, 0, 0.95160574, 0.30732158, -0.8694774, -0.15180849, 0.47006732, 4.9037166, 6.0010633, 1.6891198)
-editor_global_transform_2d = Transform2D(1, 0, 0, 1, 308, 340.5)
+editor_global_transform_3d = Transform3D(0.6441503, -0.20631212, 0.73654985, 0, 0.9629375, 0.26972467, -0.76489896, -0.17374323, 0.62027645, 4.8351607, 7.975666, 1.4019976)
+editor_global_transform_2d = Transform2D(0.6830134, 0, 0, 0.6830134, 432.1367, 236.13577)
 metadata/_custom_type_script = "uid://doxqkyqy42b34"
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1463623584]
@@ -97,6 +104,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.15779561, 0, 0)
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="node_3d" unique_id=24121122]
 transform = Transform3D(-0.49657196, 0.84830225, -0.18384674, -0.76087767, -0.32348633, 0.56251377, 0.4177098, 0.41921344, 0.80608845, -0.5381229, 0.9168335, -0.051453084)
+light_color = Color(0.58000004, 0.804, 1, 1)
+light_energy = 0.025
 
 [node name="mouse_component" type="Node" parent="node_3d" unique_id=1832117440]
 script = ExtResource("6_2p1cj")
@@ -133,8 +142,17 @@ layers = 1
 script = ExtResource("8_f4dnm")
 metadata/_custom_type_script = "uid://01i7mp0ow5tg"
 
+[node name="reflection_probe" type="ReflectionProbe" parent="." unique_id=2056266600]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.305493, 2.180933, -2.426396)
+
 [node name="mesh_instance_3d" type="MeshInstance3D" parent="." unique_id=370700788]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5.700402, -4.946706)
 mesh = SubResource("SphereMesh_igc1g")
+surface_material_override/0 = SubResource("StandardMaterial3D_0bw4t")
+
+[node name="omni_light_3d" type="OmniLight3D" parent="mesh_instance_3d" unique_id=1033889960]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.4289722, 2.5127177, 0)
+omni_range = 17.2432
 
 [node name="first_person_character_3d" parent="." unique_id=948668199 instance=ExtResource("8_3g03d")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0958033, 0)

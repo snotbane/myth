@@ -3,7 +3,7 @@ class_name MythPlugin
 extends EditorPlugin
 
 const BASE_AUTOLOAD_NAME := "myth"
-const BASE_AUTOLOAD_SCRIPT := "res://addons/myth/script/Myth.gd"
+const BASE_AUTOLOAD_SCRIPT := "res://addons/myth/script/Myth.tscn"
 
 const GHOST_AUTOLOAD_NAME := "myth_ghost_handler"
 const GHOST_AUTOLOAD_SCRIPT := "res://addons/myth/script/component/tribute/ghost/MythGhostHandler.tscn"
@@ -14,6 +14,9 @@ const TERMINAL_AUTOLOAD_SCRIPT := "res://addons/myth/script/terminal/MythTermina
 
 const WINDOW_MODE_AUTOLOAD_NAME := "myth_window_mode_handler"
 const WINDOW_MODE_AUTOLOAD_SCRIPT := "res://addons/myth/script/utility/window_mode/WindowModeHandler.tscn"
+
+const SYSTEM_PREFS_AUTOLOAD_NAME := "myth_system_prefs"
+const SYSTEM_PREFS_AUTOLOAD_SCRIPT := "res://addons/myth/script/utility/system_prefs/SystemPrefsAutoload.tscn"
 
 
 ## Adds a new input binding to the project settings.
@@ -70,11 +73,14 @@ func _enter_tree() -> void:
 		1
 	)
 
+	add_default_project_setting(InputBinder.ADD_REMOVE_EVENTS_SETTING, false)
+
 
 	add_autoload_singleton(BASE_AUTOLOAD_NAME, BASE_AUTOLOAD_SCRIPT)
-	add_autoload_singleton(TERMINAL_AUTOLOAD_NAME, TERMINAL_AUTOLOAD_SCRIPT)
-	add_autoload_singleton(GHOST_AUTOLOAD_NAME, GHOST_AUTOLOAD_SCRIPT)
-	add_autoload_singleton(WINDOW_MODE_AUTOLOAD_NAME, WINDOW_MODE_AUTOLOAD_SCRIPT)
+	# add_autoload_singleton(TERMINAL_AUTOLOAD_NAME, TERMINAL_AUTOLOAD_SCRIPT)
+	# add_autoload_singleton(GHOST_AUTOLOAD_NAME, GHOST_AUTOLOAD_SCRIPT)
+	# add_autoload_singleton(WINDOW_MODE_AUTOLOAD_NAME, WINDOW_MODE_AUTOLOAD_SCRIPT)
+	# add_autoload_singleton(SYSTEM_PREFS_AUTOLOAD_NAME, SYSTEM_PREFS_AUTOLOAD_SCRIPT)
 
 
 	var ghost_toggle_input_0 := InputEventKey.new()
@@ -99,6 +105,24 @@ func _enter_tree() -> void:
 	add_default_input_binding("_myth_fullscreen_toggle", [
 		fullscreen_toggle_input_0,
 		fullscreen_toggle_input_1,
+	])
+
+	var input_binder_remove_input_0 := InputEventMouseButton.new()
+	input_binder_remove_input_0.button_index = MOUSE_BUTTON_RIGHT
+	var input_binder_remove_input_1 := InputEventKey.new()
+	input_binder_remove_input_1.keycode = KEY_BACKSPACE
+	var input_binder_remove_input_2 := InputEventJoypadButton.new()
+	input_binder_remove_input_2.button_index = JOY_BUTTON_Y
+	add_default_input_binding("_myth_input_binder_remove", [
+		input_binder_remove_input_0,
+		input_binder_remove_input_1,
+		input_binder_remove_input_2,
+	])
+
+	var input_binder_warning_input_0 := InputEventJoypadButton.new()
+	input_binder_warning_input_0.button_index = JOY_BUTTON_X
+	add_default_input_binding("_myth_input_binder_warning", [
+		input_binder_warning_input_0,
 	])
 
 	var menu_input_0 := InputEventKey.new()
@@ -186,8 +210,9 @@ func _enter_tree() -> void:
 
 func _exit_tree() -> void:
 	remove_autoload_singleton(BASE_AUTOLOAD_NAME)
-	remove_autoload_singleton(TERMINAL_AUTOLOAD_NAME)
-	remove_autoload_singleton(GHOST_AUTOLOAD_NAME)
-	remove_autoload_singleton(WINDOW_MODE_AUTOLOAD_NAME)
+	# remove_autoload_singleton(TERMINAL_AUTOLOAD_NAME)
+	# remove_autoload_singleton(GHOST_AUTOLOAD_NAME)
+	# remove_autoload_singleton(WINDOW_MODE_AUTOLOAD_NAME)
+	# remove_autoload_singleton(SYSTEM_PREFS_AUTOLOAD_NAME)
 
 	Myth.editor_interface_safe = null

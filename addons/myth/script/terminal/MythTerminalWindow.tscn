@@ -18,12 +18,12 @@ oversampling_override = 1.0
 title = "Myth :: Terminal"
 initial_position = 1
 size = Vector2i(500, 300)
+visible = false
 
 [node name="input_toggle" type="Node" parent="window" unique_id=1341458396]
 script = ExtResource("3_xhm3u")
 action = &"_myth_terminal_toggle"
 actuate_mode = 2
-toggle_is_pressed_on_ready = true
 input_callback = 1
 metadata/_custom_type_script = "uid://bp2dwa0a4vw8n"
 

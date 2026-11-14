@@ -71,6 +71,7 @@ func _add_and_connect_signal_to_property(signal_path: NodePath, property_path: N
 	var sig : Signal = get_path_as_signal(signal_path)
 	if sig.is_null():
 		printerr("Signal at path '%s' does not exist." % signal_path)
+		breakpoint
 		return
 
 	var arg_count: int = get_signal_data(sig).args.size()

@@ -451,9 +451,11 @@ static var editor_interface_safe: Object
 func _init() -> void:
 	inst = self
 
-	var mouse_component := MouseComponent.new()
-	mouse_component.name = &"myth_mouse_default"
-	mouse_component.priority = -129
+
+func _ready() -> void:
+	if Engine.is_editor_hint():
+		return
+
+	var mouse_component : MouseComponent = find_child("mouse_component")
 	mouse_component.mouse_mode = MouseComponent.DEFAULT_MOUSE_MODE
-	add_child(mouse_component)
-	mouse_component._became_current()
+	# mouse_component._became_current()

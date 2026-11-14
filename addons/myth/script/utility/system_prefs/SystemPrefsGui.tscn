@@ -2,37 +2,25 @@
 
 [ext_resource type="Script" uid="uid://bsk25gt166keh" path="res://addons/myth/script/ui/setting/Setting.gd" id="1_30kxb"]
 [ext_resource type="Theme" uid="uid://bc3ed0744j0gx" path="res://new_theme.tres" id="1_higry"]
-[ext_resource type="Script" uid="uid://c36pv483k0xqu" path="res://addons/myth/script/utility/system_prefs/SystemPrefs.gd" id="2_higry"]
 [ext_resource type="Script" uid="uid://byafjekbp4kd6" path="res://addons/myth/script/component/tribute/mouse/MouseComponent.gd" id="2_wxvyr"]
 [ext_resource type="Script" uid="uid://d4lpd1pg6y8s2" path="res://addons/myth/script/component/feature/ProjectSettingDependency.gd" id="4_higry"]
+[ext_resource type="Script" uid="uid://cyxultqo4g2yi" path="res://addons/myth/script/ui/setting/InputBinderManager.gd" id="6_2ym4p"]
+[ext_resource type="Script" uid="uid://bmrv3splth55f" path="res://addons/myth/script/ui/setting/InputBinder.gd" id="6_cl66s"]
 
 [sub_resource type="GDScript" id="GDScript_higry"]
 script/source = "extends ResourceNodeExternal
 
-func _init() -> void:
-	resource_value_changed.connect((func(resource: Resource) -> void:
-		if resource == null:
-			return
-
-		resource.populate(get_tree())
-	), ConnectFlags.CONNECT_ONE_SHOT)
+func _ready() -> void:
+	super._ready()
+	
+	resource = SystemPrefs.inst
+	path = resource.resource_path
 "
-
-[sub_resource type="Resource" id="Resource_igc1g"]
-script = ExtResource("2_higry")
-window_mode = null
-window_ui_scale = null
-render_resolution_percent = null
-render_upscaling_mode = null
-render_upscaling_sharpness = null
-render_msaa = null
-render_ssaa = null
-render_taa = null
-render_vsync = null
-metadata/_custom_type_script = "uid://c36pv483k0xqu"
 
 [sub_resource type="GDScript" id="GDScript_wxvyr"]
 script/source = "extends PropertyMapper
+
+static var system_prefs_node: ResourceNodeExternal
 
 func create_save_sync_binding(from: Node, save_prop_name: String, from_prop_name: String = \"child_value\") -> PropertySyncer:
 	return (
@@ -40,7 +28,7 @@ func create_save_sync_binding(from: Node, save_prop_name: String, from_prop_name
 			.add_connection_push(
 				NodePath(\":resource:\" + save_prop_name + \"_changed\"),
 				NodePath(\":resource:\" + save_prop_name),
-				%save_data
+				system_prefs_node
 			)
 			.add_connection_pull(
 				NodePath(\":\" + from_prop_name + \"_changed\"),
@@ -50,6 +38,8 @@ func create_save_sync_binding(from: Node, save_prop_name: String, from_prop_name
 	)
 
 func _create_map() -> void:
+	system_prefs_node = Global.find(&\"system_prefs\")
+	
 	map = [
 		create_save_sync_binding(%window_mode, \"window_mode\"),
 		create_save_sync_binding(%ui_scale, \"window_ui_scale\"),
@@ -60,6 +50,8 @@ func _create_map() -> void:
 		create_save_sync_binding(%msaa, \"render_msaa\"),
 		create_save_sync_binding(%ssaa, \"render_ssaa\"),
 		create_save_sync_binding(%taa, \"render_taa\"),
+		
+		create_save_sync_binding(%input_binder_manager, \"input_bindings\", \"input_bindings\")
 	]
 "
 
@@ -77,12 +69,10 @@ script = ExtResource("2_wxvyr")
 priority = 1
 metadata/_custom_type_script = "uid://byafjekbp4kd6"
 
-[node name="save_data" type="Node" parent="." unique_id=1372369203]
+[node name="system_prefs" type="Node" parent="." unique_id=1372369203]
 unique_name_in_owner = true
 script = SubResource("GDScript_higry")
-path = "user://system_prefs.tres"
-template = SubResource("Resource_igc1g")
-save_if_null = true
+path = ""
 save_on_change = true
 metadata/_custom_type_script = "uid://cn6mqa541d5ii"
 
@@ -97,9 +87,10 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-current_tab = 0
+current_tab = 3
 
 [node name="Game" type="Control" parent="v_box_container" unique_id=744088458]
+visible = false
 layout_mode = 2
 metadata/_tab_index = 0
 
@@ -389,7 +380,6 @@ step = 0.1
 value = 1.0
 
 [node name="Input" type="Control" parent="v_box_container" unique_id=278065471]
-visible = false
 layout_mode = 2
 metadata/_tab_index = 3
 
@@ -418,5 +408,167 @@ title = "Mouse"
 [node name="bindings" type="FoldableContainer" parent="v_box_container/Input/scroll_container/v_box_container" unique_id=874811190]
 layout_mode = 2
 title = "Bindings"
+
+[node name="input_binder_manager" type="Node" parent="v_box_container/Input/scroll_container/v_box_container/bindings" unique_id=65533370]
+unique_name_in_owner = true
+script = ExtResource("6_2ym4p")
+metadata/_custom_type_script = "uid://cyxultqo4g2yi"
+
+[node name="v_box_container" type="VBoxContainer" parent="v_box_container/Input/scroll_container/v_box_container/bindings" unique_id=1377118853]
+layout_mode = 2
+
+[node name="menu" type="FoldableContainer" parent="v_box_container/Input/scroll_container/v_box_container/bindings/v_box_container" unique_id=1887062883]
+layout_mode = 2
+title = "Menues"
+
+[node name="v_box_container" type="VBoxContainer" parent="v_box_container/Input/scroll_container/v_box_container/bindings/v_box_container/menu" unique_id=958646801]
+layout_mode = 2
+
+[node name="menu" type="HBoxContainer" parent="v_box_container/Input/scroll_container/v_box_container/bindings/v_box_container/menu/v_box_container" unique_id=570830323]
+layout_mode = 2
+script = ExtResource("1_30kxb")
+label_text = "Pause"
+metadata/_custom_type_script = "uid://bsk25gt166keh"
+
+[node name="input_binder" type="BoxContainer" parent="v_box_container/Input/scroll_container/v_box_container/bindings/v_box_container/menu/v_box_container/menu" unique_id=2013762044]
+custom_minimum_size = Vector2(204, 0)
+layout_mode = 2
+script = ExtResource("6_cl66s")
+action = &"menu"
+event_restricteds = 2
+event_required = true
+buttons_minimum_width = 100.0
+metadata/_custom_type_script = "uid://bmrv3splth55f"
+
+[node name="movement" type="FoldableContainer" parent="v_box_container/Input/scroll_container/v_box_container/bindings/v_box_container" unique_id=1980713095]
+layout_mode = 2
+title = "Player Movement"
+
+[node name="v_box_container" type="VBoxContainer" parent="v_box_container/Input/scroll_container/v_box_container/bindings/v_box_container/movement" unique_id=26026783]
+layout_mode = 2
+
+[node name="move_forward" type="HBoxContainer" parent="v_box_container/Input/scroll_container/v_box_container/bindings/v_box_container/movement/v_box_container" unique_id=1604779300]
+layout_mode = 2
+script = ExtResource("1_30kxb")
+label_text = "Move : Forward"
+metadata/_custom_type_script = "uid://bsk25gt166keh"
+
+[node name="input_binder" type="BoxContainer" parent="v_box_container/Input/scroll_container/v_box_container/bindings/v_box_container/movement/v_box_container/move_forward" unique_id=1503194206]
+custom_minimum_size = Vector2(204, 0)
+layout_mode = 2
+script = ExtResource("6_cl66s")
+action = &"move_forward"
+event_restricteds = 1
+event_required = true
+buttons_minimum_width = 100.0
+metadata/_custom_type_script = "uid://bmrv3splth55f"
+
+[node name="move_back" type="HBoxContainer" parent="v_box_container/Input/scroll_container/v_box_container/bindings/v_box_container/movement/v_box_container" unique_id=360649484]
+layout_mode = 2
+script = ExtResource("1_30kxb")
+label_text = "           : Back"
+metadata/_custom_type_script = "uid://bsk25gt166keh"
+
+[node name="input_binder" type="BoxContainer" parent="v_box_container/Input/scroll_container/v_box_container/bindings/v_box_container/movement/v_box_container/move_back" unique_id=1376390082]
+custom_minimum_size = Vector2(204, 0)
+layout_mode = 2
+script = ExtResource("6_cl66s")
+action = &"move_back"
+event_restricteds = 1
+event_required = true
+buttons_minimum_width = 100.0
+metadata/_custom_type_script = "uid://bmrv3splth55f"
+
+[node name="move_left" type="HBoxContainer" parent="v_box_container/Input/scroll_container/v_box_container/bindings/v_box_container/movement/v_box_container" unique_id=2115712778]
+layout_mode = 2
+script = ExtResource("1_30kxb")
+label_text = "           : Left"
+metadata/_custom_type_script = "uid://bsk25gt166keh"
+
+[node name="input_binder" type="BoxContainer" parent="v_box_container/Input/scroll_container/v_box_container/bindings/v_box_container/movement/v_box_container/move_left" unique_id=1765606536]
+custom_minimum_size = Vector2(204, 0)
+layout_mode = 2
+script = ExtResource("6_cl66s")
+action = &"move_left"
+event_restricteds = 1
+event_required = true
+buttons_minimum_width = 100.0
+metadata/_custom_type_script = "uid://bmrv3splth55f"
+
+[node name="move_right" type="HBoxContainer" parent="v_box_container/Input/scroll_container/v_box_container/bindings/v_box_container/movement/v_box_container" unique_id=566204817]
+layout_mode = 2
+script = ExtResource("1_30kxb")
+label_text = "           : Right"
+metadata/_custom_type_script = "uid://bsk25gt166keh"
+
+[node name="input_binder" type="BoxContainer" parent="v_box_container/Input/scroll_container/v_box_container/bindings/v_box_container/movement/v_box_container/move_right" unique_id=1950184466]
+custom_minimum_size = Vector2(204, 0)
+layout_mode = 2
+script = ExtResource("6_cl66s")
+action = &"move_right"
+event_restricteds = 1
+event_required = true
+buttons_minimum_width = 100.0
+metadata/_custom_type_script = "uid://bmrv3splth55f"
+
+[node name="jump" type="HBoxContainer" parent="v_box_container/Input/scroll_container/v_box_container/bindings/v_box_container/movement/v_box_container" unique_id=1850617462]
+layout_mode = 2
+script = ExtResource("1_30kxb")
+label_text = "Jump"
+metadata/_custom_type_script = "uid://bsk25gt166keh"
+
+[node name="input_binder" type="BoxContainer" parent="v_box_container/Input/scroll_container/v_box_container/bindings/v_box_container/movement/v_box_container/jump" unique_id=1168088426]
+custom_minimum_size = Vector2(204, 0)
+layout_mode = 2
+script = ExtResource("6_cl66s")
+action = &"jump"
+event_required = true
+buttons_minimum_width = 100.0
+metadata/_custom_type_script = "uid://bmrv3splth55f"
+
+[node name="sprint" type="HBoxContainer" parent="v_box_container/Input/scroll_container/v_box_container/bindings/v_box_container/movement/v_box_container" unique_id=784280793]
+layout_mode = 2
+script = ExtResource("1_30kxb")
+label_text = "Sprint"
+metadata/_custom_type_script = "uid://bsk25gt166keh"
+
+[node name="input_binder" type="BoxContainer" parent="v_box_container/Input/scroll_container/v_box_container/bindings/v_box_container/movement/v_box_container/sprint" unique_id=995086323]
+custom_minimum_size = Vector2(204, 0)
+layout_mode = 2
+script = ExtResource("6_cl66s")
+action = &"sprint"
+event_required = true
+buttons_minimum_width = 100.0
+metadata/_custom_type_script = "uid://bmrv3splth55f"
+
+[node name="crouch" type="HBoxContainer" parent="v_box_container/Input/scroll_container/v_box_container/bindings/v_box_container/movement/v_box_container" unique_id=130761256]
+layout_mode = 2
+script = ExtResource("1_30kxb")
+label_text = "Crouch"
+metadata/_custom_type_script = "uid://bsk25gt166keh"
+
+[node name="input_binder" type="BoxContainer" parent="v_box_container/Input/scroll_container/v_box_container/bindings/v_box_container/movement/v_box_container/crouch" unique_id=965159207]
+custom_minimum_size = Vector2(204, 0)
+layout_mode = 2
+script = ExtResource("6_cl66s")
+action = &"crouch"
+event_required = true
+buttons_minimum_width = 100.0
+metadata/_custom_type_script = "uid://bmrv3splth55f"
+
+[node name="interact" type="HBoxContainer" parent="v_box_container/Input/scroll_container/v_box_container/bindings/v_box_container/movement/v_box_container" unique_id=668015886]
+layout_mode = 2
+script = ExtResource("1_30kxb")
+label_text = "Interact"
+metadata/_custom_type_script = "uid://bsk25gt166keh"
+
+[node name="input_binder" type="BoxContainer" parent="v_box_container/Input/scroll_container/v_box_container/bindings/v_box_container/movement/v_box_container/interact" unique_id=1899839179]
+custom_minimum_size = Vector2(204, 0)
+layout_mode = 2
+script = ExtResource("6_cl66s")
+action = &"interact"
+event_required = true
+buttons_minimum_width = 100.0
+metadata/_custom_type_script = "uid://bmrv3splth55f"
 
 [connection signal="pressed" from="v_box_container/Video/scroll_container/v_box_container/revert" to="v_box_container/Video/scroll_container/v_box_container/window/v_box_container/ui_scale" method="reset"]

@@ -50,6 +50,9 @@ var child: Control:
 		elif child is BaseButton and child.toggle_mode:
 			child.toggled.connect(_on_child_value_changed.unbind(1))
 
+		elif child is InputBinder:
+			child.action_data_changed.connect(_on_child_value_changed)
+
 
 var child_value: Variant:
 	get:
@@ -59,6 +62,8 @@ var child_value: Variant:
 			return child.value
 		elif child is BaseButton and child.toggle_mode:
 			return child.button_pressed
+		elif child is InputBinder:
+			return child.action_data
 		else:
 			return null
 	set(value):
@@ -78,7 +83,8 @@ var child_value: Variant:
 		elif child is BaseButton and child.toggle_mode:
 			child.button_pressed = value
 
-
+		elif child is InputBinder:
+			child.action_data = value
 
 		else:
 			pass
@@ -132,7 +138,12 @@ var label_label_settings: LabelSettings:
 
 func _ready() -> void:
 	for c in get_children():
-		if c is OptionButton or c is Range or (c is BaseButton and c.toggle_mode):
+		if (
+			c is OptionButton
+			or c is Range
+			or (c is BaseButton and c.toggle_mode)
+			or c is InputBinder
+		):
 			child = c
 
 	if child == null:
@@ -152,4 +163,34 @@ func reset() -> void:
 
 
 func refresh_reset() -> void:
-	reset_available = child_value != initial_value
+	reset_available = not deep_equals(initial_value, child_value)
+
+
+static func deep_equals(a: Variant, b: Variant) -> bool:
+	if a is Array and b is Array:
+		if a.size() != b.size():
+			return false
+
+		for i in a.size():
+			if not deep_equals(a[i], b[i]):
+				return false
+
+		return true
+
+	if a is Dictionary and b is Dictionary:
+		if a.size() != b.size():
+			return false
+
+		var ak : Array = a.keys()
+		var bk : Array = b.keys()
+
+		for k in ak:
+			if not bk.has(k) or not deep_equals(a[k], b[k]):
+				return false
+
+		return true
+
+	if a is InputEvent and b is InputEvent:
+		return a.is_match(b)
+
+	return a == b

@@ -46,7 +46,7 @@ var resource: Resource:
 
 func _ready() -> void:
 	if load_on_ready:
-		resource = load(file_path) if ResourceLoader.exists(file_path) else null
+		resource = load(file_path) if FileAccess.file_exists(file_path) else null
 
 
 func save(__resource__: Resource = resource) -> void:
@@ -54,4 +54,14 @@ func save(__resource__: Resource = resource) -> void:
 		printerr("Resource is null.")
 		return
 
+	if file_path.is_empty():
+		return
+
 	ResourceSaver.save(__resource__, file_path)
+
+
+func call_resource_method(method_name: StringName, args = null):
+	if resource:
+		return await resource.callv(method_name,
+			args if args is Array else [args]
+		)

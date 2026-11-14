@@ -11,10 +11,16 @@
 [ext_resource type="Script" uid="uid://c0kd3qhylrb13" path="res://addons/myth/script/component/input/InputAxis2D.gd" id="4_uu0sq"]
 [ext_resource type="AudioStream" uid="uid://ck4og8qrnkdcy" path="res://asset/sfx/common/wpn_select.ogg" id="5_7hs6g"]
 [ext_resource type="Script" uid="uid://bw77utt2osdoh" path="res://addons/myth/script/component/character/CharacterGravityMotion3D.gd" id="5_rco5e"]
+[ext_resource type="Texture2D" uid="uid://btfj011afs3yi" path="res://addons/myth/asset/texture/flashlight_filter.png" id="8_0bw4t"]
+[ext_resource type="AudioStream" uid="uid://c1f1y5d2oct5c" path="res://asset/sfx/common/flashlight1.ogg" id="8_m7ei3"]
 [ext_resource type="Script" uid="uid://dktkhjmhr7pko" path="res://addons/myth/script/component/character/CharacterJumpMotion3D.gd" id="12_mxnyh"]
 [ext_resource type="Texture2D" uid="uid://bf5n3fvqrituk" path="res://addons/myth/asset/icons/Reticle.svg" id="13_7hs6g"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_igc1g"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_amlv4"]
+outline_size = 8
+outline_color = Color(0, 0, 0, 1)
 
 [sub_resource type="GDScript" id="GDScript_j2q5q"]
 script/source = "extends Label
@@ -77,6 +83,25 @@ mouse_enabled = true
 mouse_sensitivity = Vector2(-10, -10)
 metadata/_custom_type_script = "uid://d201t4jfiho2x"
 
+[node name="flashlight_3d" type="SpotLight3D" parent="collision_shape_3d/camera_3d" unique_id=581965166]
+visible = false
+light_energy = 4.0
+light_projector = ExtResource("8_0bw4t")
+light_size = 0.1
+shadow_enabled = true
+spot_range = 64.0
+spot_attenuation = 2.0
+spot_angle = 35.0
+
+[node name="input_action" type="Node" parent="collision_shape_3d/camera_3d/flashlight_3d" unique_id=1682330469]
+script = ExtResource("4_m7ei3")
+action = &"flashlight"
+actuate_mode = 2
+metadata/_custom_type_script = "uid://bolu65ie3sr1h"
+
+[node name="audio_stream_player_3d" type="AudioStreamPlayer3D" parent="collision_shape_3d/camera_3d/flashlight_3d" unique_id=1795648474]
+stream = ExtResource("8_m7ei3")
+
 [node name="footstep_audio_3d" type="AudioStreamPlayer3D" parent="collision_shape_3d" unique_id=457523338]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1, 0)
 max_polyphony = 6
@@ -99,6 +124,7 @@ input_left = &"move_left"
 input_right = &"move_right"
 input_up = &"move_forward"
 input_down = &"move_back"
+constant_enabled = true
 metadata/_custom_type_script = "uid://c0kd3qhylrb13"
 
 [node name="input_sprint" type="Node" parent="strafe" unique_id=1272742796]
@@ -110,7 +136,6 @@ metadata/_custom_type_script = "uid://bolu65ie3sr1h"
 script = ExtResource("4_m7ei3")
 action = &"crouch"
 actuate_mode = 3
-toggle_release_mode = 1
 release_enabled = true
 release_condition = NodePath("../..:ceiling_sensor:is_empty")
 metadata/_custom_type_script = "uid://bolu65ie3sr1h"
@@ -165,6 +190,7 @@ layout_mode = 1
 offset_left = 5.0
 offset_right = 45.0
 offset_bottom = 23.0
+label_settings = SubResource("LabelSettings_amlv4")
 script = SubResource("GDScript_j2q5q")
 
 [connection signal="became_grounded" from="." to="collision_shape_3d/footstep_audio_3d" method="play_last_key"]
@@ -174,6 +200,8 @@ script = SubResource("GDScript_j2q5q")
 [connection signal="interact_started" from="collision_shape_3d/camera_3d/interaction_cast_3d/interactor" to="collision_shape_3d/camera_3d/interaction_cast_3d/interactor/input_interact/interaction_success" method="play"]
 [connection signal="pressed" from="collision_shape_3d/camera_3d/interaction_cast_3d/interactor/input_interact" to="collision_shape_3d/camera_3d/interaction_cast_3d/interactor" method="_on_input_interact_pressed"]
 [connection signal="sequence_failed" from="collision_shape_3d/camera_3d/interaction_cast_3d/interactor/input_interact" to="collision_shape_3d/camera_3d/interaction_cast_3d/interactor/input_interact/interaction_failure" method="play"]
+[connection signal="changed" from="collision_shape_3d/camera_3d/flashlight_3d/input_action" to="collision_shape_3d/camera_3d/flashlight_3d" method="set_visible"]
+[connection signal="changed" from="collision_shape_3d/camera_3d/flashlight_3d/input_action" to="collision_shape_3d/camera_3d/flashlight_3d/audio_stream_player_3d" method="play" unbinds=1]
 [connection signal="footstepped" from="strafe" to="collision_shape_3d/footstep_audio_3d" method="play_key" binds= [&"audio_stream_footstep"]]
 [connection signal="desired_input" from="strafe/input_move_2d" to="strafe" method="_on_input_axis_2d_desired_input"]
 [connection signal="changed" from="strafe/input_sprint" to="strafe" method="set_sprint_desired"]

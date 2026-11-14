@@ -1,0 +1,23 @@
+[gd_scene format=3 uid="uid://cbhbi7yfp45xs"]
+
+[sub_resource type="GDScript" id="GDScript_t3340"]
+script/source = "extends ResourceNodeExternal
+
+func _ready() -> void:
+	super._ready()
+	
+	if resource == null:
+		resource = SystemPrefs.new()
+	
+	assert(resource is SystemPrefs)
+	resource.populate(self)
+"
+
+[node name="system_prefs_autoload" type="Node" unique_id=381609887]
+
+[node name="resource_node_external" type="Node" parent="." unique_id=479522426]
+script = SubResource("GDScript_t3340")
+path = "user://system_prefs.tres"
+metadata/_custom_type_script = "uid://cn6mqa541d5ii"
+
+[connection signal="ready" from="resource_node_external" to="resource_node_external" method="call_resource_method" flags=18 binds= [&"populate"]]

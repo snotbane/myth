@@ -34,6 +34,15 @@ var input_down: StringName:
 @export
 var constrained: bool = true
 
+@export
+var auto_up: bool = false
+
+@export
+var constant_direction := Vector2.UP
+
+@export
+var auto_cancelable : bool = true
+
 @export_group("Mouse", "mouse_")
 
 ## If enabled, the mouse motion (see [member InputEventMouseMotion.screen_relative]) will also be used to handle this input, in addition to the input actions.
@@ -96,6 +105,23 @@ func _process(delta: float) -> void:
 
 	else:
 		input_vector = Vector2.ZERO
+
+	if auto_up:
+		if input_vector.y > 0.0:
+			auto_up = false
+		else:
+			if is_zero_approx(input_vector.x):
+				input_vector = Vector2.UP
+			else:
+				input_vector = Vector2(input_vector.x, 0.0).normalized()
+				input_vector.y = -1.0
+				input_vector = input_vector.normalized()
+
+				input_vector = input_vector.slide(constant_direction)
+				var l := input_vector.length()
+				input_vector = input_vector.normalized()
+				input_vector += constant_direction
+				input_vector
 
 	if input_vector == _input_vector_prev: return
 	_input_vector_prev = input_vector

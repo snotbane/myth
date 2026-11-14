@@ -1,0 +1,93 @@
+[gd_scene format=3 uid="uid://b887s2xasmaur"]
+
+[ext_resource type="Script" uid="uid://bioqc2ddk1cvg" path="res://addons/myth/script/Myth.gd" id="1_sywwk"]
+[ext_resource type="Script" uid="uid://cseudttyodlc5" path="res://addons/myth/script/utility/window_mode/WindowModeHandler.gd" id="2_1jjw0"]
+[ext_resource type="Script" uid="uid://byafjekbp4kd6" path="res://addons/myth/script/component/tribute/mouse/MouseComponent.gd" id="3_gere0"]
+[ext_resource type="Script" uid="uid://bolu65ie3sr1h" path="res://addons/myth/script/component/input/InputAction.gd" id="3_rp1xm"]
+[ext_resource type="Script" uid="uid://btbbh7mripihc" path="res://addons/myth/script/component/feature/FeatureDependency.gd" id="4_1jjw0"]
+[ext_resource type="Script" uid="uid://bp2dwa0a4vw8n" path="res://addons/myth/script/component/input/WindowInputAction.gd" id="5_rp1xm"]
+[ext_resource type="PackedScene" uid="uid://47dn4a4hikmq" path="res://addons/myth/script/terminal/MythTerminal.tscn" id="6_emwu5"]
+[ext_resource type="Script" uid="uid://2riw1kg25qqm" path="res://addons/myth/script/component/tribute/ghost/Ghost.gd" id="8_emwu5"]
+[ext_resource type="Script" uid="uid://64pab4lqwg15" path="res://addons/myth/script/component/misc/Global.gd" id="9_gokw1"]
+
+[sub_resource type="GDScript" id="GDScript_t3340"]
+script/source = "extends ResourceNodeExternal
+
+func _ready() -> void:
+	super._ready()
+	
+	if resource == null:
+		resource = SystemPrefs.new()
+	
+	assert(resource is SystemPrefs)
+	resource.populate(self)
+"
+
+[node name="myth" type="Node" unique_id=2010653603]
+script = ExtResource("1_sywwk")
+metadata/_custom_type_script = "uid://bioqc2ddk1cvg"
+
+[node name="system_prefs" type="Node" parent="." unique_id=381609887]
+
+[node name="system_prefs" type="Node" parent="system_prefs" unique_id=479522426]
+script = SubResource("GDScript_t3340")
+path = "user://system_prefs.tres"
+metadata/_custom_type_script = "uid://cn6mqa541d5ii"
+
+[node name="global" type="Node" parent="system_prefs/system_prefs" unique_id=956903397]
+script = ExtResource("9_gokw1")
+metadata/_custom_type_script = "uid://64pab4lqwg15"
+
+[node name="window_mode_handler" type="Node" parent="." unique_id=806217653]
+script = ExtResource("2_1jjw0")
+
+[node name="input_action" type="Node" parent="window_mode_handler" unique_id=1510137030]
+script = ExtResource("3_rp1xm")
+action = &"_myth_fullscreen_toggle"
+metadata/_custom_type_script = "uid://bolu65ie3sr1h"
+
+[node name="myth_terminal_window" type="Node" parent="." unique_id=1036668020]
+process_mode = 3
+
+[node name="feature_dependency" type="Node" parent="myth_terminal_window" unique_id=1523518918]
+script = ExtResource("4_1jjw0")
+features = PackedStringArray("debug")
+metadata/_custom_type_script = "uid://btbbh7mripihc"
+
+[node name="window" type="Window" parent="myth_terminal_window" unique_id=382796628]
+oversampling_override = 1.0
+title = "Myth :: Terminal"
+initial_position = 1
+size = Vector2i(500, 300)
+visible = false
+
+[node name="input_toggle" type="Node" parent="myth_terminal_window/window" unique_id=1341458396]
+script = ExtResource("5_rp1xm")
+action = &"_myth_terminal_toggle"
+actuate_mode = 2
+input_callback = 1
+metadata/_custom_type_script = "uid://bp2dwa0a4vw8n"
+
+[node name="myth_terminal" parent="myth_terminal_window/window" unique_id=815439504 instance=ExtResource("6_emwu5")]
+
+[node name="mouse_component" type="Node" parent="myth_terminal_window/window/myth_terminal" unique_id=670264409]
+script = ExtResource("3_gere0")
+priority = 128
+metadata/_custom_type_script = "uid://byafjekbp4kd6"
+
+[node name="myth_ghost_handler" type="Node" parent="." unique_id=1215814713]
+script = ExtResource("8_emwu5")
+priority = -128
+metadata/_custom_type_script = "uid://2riw1kg25qqm"
+
+[node name="global" type="Node" parent="myth_ghost_handler" unique_id=1162432695]
+script = ExtResource("9_gokw1")
+metadata/_custom_type_script = "uid://64pab4lqwg15"
+
+[node name="mouse_component" type="Node" parent="." unique_id=692358178]
+script = ExtResource("3_gere0")
+priority = -129
+metadata/_custom_type_script = "uid://byafjekbp4kd6"
+
+[connection signal="pressed" from="window_mode_handler/input_action" to="window_mode_handler" method="toggle_fullscreen"]
+[connection signal="changed" from="myth_terminal_window/window/input_toggle" to="myth_terminal_window/window" method="set_visible"]

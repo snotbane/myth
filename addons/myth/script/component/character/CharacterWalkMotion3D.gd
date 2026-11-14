@@ -212,6 +212,17 @@ var crouch_shrink_time: float = 0.25
 
 var pawn_shape_height_onready: float
 
+@export_group("Auto Walk", "autowalk_")
+
+## If enabled, the character will continuously walk forwards. While this is enabled, inputting forwards will do nothing, while inputting backwards will cancel autowalk.
+@export_custom(PROPERTY_HINT_GROUP_ENABLE, "")
+var autowalk_enabled: bool = false
+
+
+func set_autowalk_enabled(value: bool = true) -> void:
+	autowalk_enabled = value
+
+
 # @export_range(0.0, 1.0, 0.001)
 var friction_scalar: float = 1.0
 
@@ -263,6 +274,17 @@ func _physics_process(delta: float) -> void:
 
 	if pawn.air_is_airborne and is_zero_approx(air_friction):
 		return
+
+	# if autowalk_enabled:
+	# 	if input_vector.y > 0.0:
+	# 		autowalk_enabled = false
+	# 	else:
+	# 		if is_zero_approx(input_vector.x):
+	# 			input_vector = Vector2.UP
+	# 		else:
+	# 			input_vector = Vector2(input_vector.x, 0.0).normalized()
+	# 			input_vector.y = -1.0
+	# 			input_vector = input_vector.normalized()
 
 	var target_velocity := Myth.xy2_to_xz3(input_vector)
 

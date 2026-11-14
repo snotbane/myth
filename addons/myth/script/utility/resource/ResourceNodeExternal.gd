@@ -24,5 +24,5 @@ func _set_file_path(value: String) -> void:
 func _ready() -> void:
 	super._ready()
 
-	if resource == null and save_if_null:
+	if save_if_null and resource == null and template != null and file_path:
 		save(template)
