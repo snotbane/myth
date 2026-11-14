@@ -6,44 +6,50 @@ extends InputComponent
 ## Emits when a motion is desired via input.
 signal desired_input(vector: Vector2)
 
+
+var action_vector: Vector2
+
+## -X input action name.
 @export_custom(PROPERTY_HINT_INPUT_NAME, "")
-var input_left: StringName:
+var action_left: StringName:
 	set(value):
-		input_left = value
+		action_left = value
 		validate_actions()
 
+## +X input action name.
 @export_custom(PROPERTY_HINT_INPUT_NAME, "")
-var input_right: StringName:
+var action_right: StringName:
 	set(value):
-		input_right = value
+		action_right = value
 		validate_actions()
 
+## -Y input action name.
 @export_custom(PROPERTY_HINT_INPUT_NAME, "")
-var input_up: StringName:
+var action_up: StringName:
 	set(value):
-		input_up = value
+		action_up = value
 		validate_actions()
 
+## +Y input action name.
 @export_custom(PROPERTY_HINT_INPUT_NAME, "")
-var input_down: StringName:
+var action_down: StringName:
 	set(value):
-		input_down = value
+		action_down = value
 		validate_actions()
 
 ## If enabled, the final input vector emitted by [member desired_input] will be normalized to a length of 1.0 if it is longer than that, while still allowing for values shorter than 1.0.
 @export
 var constrained: bool = true
 
-@export
-var auto_up: bool = false
 
-@export
-var constant_direction := Vector2.UP
+## Final scalar which is applied after everything. NOTE: This ignores [member constrained] and allows the input to desire values greater than 1.0.
+@export_range(-1.0, 1.0, 0.001, "or_greater", "or_less")
+var scalar: float = 1.0
 
-@export
-var auto_cancelable : bool = true
 
-@export_group("Mouse", "mouse_")
+@export_group("Use Mouse", "mouse_")
+
+var mouse_vector: Vector2
 
 ## If enabled, the mouse motion (see [member InputEventMouseMotion.screen_relative]) will also be used to handle this input, in addition to the input actions.
 @export_custom(PROPERTY_HINT_GROUP_ENABLE, "")
@@ -66,14 +72,50 @@ var invert_mouse_y: bool = false:
 	get: return mouse_sensitivity.y < 0.0
 	set(value): mouse_sensitivity.y = absf(mouse_sensitivity.y) * (+1.0 if value else -1.0)
 
-var action_vector: Vector2
 
-var mouse_vector: Vector2
+@export_group("Auto Move", "auto_")
 
-var _input_vector_prev: Vector2
+## If enabled, the axis will simulate moving in the [member auto_direction]. You will likely want to leave this unchecked, and have a separate [InputAction] connected to [member toggle_auto_enabled]. Then use [member cancel_auto_enabled] to manually disable (e.g. if the player gets hurt).
+@export_custom(PROPERTY_HINT_GROUP_ENABLE, "checkbox_only")
+var auto_enabled: bool = false
 
-## The current input vector exerted by both the actions and the mouse.
+## The direction to automatically move in.
+@export
+var auto_direction := Vector2.UP:
+	set(value):
+		auto_direction = value.normalized()
+
+## If enabled, [member cancel_auto_enabled] will be called if the user inputs in a direction opposite of [member auto_direction].
+@export
+var auto_reverse_cancel : bool = true
+
+
+## Cancels auto movement.
+func cancel_auto_enabled() -> void:
+	auto_enabled = false
+
+
+## Toggles auto movement on or off.
+func toggle_auto_enabled() -> void:
+	auto_enabled = not auto_enabled
+
+
+func _process_auto(vector: Vector2) -> Vector2:
+	if auto_enabled:
+		if auto_reverse_cancel and vector.dot(auto_direction) < 0.0:
+			cancel_auto_enabled()
+
+		else:
+			return vector.slide(auto_direction) + auto_direction
+
+	return vector
+
+@export_group("")
+
+
+## The current input vector exerted by either the actions and the mouse (mouse takes priority).
 var input_vector: Vector2
+var _input_vector_prev: Vector2
 
 func set_actions(
 	left: StringName,
@@ -81,14 +123,16 @@ func set_actions(
 	up: StringName,
 	down: StringName,
 ) -> void:
-	input_left = left
-	input_right = right
-	input_up = up
-	input_down = down
+	action_left = left
+	action_right = right
+	action_up = up
+	action_down = down
 
 
 func _process(delta: float) -> void:
 	if mouse_vector:
+		mouse_vector = _process_auto(mouse_vector)
+
 		input_vector = (
 			(mouse_vector).limit_length()
 			if mouse_constrained
@@ -97,6 +141,8 @@ func _process(delta: float) -> void:
 		mouse_vector = Vector2.ZERO
 
 	elif action_vector:
+		action_vector = _process_auto(action_vector)
+
 		input_vector = (
 			action_vector.limit_length()
 			if constrained
@@ -104,37 +150,21 @@ func _process(delta: float) -> void:
 		)
 
 	else:
-		input_vector = Vector2.ZERO
+		input_vector = _process_auto(Vector2.ZERO)
 
-	if auto_up:
-		if input_vector.y > 0.0:
-			auto_up = false
-		else:
-			if is_zero_approx(input_vector.x):
-				input_vector = Vector2.UP
-			else:
-				input_vector = Vector2(input_vector.x, 0.0).normalized()
-				input_vector.y = -1.0
-				input_vector = input_vector.normalized()
-
-				input_vector = input_vector.slide(constant_direction)
-				var l := input_vector.length()
-				input_vector = input_vector.normalized()
-				input_vector += constant_direction
-				input_vector
 
 	if input_vector == _input_vector_prev: return
 	_input_vector_prev = input_vector
 
-	desired_input.emit(input_vector)
+	desired_input.emit(input_vector * scalar)
 
 
 func _validate_actions() -> bool:
 	return (
-		validate_action_name(input_left)
-		and validate_action_name(input_right)
-		and validate_action_name(input_up)
-		and validate_action_name(input_down)
+		validate_action_name(action_left)
+		and validate_action_name(action_right)
+		and validate_action_name(action_up)
+		and validate_action_name(action_down)
 	)
 
 
@@ -173,19 +203,19 @@ func _mouse_input(event: InputEvent) -> bool:
 
 func _component_input(event: InputEvent) -> bool:
 	if (
-		event.is_action(input_left)
-		or event.is_action(input_right)
-		or event.is_action(input_up)
-		or event.is_action(input_down)
+		event.is_action(action_left)
+		or event.is_action(action_right)
+		or event.is_action(action_up)
+		or event.is_action(action_down)
 	):
 		action_vector = Vector2(
 			Input.get_axis(
-				input_left,
-				input_right
+				action_left,
+				action_right
 			),
 			Input.get_axis(
-				input_up,
-				input_down
+				action_up,
+				action_down
 			)
 		)
 

@@ -13,11 +13,11 @@
 [sub_resource type="GDScript" id="GDScript_t3340"]
 script/source = "extends ResourceNodeExternal
 
+func _get_fallback_template() -> Resource:
+	return SystemPrefs.new()
+
 func _ready() -> void:
 	super._ready()
-	
-	if resource == null:
-		resource = SystemPrefs.new()
 	
 	assert(resource is SystemPrefs)
 	resource.populate(self)
@@ -32,6 +32,7 @@ metadata/_custom_type_script = "uid://bioqc2ddk1cvg"
 [node name="system_prefs" type="Node" parent="system_prefs" unique_id=479522426]
 script = SubResource("GDScript_t3340")
 path = "user://system_prefs.tres"
+save_if_null = true
 metadata/_custom_type_script = "uid://cn6mqa541d5ii"
 
 [node name="global" type="Node" parent="system_prefs/system_prefs" unique_id=956903397]

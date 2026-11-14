@@ -21,8 +21,14 @@ func _set_file_path(value: String) -> void:
 	path = value
 
 
+func _get_fallback_template() -> Resource:
+	return null
+
+
 func _ready() -> void:
 	super._ready()
 
-	if save_if_null and resource == null and template != null and file_path:
-		save(template)
+	var actual_template : Resource = template if template else _get_fallback_template()
+
+	if save_if_null and resource == null and actual_template != null and file_path:
+		save(actual_template)

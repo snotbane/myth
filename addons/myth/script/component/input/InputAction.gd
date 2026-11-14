@@ -101,7 +101,6 @@ func _validate_actions() -> bool:
 func _component_input(event: InputEvent) -> bool:
 	if event.is_action(action) and not event.is_echo():
 		_actuate_method.call(event)
-
 		return true
 
 	return false

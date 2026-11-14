@@ -88,8 +88,8 @@ points = PackedVector3Array(-1, 4, 4, -1, 4, -4, -1, -4, 4, 1, -4, 4, 1, -4, -4,
 
 [node name="editor_camera_manifest" type="Node" parent="." unique_id=2108431072]
 script = ExtResource("1_3g03d")
-editor_global_transform_3d = Transform3D(0.6441503, -0.20631212, 0.73654985, 0, 0.9629375, 0.26972467, -0.76489896, -0.17374323, 0.62027645, 4.8351607, 7.975666, 1.4019976)
-editor_global_transform_2d = Transform2D(0.6830134, 0, 0, 0.6830134, 432.1367, 236.13577)
+editor_global_transform_3d = Transform3D(0.7414152, -0.23113827, 0.629983, 0, 0.9388067, 0.34444448, -0.67104656, -0.25537637, 0.6960456, 4.5135064, 7.23794, 5.2941723)
+editor_global_transform_2d = Transform2D(1, 0, 0, 1, 1, 1)
 metadata/_custom_type_script = "uid://doxqkyqy42b34"
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1463623584]

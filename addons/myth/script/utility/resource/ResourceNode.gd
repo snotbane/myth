@@ -57,6 +57,7 @@ func save(__resource__: Resource = resource) -> void:
 	if file_path.is_empty():
 		return
 
+	resource = __resource__
 	ResourceSaver.save(__resource__, file_path)
 
 

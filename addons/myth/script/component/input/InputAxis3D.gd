@@ -42,6 +42,56 @@ var input_back: StringName:
 		input_back = value
 		validate_actions()
 
+## If enabled, the final input vector emitted by [member desired_input] will be normalized to a length of 1.0 if it is longer than that, while still allowing for values shorter than 1.0.
+@export
+var constrained: bool = true
+
+
+## Final scalar which is applied after everything. NOTE: This ignores [member constrained] and allows the input to desire values greater than 1.0.
+@export_range(-1.0, 1.0, 0.001, "or_greater", "or_less")
+var scalar: float = 1.0
+
+
+
+@export_group("Auto Move", "auto_")
+
+## If enabled, the axis will simulate moving in the [member auto_direction]. You will likely want to leave this unchecked, and have a separate [InputAction] connected to [member toggle_auto_enabled]. Then use [member cancel_auto_enabled] to manually disable (e.g. if the player gets hurt).
+@export_custom(PROPERTY_HINT_GROUP_ENABLE, "checkbox_only")
+var auto_enabled: bool = false
+
+## The direction to automatically move in.
+@export
+var auto_direction := Vector3.FORWARD:
+	set(value):
+		auto_direction = value.normalized()
+
+## If enabled, [member cancel_auto_enabled] will be called if the user inputs in a direction opposite of [member auto_direction].
+@export
+var auto_reverse_cancel : bool = true
+
+
+## Cancels auto movement.
+func cancel_auto_enabled() -> void:
+	auto_enabled = false
+
+
+## Toggles auto movement on or off.
+func toggle_auto_enabled() -> void:
+	auto_enabled = not auto_enabled
+
+
+func _process_auto(vector: Vector3) -> Vector3:
+	if auto_enabled:
+		if auto_reverse_cancel and vector.dot(auto_direction) < 0.0:
+			cancel_auto_enabled()
+
+		else:
+			return vector.slide(auto_direction) + auto_direction
+
+	return vector
+
+@export_group("")
+
 
 func set_actions(
 	left: StringName,
@@ -93,7 +143,11 @@ func _component_input(event: InputEvent) -> bool:
 				input_back,
 			),
 		)
-		desired_input.emit(vector.limit_length())
+		vector = _process_auto(vector)
+		if constrained:
+			vector = vector.limit_length()
+
+		desired_input.emit(vector * scalar)
 
 		return true
 
