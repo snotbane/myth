@@ -35,10 +35,14 @@ func _init(__binding__: InputBinder, __event__: InputEvent = null, create_type: 
 
 	focus_exited.connect(set.bind(&"button_pressed", false))
 	changed.connect(binder.set_action_data_from_children)
+
+	tree_exited.connect(resolve_warnings)
 	warning_button.pressed.connect(binder.handle_warnings.bind(self))
 
 
 func _ready() -> void:
+	warning_button.position -= warning_button.size * 0.5
+
 	_refresh_disabled()
 	_refresh_warnings()
 	_refresh_display()
@@ -59,7 +63,7 @@ var event: InputEvent:
 			_refresh_modifiers()
 
 			if is_node_ready():
-				check_duplicates()
+				resolve_local_duplicates()
 
 			_refresh_warnings()
 			event.changed.connect(_refresh_display)
@@ -68,6 +72,7 @@ var event: InputEvent:
 			queue_free()
 
 		else:
+			_refresh_warnings()
 			_refresh_display()
 
 		changed.emit()
@@ -78,6 +83,8 @@ var event_staged: InputEvent:
 	set(value):
 		_event_staged = value
 		_refresh_display()
+
+var _event_previous: InputEvent
 
 var readonly: bool
 
@@ -112,6 +119,16 @@ func revert() -> void:
 
 func stage(__event__: InputEvent = null) -> void:
 	event_staged = __event__
+
+
+## Removes any duplicate events, keeping this one.
+func resolve_local_duplicates(exact_match: bool = true) -> void:
+	if event == null: return
+
+	for other: InputBinder.EventButton in binder.get_event_buttons():
+		if self == other or other.event == null or not event.is_match(other.event, exact_match): continue
+
+		other.event = null
 
 
 func _refresh_disabled() -> void:
@@ -151,17 +168,125 @@ func _refresh_modifiers() -> void:
 	event.meta_pressed = false
 
 
+
+class Warning \
+extends RefCounted:
+	enum {
+		UNKNOWN = -1,
+		ACTION_UNBOUND_IN_PROJECT,
+		ACTION_REQUIRED_UNBOUND_BY_USER,
+		CONFLICTS_WITH_ANOTHER,
+	}
+
+	func get_error_code_string() -> String:
+		match code:
+			UNKNOWN:
+				return "Unknown error."
+
+			ACTION_UNBOUND_IN_PROJECT:
+				return "The InputBinder's action is not bound to any valid action in the ProjectSettings."
+
+			ACTION_REQUIRED_UNBOUND_BY_USER:
+				return "This action must be bound."
+
+			CONFLICTS_WITH_ANOTHER:
+				if related and related.owner:
+					return "Conflicts with %s." % str(related.owner.binder.text)
+				else:
+					return "Conflicts with another (unknown)."
+
+			_:
+				return "Unimplemented error."
+
+
+	var owner: InputBinder.EventButton
+	var code: int
+	var related: Warning
+
+	func _init(__owner__: InputBinder.EventButton, __code__: int = UNKNOWN) -> void:
+		owner = __owner__
+		code = __code__
+
+
+	func _to_string() -> String:
+		return get_error_code_string()
+
+
+	func resolve() -> void:
+		owner.warnings.erase(self)
+		owner._refresh_warning_button()
+
+		if related:
+			related.related = null
+			related.resolve()
+			related = null
+
+
+var warnings: Array[Warning] = []
+
+
+func resolve_warnings() -> void:
+	for warning in warnings.duplicate():
+		warning.resolve()
+
+
+func create_warning(code: int) -> Warning:
+	var result := Warning.new(self, code)
+	warnings.push_back(result)
+	_refresh_warning_button()
+	return result
+
+
+func has_conflict_with(other: InputBinder.EventButton) -> bool:
+	for warning in warnings:
+		if warning.related.owner == other:
+			return true
+
+	return false
+
+
+func create_conflict_with(other: InputBinder.EventButton) -> void:
+	if has_conflict_with(other):
+		return
+
+	var a := create_warning(Warning.CONFLICTS_WITH_ANOTHER)
+	var b := other.create_warning(Warning.CONFLICTS_WITH_ANOTHER)
+	a.related = b
+	b.related = a
+
+
+
+## Occurs any time the [member event] changes or when the [InputBinderManager] is ready.
 func _refresh_warnings() -> void:
-	pass
+	resolve_warnings()
 
-## Removes any duplicate events, keeping this one.
-func check_duplicates(exact_match: bool = true) -> void:
-	if event == null: return
+	assert(warnings.is_empty())
 
-	for other: InputBinder.EventButton in binder.get_event_buttons():
-		if self == other or other.event == null or not event.is_match(other.event, exact_match): continue
+	if binder.action.is_empty():
+		create_warning(Warning.ACTION_UNBOUND_IN_PROJECT)
 
-		other.event = null
+	elif binder.event_required and binder.action_data.has("events") and binder.action_data["events"].is_empty():
+		create_warning(Warning.ACTION_REQUIRED_UNBOUND_BY_USER)
+
+	elif event:
+		for other in binder.conflict_candidates:
+			for other_button in other.get_event_buttons():
+				if other_button.event == null:
+					continue
+
+				if event.is_match(other_button.event):
+					create_conflict_with(other_button)
+
+
+func _refresh_warning_button() -> void:
+	warning_button.visible = not warnings.is_empty()
+	var warning_tooltip_text := ""
+	for warning in warnings:
+		warning_tooltip_text += "* " + warning.to_string() + "\n"
+	warning_tooltip_text = warning_tooltip_text.left(-1)
+	warning_button.tooltip_text = warning_tooltip_text
+
+
 
 
 func _input(__event__: InputEvent) -> void:

@@ -33,15 +33,16 @@ var manager: InputBinderManager:
 			return
 
 		if manager:
-			action_data_changed.disconnect(manager.input_bindings_changed.emit)
-			manager.members.erase(self)
+			manager.remove_member(self)
 
 		manager = value
 
 		if manager:
-			action_data_changed.connect(manager.input_bindings_changed.emit)
-			if not manager.members.has(self):
-				manager.members.push_back(self)
+			manager.add_member(self)
+
+
+func _manager_ready() -> void:
+	_initialize_conflicts()
 
 
 var event_hbox: HBoxContainer
@@ -131,6 +132,15 @@ func _init() -> void:
 			misc_hbox.size_flags_horizontal = SIZE_EXPAND_FILL if vertical else SIZE_SHRINK_END
 			misc_hbox.size_flags_vertical = SIZE_SHRINK_CENTER
 		)
+
+
+var text: String:
+	get:
+		var parent := get_parent()
+		if parent is Setting:
+			return parent.label_text
+
+		return action
 
 
 func _ready() -> void:
@@ -346,21 +356,7 @@ func create_event_button(event: InputEvent = null, creation_state: int = EVENT_B
 		for button: Control in get_event_buttons():
 			button.size_flags_horizontal = value
 
-#region Conflicts
-@export_subgroup("Conflicts", "conflict_")
 
-
-
-func handle_warnings(button: EventButton):
-	await _handle_warnings(button)
-
-## This method is called when a child button's warning is pressed.
-func _handle_warnings(button: EventButton):
-	for warning in button.warnings:
-		if warning.other == null: continue
-		warning.other.grab_focus.call_deferred()
-
-#endregion
 @export_group("Misc", "misc_")
 
 
@@ -425,3 +421,67 @@ var deadzone_enabled: bool = false:
 var deadzone: float:
 	get: return deadzone_slider.value
 	set(value): deadzone_slider.value = value
+
+
+#region Warnings
+@export_subgroup("Warnings", "warning_")
+
+
+
+## Conflicts with these binders are always checked, regardless of sections.
+@export
+var conflict_guarantors: Array[InputBinder] = []
+
+
+## Conflicts with these binders are always ignored, regardless of sections.
+@export
+var conflict_exemptions: Array[InputBinder] = []
+
+
+var conflict_candidates: Array[InputBinder]
+
+
+func _initialize_conflicts() -> void:
+	for other in manager.members:
+		if self == other:
+			continue
+
+		assert(
+			not (other in conflict_guarantors and other in conflict_exemptions),
+			"InputBinder '%s' cannot be both a conflict guarantor and conflict exempt for '%s'" % [
+				other,
+				self,
+			]
+		)
+
+		if other in conflict_exemptions:
+			continue
+
+		if other in conflict_guarantors or compares_with(other):
+			conflict_candidates.push_back(other)
+
+
+	for button in get_event_buttons():
+		button._refresh_warnings()
+
+
+
+func compares_with(other: InputBinder) -> bool:
+	return manager._conflicts_comparable(self, other)
+
+
+func conflicts_with(other: InputBinder) -> bool:
+	return manager.conflicts_with(self, other)
+
+
+func handle_warnings(button: EventButton):
+	for warning in button.warnings:
+		match warning.code:
+			InputBinder.EventButton.Warning.CONFLICTS_WITH_ANOTHER:
+				if warning.related and warning.related.owner:
+					warning.related.owner.grab_focus.call_deferred()
+				break
+	print(text)
+
+
+#endregion

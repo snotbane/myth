@@ -101,6 +101,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+follow_focus = true
 horizontal_scroll_mode = 0
 
 [node name="v_box_container" type="VBoxContainer" parent="v_box_container/Game/scroll_container" unique_id=1759104706]
@@ -124,6 +125,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+follow_focus = true
 horizontal_scroll_mode = 0
 
 [node name="v_box_container" type="VBoxContainer" parent="v_box_container/Video/scroll_container" unique_id=477784725]
@@ -341,6 +343,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+follow_focus = true
 horizontal_scroll_mode = 0
 
 [node name="v_box_container" type="VBoxContainer" parent="v_box_container/Audio/scroll_container" unique_id=1743559767]
@@ -390,6 +393,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+follow_focus = true
 horizontal_scroll_mode = 0
 
 [node name="v_box_container" type="VBoxContainer" parent="v_box_container/Input/scroll_container" unique_id=1266487617]
@@ -409,9 +413,10 @@ title = "Mouse"
 layout_mode = 2
 title = "Bindings"
 
-[node name="input_binder_manager" type="Node" parent="v_box_container/Input/scroll_container/v_box_container/bindings" unique_id=65533370]
+[node name="input_binder_manager" type="Node" parent="v_box_container/Input/scroll_container/v_box_container/bindings" unique_id=65533370 node_paths=PackedStringArray("sections")]
 unique_name_in_owner = true
 script = ExtResource("6_2ym4p")
+sections = [NodePath("../v_box_container/menu"), NodePath("../v_box_container/movement")]
 metadata/_custom_type_script = "uid://cyxultqo4g2yi"
 
 [node name="v_box_container" type="VBoxContainer" parent="v_box_container/Input/scroll_container/v_box_container/bindings" unique_id=1377118853]
@@ -431,7 +436,7 @@ label_text = "Pause"
 metadata/_custom_type_script = "uid://bsk25gt166keh"
 
 [node name="input_binder" type="BoxContainer" parent="v_box_container/Input/scroll_container/v_box_container/bindings/v_box_container/menu/v_box_container/menu" unique_id=2013762044]
-custom_minimum_size = Vector2(204, 0)
+custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
 script = ExtResource("6_cl66s")
 action = &"menu"
@@ -454,7 +459,7 @@ label_text = "Move : Forward"
 metadata/_custom_type_script = "uid://bsk25gt166keh"
 
 [node name="input_binder" type="BoxContainer" parent="v_box_container/Input/scroll_container/v_box_container/bindings/v_box_container/movement/v_box_container/move_forward" unique_id=1503194206]
-custom_minimum_size = Vector2(204, 0)
+custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
 script = ExtResource("6_cl66s")
 action = &"move_forward"
@@ -470,7 +475,7 @@ label_text = "           : Back"
 metadata/_custom_type_script = "uid://bsk25gt166keh"
 
 [node name="input_binder" type="BoxContainer" parent="v_box_container/Input/scroll_container/v_box_container/bindings/v_box_container/movement/v_box_container/move_back" unique_id=1376390082]
-custom_minimum_size = Vector2(204, 0)
+custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
 script = ExtResource("6_cl66s")
 action = &"move_back"
@@ -486,7 +491,7 @@ label_text = "           : Left"
 metadata/_custom_type_script = "uid://bsk25gt166keh"
 
 [node name="input_binder" type="BoxContainer" parent="v_box_container/Input/scroll_container/v_box_container/bindings/v_box_container/movement/v_box_container/move_left" unique_id=1765606536]
-custom_minimum_size = Vector2(204, 0)
+custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
 script = ExtResource("6_cl66s")
 action = &"move_left"
@@ -502,7 +507,7 @@ label_text = "           : Right"
 metadata/_custom_type_script = "uid://bsk25gt166keh"
 
 [node name="input_binder" type="BoxContainer" parent="v_box_container/Input/scroll_container/v_box_container/bindings/v_box_container/movement/v_box_container/move_right" unique_id=1950184466]
-custom_minimum_size = Vector2(204, 0)
+custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
 script = ExtResource("6_cl66s")
 action = &"move_right"
@@ -518,7 +523,7 @@ label_text = "Jump"
 metadata/_custom_type_script = "uid://bsk25gt166keh"
 
 [node name="input_binder" type="BoxContainer" parent="v_box_container/Input/scroll_container/v_box_container/bindings/v_box_container/movement/v_box_container/jump" unique_id=1168088426]
-custom_minimum_size = Vector2(204, 0)
+custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
 script = ExtResource("6_cl66s")
 action = &"jump"
@@ -533,7 +538,7 @@ label_text = "Sprint"
 metadata/_custom_type_script = "uid://bsk25gt166keh"
 
 [node name="input_binder" type="BoxContainer" parent="v_box_container/Input/scroll_container/v_box_container/bindings/v_box_container/movement/v_box_container/sprint" unique_id=995086323]
-custom_minimum_size = Vector2(204, 0)
+custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
 script = ExtResource("6_cl66s")
 action = &"sprint"
@@ -548,7 +553,7 @@ label_text = "Crouch"
 metadata/_custom_type_script = "uid://bsk25gt166keh"
 
 [node name="input_binder" type="BoxContainer" parent="v_box_container/Input/scroll_container/v_box_container/bindings/v_box_container/movement/v_box_container/crouch" unique_id=965159207]
-custom_minimum_size = Vector2(204, 0)
+custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
 script = ExtResource("6_cl66s")
 action = &"crouch"
@@ -563,7 +568,7 @@ label_text = "Interact"
 metadata/_custom_type_script = "uid://bsk25gt166keh"
 
 [node name="input_binder" type="BoxContainer" parent="v_box_container/Input/scroll_container/v_box_container/bindings/v_box_container/movement/v_box_container/interact" unique_id=1899839179]
-custom_minimum_size = Vector2(204, 0)
+custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
 script = ExtResource("6_cl66s")
 action = &"interact"

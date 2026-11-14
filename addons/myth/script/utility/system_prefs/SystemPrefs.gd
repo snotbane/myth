@@ -276,8 +276,10 @@ signal input_bindings_changed
 
 
 static func set_action_in_input_map(action: StringName, data: Dictionary) -> void:
-	if InputMap.has_action(action):
-		InputMap.action_erase_events(action)
+	if not InputMap.has_action(action):
+		return
+
+	InputMap.action_erase_events(action)
 
 	for event: InputEvent in data["events"]:
 		if event == null:
