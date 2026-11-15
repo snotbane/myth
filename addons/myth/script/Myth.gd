@@ -260,6 +260,13 @@ static func cache_children(node: Node, type: String = "") -> Array[Node]:
 		node.remove_child(child)
 	return result
 
+
+## Ensures the given [param node] is ready. If it is ready, this does nothing. If it is not ready, it awaits [member Node.ready].
+static func ensure_ready(node: Node):
+	if not node.is_node_ready():
+		await node.ready
+
+
 #endregion
 
 

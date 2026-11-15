@@ -36,7 +36,7 @@ func _init(__binding__: InputBinder, __event__: InputEvent = null, create_type: 
 	focus_exited.connect(set.bind(&"button_pressed", false))
 	changed.connect(binder.set_action_data_from_children)
 
-	tree_exited.connect(resolve_warnings)
+	tree_exiting.connect(resolve_warnings)
 	warning_button.pressed.connect(binder.handle_warnings.bind(self))
 
 
@@ -44,7 +44,7 @@ func _ready() -> void:
 	warning_button.position -= warning_button.size * 0.5
 
 	_refresh_disabled()
-	_refresh_warnings()
+	queue_refresh_warnings()
 	_refresh_display()
 
 var event: InputEvent:
@@ -65,14 +65,14 @@ var event: InputEvent:
 			if is_node_ready():
 				resolve_local_duplicates()
 
-			_refresh_warnings()
+			queue_refresh_warnings()
 			event.changed.connect(_refresh_display)
 
 		elif is_node_ready() and binder.event_can_remove_any:
 			queue_free()
 
 		else:
-			_refresh_warnings()
+			queue_refresh_warnings()
 			_refresh_display()
 
 		changed.emit()
@@ -108,7 +108,7 @@ func commit(__event__: InputEvent = event_staged) -> void:
 
 	event = __event__
 	button_pressed = false
-	_refresh_warnings()
+	queue_refresh_warnings()
 
 
 func revert() -> void:
@@ -193,7 +193,7 @@ extends RefCounted:
 				if related and related.owner:
 					return "Conflicts with %s." % str(related.owner.binder.text)
 				else:
-					return "Conflicts with another (unknown)."
+					return "Conflicts with another (unknown). related: %s" % related
 
 			_:
 				return "Unimplemented error."
@@ -233,7 +233,7 @@ func resolve_warnings() -> void:
 func create_warning(code: int) -> Warning:
 	var result := Warning.new(self, code)
 	warnings.push_back(result)
-	_refresh_warning_button()
+	_refresh_warning_button.call_deferred()
 	return result
 
 
@@ -255,6 +255,14 @@ func create_conflict_with(other: InputBinder.EventButton) -> void:
 	b.related = a
 
 
+var _refresh_warnings_queued: bool
+func queue_refresh_warnings() -> void:
+	if _refresh_warnings_queued:
+		return
+	_refresh_warnings_queued = true
+
+	_refresh_warnings.call_deferred()
+
 
 ## Occurs any time the [member event] changes or when the [InputBinderManager] is ready.
 func _refresh_warnings() -> void:
@@ -269,7 +277,10 @@ func _refresh_warnings() -> void:
 		create_warning(Warning.ACTION_REQUIRED_UNBOUND_BY_USER)
 
 	elif event:
-		for other in binder.conflict_candidates:
+		for other in binder.get_section_members():
+			if binder == other:
+				continue
+
 			for other_button in other.get_event_buttons():
 				if other_button.event == null:
 					continue
@@ -277,12 +288,14 @@ func _refresh_warnings() -> void:
 				if event.is_match(other_button.event):
 					create_conflict_with(other_button)
 
+	_refresh_warnings_queued = false
+
 
 func _refresh_warning_button() -> void:
 	warning_button.visible = not warnings.is_empty()
 	var warning_tooltip_text := ""
 	for warning in warnings:
-		warning_tooltip_text += "* " + warning.to_string() + "\n"
+		warning_tooltip_text += "• " + warning.to_string() + "\n"
 	warning_tooltip_text = warning_tooltip_text.left(-1)
 	warning_button.tooltip_text = warning_tooltip_text
 

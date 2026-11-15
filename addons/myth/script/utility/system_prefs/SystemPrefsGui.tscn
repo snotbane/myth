@@ -416,7 +416,7 @@ title = "Bindings"
 [node name="input_binder_manager" type="Node" parent="v_box_container/Input/scroll_container/v_box_container/bindings" unique_id=65533370 node_paths=PackedStringArray("sections")]
 unique_name_in_owner = true
 script = ExtResource("6_2ym4p")
-sections = [NodePath("../v_box_container/menu"), NodePath("../v_box_container/movement")]
+sections = [NodePath("../v_box_container/movement")]
 metadata/_custom_type_script = "uid://cyxultqo4g2yi"
 
 [node name="v_box_container" type="VBoxContainer" parent="v_box_container/Input/scroll_container/v_box_container/bindings" unique_id=1377118853]

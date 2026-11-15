@@ -41,10 +41,6 @@ var manager: InputBinderManager:
 			manager.add_member(self)
 
 
-func _manager_ready() -> void:
-	_initialize_conflicts()
-
-
 var event_hbox: HBoxContainer
 var event_hflow: HFlowContainer
 var event_add_button: Button
@@ -134,6 +130,10 @@ func _init() -> void:
 		)
 
 
+func _to_string() -> String:
+	return text
+
+
 var text: String:
 	get:
 		var parent := get_parent()
@@ -189,7 +189,7 @@ var action: StringName:
 		_event_restricteds = clampi(_event_restricteds, 0, action_project_setting_event_count)
 		refresh(get_action_data_from_project_settings() if Engine.is_editor_hint() else action_data)
 
-		if manager:
+		if manager and manager.is_parent_ready() and Engine.is_editor_hint():
 			_initialize_conflicts()
 
 
@@ -430,21 +430,19 @@ var deadzone: float:
 @export_subgroup("Warnings", "warning_")
 
 
+func get_section_members() -> Array:
+	var result : Array = []
+	for other in manager.members:
+		if self == other: continue
+		if manager.member_sections[self] == manager.member_sections[other] or manager.member_sections[self] == null or manager.member_sections[other] == null:
+			result.push_back(other)
+	return result
 
-var conflict_candidates: Array[InputBinder]
-var conflicts_ready: bool
 
 
 func _initialize_conflicts() -> void:
-	conflicts_ready = true
-
-	for other in manager.members:
-		if compares_with(other):
-			conflict_candidates.push_back(other)
-
-
 	for button in get_event_buttons():
-		button._refresh_warnings()
+		button.queue_refresh_warnings()
 
 
 ## Returns true if the other [InputBinder] can be checked for input binding conflicts. This means they must either be in the same manager section, either be explicitly defined.
