@@ -59,18 +59,18 @@ var mouse_enabled: bool = false
 @export
 var mouse_constrained: bool = false
 
+
+@export
+var mouse_sensitivity_setting: StringName
+
+
+func get_mouse_sensitivity() -> Vector2:
+	return SystemPrefs.inst.get_sensitivity_2d(mouse_sensitivity_setting)
+
+
 ## Higher values make [member desired_input] output higher values.
 @export
-var mouse_sensitivity: Vector2 = Vector2.ONE
-
-
-var invert_mouse_x: bool = false:
-	get: return mouse_sensitivity.x < 0.0
-	set(value): mouse_sensitivity.x = absf(mouse_sensitivity.x) * (+1.0 if value else -1.0)
-
-var invert_mouse_y: bool = false:
-	get: return mouse_sensitivity.y < 0.0
-	set(value): mouse_sensitivity.y = absf(mouse_sensitivity.y) * (+1.0 if value else -1.0)
+var mouse_scalar: Vector2 = Vector2.ONE
 
 
 @export_group("Auto Move", "auto_")
@@ -193,7 +193,7 @@ func _mouse_input(event: InputEvent) -> bool:
 		and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED
 		and event is InputEventMouseMotion
 	):
-		mouse_vector += event.screen_relative * mouse_sensitivity
+		mouse_vector -= event.screen_relative * get_mouse_sensitivity() * mouse_scalar
 		if consume:
 			get_viewport().set_input_as_handled()
 		return true

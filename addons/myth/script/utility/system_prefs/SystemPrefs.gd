@@ -24,6 +24,8 @@ func populate(host: Node) -> void:
 	if Engine.is_editor_hint():
 		return
 
+	set_sensitivity(&"look_mouse", 15.0)
+
 	for action in input_bindings:
 		set_action_in_input_map(action, input_bindings[action])
 
@@ -289,6 +291,82 @@ static func set_action_in_input_map(action: StringName, data: Dictionary) -> voi
 
 	if data.has("deadzone"):
 		InputMap.action_set_deadzone(action, data["deadzone"])
+
+
+@export_storage
+var sensitivities: Dictionary:
+	set(value):
+		sensitivities = value
+
+		sensitivities_changed.emit()
+		emit_changed()
+signal sensitivities_changed
+
+func get_sensitivity_1d(key: StringName) -> float:
+	return sensitivities.get(key, 1.0)
+
+func get_sensitivity_2d(key: StringName) -> Vector2:
+	var result = sensitivities.get(key, Vector2.ONE)
+	if result is float:
+		result = Vector2.ONE * result
+	return result
+
+func get_sensitivity_3d(key: StringName) -> Vector3:
+	var result = sensitivities.get(key, Vector3.ONE)
+	if result is float:
+		result = Vector3.ONE * result
+	return result
+
+func set_sensitivity(key: StringName, value: Variant) -> void:
+	if value is int:
+		value = float(value)
+	elif value is Vector2i:
+		value = Vector2(value)
+	elif value is Vector3i:
+		value = Vector3(value)
+
+	assert(
+		value is float or value is Vector2 or value is Vector3,
+		"Sensitivity value '%s' must be a float, Vector2, or Vector3." % key
+	)
+
+	sensitivities[key] = value
+
+func set_sensitivity_inverted_1d(key: StringName, inverted: bool) -> void:
+	set_sensitivity_sign(key, -1.0 if inverted else +1.0)
+
+func set_sensitivity_inverted_2d(key: StringName, inverted_x: bool, inverted_y: bool) -> void:
+	set_sensitivity_sign(key, Vector2(
+		-1.0 if inverted_x else +1.0,
+		-1.0 if inverted_y else +1.0,
+	))
+
+func set_sensitivity_inverted_3d(key: StringName, inverted_x: bool, inverted_y: bool, inverted_z: bool) -> void:
+	set_sensitivity_sign(key, Vector3(
+		-1.0 if inverted_x else +1.0,
+		-1.0 if inverted_y else +1.0,
+		-1.0 if inverted_z else +1.0,
+	))
+
+func set_sensitivity_sign(key: StringName, sign: Variant) -> void:
+	if not sensitivities.has(key):
+		return
+
+	if sensitivities[key] is float and sign is float:
+		sensitivities[key] = absf(sensitivities[key]) * sign
+
+	elif sensitivities[key] is Vector2 and sign is Vector2:
+		sensitivities[key] = sensitivities[key].abs() * sign
+
+	elif sensitivities[key] is Vector3 and sign is Vector3:
+		sensitivities[key] = sensitivities[key].abs() * sign
+
+	else:
+		assert(false, "Sensitivity '%s' (%s) and sign (%s) must match types." % [
+			key,
+			sensitivities[key],
+			sign
+		])
 
 
 #endregion

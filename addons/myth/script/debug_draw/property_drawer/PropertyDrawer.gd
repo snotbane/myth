@@ -4,11 +4,11 @@ class_name PropertyDrawer
 extends Resource
 
 static func float_to_string(value: float, float_format: String = "%s") -> String:
-	return ("+" if value > 0.0 else "-" if value < 0.0 else "±") + (float_format % absf(value))
+	return ("+" if value > 0.0 else "−" if value < 0.0 else "±") + (float_format % absf(value))
 
 
 static func int_to_string(value: int, int_format: String = "%s") -> String:
-	return ("+" if value > 0 else "-" if value < 0 else "±") + (int_format % absi(value))
+	return ("+" if value > 0 else "−" if value < 0 else "±") + (int_format % absi(value))
 
 
 static func value_to_string(value: Variant, format: String = "%s") -> String:

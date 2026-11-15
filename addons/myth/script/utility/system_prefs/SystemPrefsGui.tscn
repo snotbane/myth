@@ -4,6 +4,7 @@
 [ext_resource type="Theme" uid="uid://bc3ed0744j0gx" path="res://new_theme.tres" id="1_higry"]
 [ext_resource type="Script" uid="uid://byafjekbp4kd6" path="res://addons/myth/script/component/tribute/mouse/MouseComponent.gd" id="2_wxvyr"]
 [ext_resource type="Script" uid="uid://d4lpd1pg6y8s2" path="res://addons/myth/script/component/feature/ProjectSettingDependency.gd" id="4_higry"]
+[ext_resource type="Script" uid="uid://ddoexiyfx5ulf" path="res://addons/myth/script/ui/setting/SensitivityBinder.gd" id="5_2ym4p"]
 [ext_resource type="Script" uid="uid://cyxultqo4g2yi" path="res://addons/myth/script/ui/setting/InputBinderManager.gd" id="6_2ym4p"]
 [ext_resource type="Script" uid="uid://bmrv3splth55f" path="res://addons/myth/script/ui/setting/InputBinder.gd" id="6_cl66s"]
 
@@ -408,6 +409,24 @@ title = "General"
 [node name="mouse" type="FoldableContainer" parent="v_box_container/Input/scroll_container/v_box_container" unique_id=599929305]
 layout_mode = 2
 title = "Mouse"
+
+[node name="v_box_container" type="VBoxContainer" parent="v_box_container/Input/scroll_container/v_box_container/mouse" unique_id=253088800]
+layout_mode = 2
+
+[node name="mouse_sensitivity" type="HBoxContainer" parent="v_box_container/Input/scroll_container/v_box_container/mouse/v_box_container" unique_id=93884486]
+layout_mode = 2
+script = ExtResource("1_30kxb")
+label_text = "Sensitivity"
+metadata/_custom_type_script = "uid://bsk25gt166keh"
+
+[node name="sensitivity_binder" type="GridContainer" parent="v_box_container/Input/scroll_container/v_box_container/mouse/v_box_container/mouse_sensitivity" unique_id=1709497900]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+columns = 2
+script = ExtResource("5_2ym4p")
+dimensions = 1
+text_format = "%1.1f"
+metadata/_custom_type_script = "uid://ddoexiyfx5ulf"
 
 [node name="bindings" type="FoldableContainer" parent="v_box_container/Input/scroll_container/v_box_container" unique_id=874811190]
 layout_mode = 2

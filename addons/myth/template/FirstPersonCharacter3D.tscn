@@ -92,7 +92,7 @@ metadata/_custom_type_script = "uid://b8dtylr7phwi3"
 script = ExtResource("2_rco5e")
 yaw_node = NodePath("../../..")
 mouse_enabled = true
-mouse_sensitivity = Vector2(-10, -10)
+mouse_sensitivity_setting = &"look_mouse"
 metadata/_custom_type_script = "uid://d201t4jfiho2x"
 
 [node name="flashlight_3d" type="SpotLight3D" parent="collision_shape_3d/camera_3d" unique_id=581965166]

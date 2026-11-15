@@ -53,6 +53,9 @@ var child: Control:
 		elif child is InputBinder:
 			child.action_data_changed.connect(_on_child_value_changed)
 
+		elif child is SensitivityBinder:
+			child.dynamic_value_changed.connect(_on_child_value_changed)
+
 
 var child_value: Variant:
 	get:
@@ -64,6 +67,8 @@ var child_value: Variant:
 			return child.button_pressed
 		elif child is InputBinder:
 			return child.action_data
+		elif child is SensitivityBinder:
+			return child.dynamic_value
 		else:
 			return null
 	set(value):
@@ -85,6 +90,9 @@ var child_value: Variant:
 
 		elif child is InputBinder:
 			child.action_data = value
+
+		elif child is SensitivityBinder:
+			child.dynamic_value = value
 
 		else:
 			pass
@@ -143,6 +151,7 @@ func _ready() -> void:
 			or c is Range
 			or (c is BaseButton and c.toggle_mode)
 			or c is InputBinder
+			or c is SensitivityBinder
 		):
 			child = c
 
