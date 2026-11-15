@@ -471,7 +471,7 @@ metadata/_custom_type_script = "uid://bmrv3splth55f"
 [node name="move_back" type="HBoxContainer" parent="v_box_container/Input/scroll_container/v_box_container/bindings/v_box_container/movement/v_box_container" unique_id=360649484]
 layout_mode = 2
 script = ExtResource("1_30kxb")
-label_text = "           : Back"
+label_text = "Move : Back"
 metadata/_custom_type_script = "uid://bsk25gt166keh"
 
 [node name="input_binder" type="BoxContainer" parent="v_box_container/Input/scroll_container/v_box_container/bindings/v_box_container/movement/v_box_container/move_back" unique_id=1376390082]
@@ -487,7 +487,7 @@ metadata/_custom_type_script = "uid://bmrv3splth55f"
 [node name="move_left" type="HBoxContainer" parent="v_box_container/Input/scroll_container/v_box_container/bindings/v_box_container/movement/v_box_container" unique_id=2115712778]
 layout_mode = 2
 script = ExtResource("1_30kxb")
-label_text = "           : Left"
+label_text = "Move : Left"
 metadata/_custom_type_script = "uid://bsk25gt166keh"
 
 [node name="input_binder" type="BoxContainer" parent="v_box_container/Input/scroll_container/v_box_container/bindings/v_box_container/movement/v_box_container/move_left" unique_id=1765606536]
@@ -503,7 +503,7 @@ metadata/_custom_type_script = "uid://bmrv3splth55f"
 [node name="move_right" type="HBoxContainer" parent="v_box_container/Input/scroll_container/v_box_container/bindings/v_box_container/movement/v_box_container" unique_id=566204817]
 layout_mode = 2
 script = ExtResource("1_30kxb")
-label_text = "           : Right"
+label_text = "Move : Right"
 metadata/_custom_type_script = "uid://bsk25gt166keh"
 
 [node name="input_binder" type="BoxContainer" parent="v_box_container/Input/scroll_container/v_box_container/bindings/v_box_container/movement/v_box_container/move_right" unique_id=1950184466]

@@ -187,7 +187,10 @@ var action: StringName:
 
 		update_configuration_warnings()
 		_event_restricteds = clampi(_event_restricteds, 0, action_project_setting_event_count)
-		refresh()
+		refresh(get_action_data_from_project_settings() if Engine.is_editor_hint() else action_data)
+
+		if manager:
+			_initialize_conflicts()
 
 
 var action_project_setting: String:
@@ -428,36 +431,15 @@ var deadzone: float:
 
 
 
-## Conflicts with these binders are always checked, regardless of sections.
-@export
-var conflict_guarantors: Array[InputBinder] = []
-
-
-## Conflicts with these binders are always ignored, regardless of sections.
-@export
-var conflict_exemptions: Array[InputBinder] = []
-
-
 var conflict_candidates: Array[InputBinder]
+var conflicts_ready: bool
 
 
 func _initialize_conflicts() -> void:
+	conflicts_ready = true
+
 	for other in manager.members:
-		if self == other:
-			continue
-
-		assert(
-			not (other in conflict_guarantors and other in conflict_exemptions),
-			"InputBinder '%s' cannot be both a conflict guarantor and conflict exempt for '%s'" % [
-				other,
-				self,
-			]
-		)
-
-		if other in conflict_exemptions:
-			continue
-
-		if other in conflict_guarantors or compares_with(other):
+		if compares_with(other):
 			conflict_candidates.push_back(other)
 
 
@@ -465,23 +447,27 @@ func _initialize_conflicts() -> void:
 		button._refresh_warnings()
 
 
-
+## Returns true if the other [InputBinder] can be checked for input binding conflicts. This means they must either be in the same manager section, either be explicitly defined.
 func compares_with(other: InputBinder) -> bool:
-	return manager._conflicts_comparable(self, other)
+	if self == other or not manager.member_sections.has(other) or action == other.action:
+		return false
 
+	if manager.member_sections[self] == null or manager.member_sections[other] == null:
+		return true
 
-func conflicts_with(other: InputBinder) -> bool:
-	return manager.conflicts_with(self, other)
+	return manager.member_sections[self] == manager.member_sections[other]
 
 
 func handle_warnings(button: EventButton):
 	for warning in button.warnings:
 		match warning.code:
+			InputBinder.EventButton.Warning.ACTION_REQUIRED_UNBOUND_BY_USER:
+				warning.owner.button_pressed = true
+				break
+
 			InputBinder.EventButton.Warning.CONFLICTS_WITH_ANOTHER:
 				if warning.related and warning.related.owner:
 					warning.related.owner.grab_focus.call_deferred()
 				break
-	print(text)
-
 
 #endregion
